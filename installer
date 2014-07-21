@@ -1,0 +1,25 @@
+currentVersion = 1
+
+local function downloadFiles(url, path)
+  for i = 1, 3 do
+    local response = http.get(url)
+      if response then
+	    local data = response.readAll()
+		if path then
+		  local f = io.open(path, "w")
+		  f:write(data)
+		  f:close()
+		end
+	   return true
+      end
+  end
+  return false
+end
+
+print "Starting Download"
+sleep(3)
+print "Connected To GitHub Repository!"
+sleep(1)
+print "Attempting To Download Files"
+downloadFiles("http://raw.github.com/hbomb79/securitySystemPro/master/hi", "/hi")
+print "Download Completed!"
