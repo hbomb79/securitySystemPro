@@ -1,0 +1,18 @@
+-- This is the program/script that actually re-installs all of the scripts on the computer
+
+function drawTitleBar()
+  term.setBackgroundColor(128)
+  term.setCursorPos(1,1)
+  term.clearLine()
+  term.setTextColor(colors.cyan)
+  write "HbombOS Security Solutions"
+  term.setCursorPos(1,2)
+  term.clearLine()
+  term.setTextColor(256)
+  write "Updating"
+  term.setTextColor(1)
+  term.setBackgroundColor(256)
+end
+
+
+drawTitleBar()
