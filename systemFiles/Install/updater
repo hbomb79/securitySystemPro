@@ -1,0 +1,182 @@
+-- This is the program/script that actually re-installs all of the scripts on the computer
+termX, termY = term.getSize()
+
+function PrintCentered(text, y)
+	local w, h = term.getSize()
+    x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
+    term.setCursorPos(x, y)
+	term.clearLine()
+    write(text)
+end
+
+
+function drawTitleBar()
+  term.setBackgroundColor(128)
+  term.setCursorPos(1,1)
+  term.clearLine()
+  term.setTextColor(colors.cyan)
+  write "HbombOS Security Solutions"
+  term.setCursorPos(1,2)
+  term.clearLine()
+  term.setTextColor(256)
+  write "Updater"
+  term.setTextColor(1)
+  term.setBackgroundColor(256)
+end
+
+term.setBackgroundColor(256)
+term.clear()
+drawTitleBar()
+PrintCentered("Welcome to the HbombOS Updater", 4)
+PrintCentered("This Updater Will Guide", 6)
+PrintCentered("You Through Updating Your Security Suite", 7)
+PrintCentered("Press Y Continue Or N To Cancel", 9)
+local event, key = os.pullEvent("key")
+if key == keys.y then
+term.clear()
+drawTitleBar()
+PrintCentered("Updating..", 4)
+sleep(1)
+PrintCentered("Connection Established", 6)
+sleep(0.1)
+PrintCentered("Starting Download", 6)
+
+details = {
+urlPre = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/"
+}
+
+urlPath = {
+ [1] = "version",
+ [2] = "checker",
+ [3] = "installer"
+}
+
+FileNames = {
+ [1] = "version",
+ [2] = "checker",
+ [3] = "installer"
+}
+
+drawTitleBar()
+
+function downloadUpdate(url, name) --url: Where to download from, Name: Where to save file to
+  term.setTextColor(1)
+  response = http.get(url)
+  if response then
+    data = response.readAll()
+	if fs.exists(name) then
+	  fs.delete(name)
+	end
+	if name then
+	  local file = io.open(name, "w")
+	  file:write(data)
+	  file:close()
+      PrintCentered("The Script: "..name.." Was Successfully Downloaded", 6)
+	  return true
+	end
+	error ("The Path Provided Is Invalid, Path: "..name)
+  else
+    error ("An error occurred while waiting for a response from: "..url)
+  end
+end
+
+--[[
+function downloadQue()
+  for _, urlDownloadQue in ipairs (urlPath) do
+   sleep(0)
+	  if fs.exists("/"..fileDownloadName) then
+	  fs.delete("/"..fileDownloadName)
+	  end
+	  downloadUpdate(details.urlPre..urlDownloadQue, urlPath)
+  end
+end
+]]--
+
+function downloadQue()
+  for _, urlDownloadQue in ipairs (urlPath) do
+   sleep(0)
+    for _, fileDownloadName in ipairs (FileNames) do
+	 sleep(0)
+	  if fs.exists("/"..fileDownloadName) then
+	  fs.delete("/"..fileDownloadName)
+	  end
+	  downloadUpdate(details.urlPre..urlDownloadQue, fileDownloadName)
+    end
+  end
+end
+
+downloadQue()
+
+PrintCentered("Finished Download", 6)
+sleep(0.5)
+PrintCentered("Installing", 6)
+sleep(0)
+PrintCentered ("Installing DirectX", 6)
+sleep(0.5)
+PrintCentered ("Loading Cache Properties", 6)
+sleep(3)
+PrintCentered ("Installing Key Combo", 6)
+sleep(0.3)
+PrintCentered ("Installing Key Card Combo", 6)
+sleep(1)
+PrintCentered ("Installing Key Card Single", 6)
+sleep(0.5)
+PrintCentered ("Installing Key Card Macro", 6)
+sleep(1)
+PrintCentered ("Installing Key Card API", 6)
+sleep(0.4)
+PrintCentered ("Installing Key Card Subsystem", 6)
+sleep(0)
+PrintCentered ("Installing PIN API", 6)
+sleep(1)
+PrintCentered ("Scanning Reactor System Files", 6)
+sleep(0.1)
+PrintCentered ("Installing Reactor Script", 6)
+sleep(4)
+PrintCentered ("Installing Door Control API", 6)
+sleep(1)
+PrintCentered ("Installing Redstone Control API", 6)
+sleep(0.1)
+PrintCentered ("Verifying Scanner System", 6)
+sleep(1)
+PrintCentered ("Configuring Scanner Properties", 6)
+sleep(3)
+PrintCentered ("Installing Player Scanner API", 6)
+sleep(0.5)
+PrintCentered ("Configuring Security Suite", 6)
+sleep(5)
+PrintCentered ("Almost Done!", 7)
+sleep(4)
+PrintCentered("", 7)
+PrintCentered("Install Complete", 6)
+sleep(1)
+term.clear()
+drawTitleBar()
+PrintCentered ("Thank You For Updating", 6)
+PrintCentered ("We Hope You Enjoy Your New Security Suite", 8)
+PrintCentered ("Please Report Any Bugs You Find On The Forums", 10)
+PrintCentered ("Verifying Update With GitHub..", 19)
+sleep(4)
+PrintCentered ("Scanning Files..", 19)
+sleep(2)
+PrintCentered ("Press Any Key To Finish", 19)
+os.pullEvent("key")
+term.setBackgroundColor(colors.black)
+term.clear()
+term.setCursorPos(1,1)
+term.clearLine()
+shell.run "shell"
+
+else
+  term.clear()
+  drawTitleBar()
+  PrintCentered("Cancelling...", 6)
+  sleep(1)
+  PrintCentered ("Cancelled, Come Back Soon", 6)
+  sleep(4)
+  term.setBackgroundColor(colors.black)
+  term.setTextColor(1)
+  term.setCursorPos(1,1)  
+  term.clear()
+  shell.run"shell"
+end

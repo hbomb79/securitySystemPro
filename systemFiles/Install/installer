@@ -1,0 +1,121 @@
+-- This is the first time setup so the computer will
+-- Download all the required scripts.
+
+
+-- Checking System Support
+if not http then
+  error "You Must Enable HTTP In Computer-craft Con-figs To Use The System!"
+end
+
+if pocket then
+  error "Sorry, The Software Does Not Support Pocket Computer!"
+end
+
+if not term.isColor() then
+  error "This Computer Does Not Appear To Be Advanced, If It Is Advanced, Then Please Report This"
+end
+
+
+function PrintCentered(text, y)
+	local w, h = term.getSize()
+    x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
+    term.setCursorPos(x, y)
+	term.clearLine()
+    write(text)
+end
+
+files = {
+ [1] = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/installer",
+ [2] = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version",
+ [3] = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/checker"
+}
+
+fileNames = {
+ [1] = "installer",
+ [2] = "version",
+ [3] = "checker"
+}
+
+
+function initBackground(color) --Draw The Background In The Specified Color
+  term.setBackgroundColor(color)
+  term.clear()
+end
+
+
+function drawTitleBar()
+  term.setBackgroundColor(128)
+  term.setCursorPos(1,1)
+  term.clearLine()
+  term.setTextColor(colors.cyan)
+  write "hbombOS Security Solutions"
+  term.setCursorPos(1,2)
+  term.clearLine()
+  term.setTextColor(256)
+  write "Setup"
+end
+
+initBackground(256)
+drawTitleBar()
+
+function downloadFiles(getUrl, toPath)
+term.setTextColor(1)
+term.setBackgroundColor(256)
+-- Download the files and scripts from github
+  for i = 1, 3 do
+    local response = http.get(getUrl)
+	if response then
+	  data = response.readAll()
+	   --[[ if fs.exists(toPath) then
+		  fs.delete(toPath)
+		  PrintCentered ("Deleted Previous File At Location: "..toPath, "19")
+		  term.setCursorPos(1,18)
+		  term.clearLine()
+		  term.setCursorPos(1,29)
+		  term.clearLine()
+		end]]--
+		if toPath then
+		  local file = io.open(toPath, "w")
+		  file:write(data)
+		  file:close()
+		  PrintCentered ("Data Updated To File: "..toPath.."!", 19)
+		  term.setCursorPos(1,18)
+		  term.clearLine()
+		  term.setCursorPos(1,29)
+		  term.clearLine()
+		  return true
+		else
+		  error "We Believe The Path Specified Is Invalid, Report If Not Your Fault"
+		end
+	else
+	  error ("The File Or Files At: "..getUrl.." Do Not Appear To Exist! Please Report This Issue On Forums Or Through GitHub")
+	end
+  end
+  error ("Failed To Download The File From URL: "..getUrl.." Please try again later, If this is the 2nd time you've seen this, then report it on the fourms")
+end
+
+function downloadQuery()
+  term.setCursorPos(1,19)
+  term.setTextColor(1)
+  term.setBackgroundColor(256)
+  PrintCentered("Attempting Download Of Files!", "5")
+  for _, fileForDownload in ipairs(files) do
+    sleep(0)
+	 for _, fileDownloadName in ipairs(fileNames) do
+	  downloadFiles(fileForDownload, fileDownloadName)
+	 end
+  end
+  return true
+end
+
+
+if not fs.exists("/version") then
+downloadQuery()
+else
+  print "You have already completed the install before... Running Update Checker!"
+  sleep(2)
+  shell.run"/systemFiles/Install/checkUpdate"
+end
+function main()
+  
+end

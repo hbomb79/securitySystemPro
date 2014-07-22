@@ -1,0 +1,205 @@
+-- This script loads the APIs Required as well as checks for missing files and updates via GitHub
+-- The Installer Will Check If The Computer is compatible
+
+termX, termY = term.getSize()
+
+function initBackground(color)
+  term.setBackgroundColor(color)
+  term.clear()  
+  drawTitleBar()
+end
+
+bootX = termX/2-7
+bootY = termY/2-4
+
+-- Loads All Boot Images
+BL0 = paintutils.loadImage("systemFiles/BootLogos/boot0.nfp")
+BL1 = paintutils.loadImage("systemFiles/BootLogos/boot1.nfp")
+BL2 = paintutils.loadImage("systemFiles/BootLogos/boot2.nfp")
+BL3 = paintutils.loadImage("systemFiles/BootLogos/boot3.nfp")
+BL4 = paintutils.loadImage("systemFiles/BootLogos/boot4.nfp")
+BL5 = paintutils.loadImage("systemFiles/BootLogos/boot5.nfp")
+BL6 = paintutils.loadImage("systemFiles/BootLogos/boot6.nfp")
+BL7 = paintutils.loadImage("systemFiles/BootLogos/boot7.nfp")
+BL8 = paintutils.loadImage("systemFiles/BootLogos/boot8.nfp")
+BLFinal = paintutils.loadImage('systemFiles/bootFail.nfp')
+
+color = true
+
+
+function bootLogo (state, x, y, bgcolor)
+  if state == 0 then
+    paintutils.drawImage(BL0, x, y)
+  elseif state == 1 then
+    paintutils.drawImage(BL1, x, y)
+  elseif state == 2 then
+    paintutils.drawImage(BL2, x, y)
+  elseif state == 3 then
+    paintutils.drawImage(BL3, x, y)
+  elseif state == 4 then
+    paintutils.drawImage(BL4, x, y)
+  elseif state == 5 then
+    paintutils.drawImage(BL5, x, y)
+  elseif state == 6 then
+    paintutils.drawImage(BL6, x, y)
+  elseif state == 7 then
+    paintutils.drawImage(BL7, x, y)
+  elseif state == 8 then
+    paintutils.drawImage(BL8, x, y)
+  elseif state == 9 then
+    paintutils.drawImage(BLFinal, x, y)
+  end
+  term.setBackgroundColor(bgcolor)
+end
+
+
+function PrintCentered(text, y)
+	local w, h = term.getSize()
+    x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
+    term.setCursorPos(x, y)
+	term.clearLine()
+    write(text)
+end
+
+function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
+  local screenWidth, screenHeight = term.getSize()
+  local x = (screenWidth - 14) / 2
+  local y = (screenHeight - 9) / 2
+  drawTitleBar()
+  local currentImage = -1
+	local total = #fs.list("/api")
+	term.setBackgroundColor(256)
+	PrintCentered("Loading APIs", 6)
+	for _, fileApi in pairs(fs.list('/api')) do
+		if string.sub(fileApi,1,1) ~= "." then
+			if math.floor(_*(8/total)) ~= currentImage then
+				currentImage = math.floor(_*(8/total))
+				local image = paintutils.loadImage('systemFiles/BootLogos/boot'..currentImage..'.nfp')
+				paintutils.drawImage(image, bootX, bootY)
+			end		
+			if os.loadAPI('/api/'..fileApi) then
+			sleep(0)
+			term.setBackgroundColor(256)
+			term.setTextColor(colors.white)
+            term.setCursorPos(1,19)
+			term.clearLine()
+			term.setCursorPos(1,18)
+			term.clearLine()
+			PrintCentered(fileApi.." Loaded!", 18)
+		    else
+			  error ("Error Occurred Whilst Loading API: "..fileApi)
+			end
+		end
+	end
+	sleep(0.1)
+	term.clear()
+	initBackground(256)
+	drawTitleBar()
+	return true
+end
+
+--[[
+function colorScreen(interval) --Provides a nice looking colour changing screen whilst booting
+  if interval == nil then 
+    interval = 1 
+  end
+  while color do
+    initBackground(256)
+    sleep(interval)
+    initBackground(colors.lightBlue)
+    sleep(interval)
+    initBackground(colors.blue)
+    sleep(interval)  
+    initBackground(colors.orange)
+    sleep(interval)
+    initBackground(colors.red)
+    sleep(interval)
+    initBackground(colors.purple)
+    sleep(interval)
+    initBackground(colors.orange)
+    sleep(interval)
+    initBackground(colors.blue)
+    sleep(interval)
+    initBackground(colors.lightBlue)
+    sleep(interval)
+  end
+end
+]]--
+function drawTitleBar()
+  term.setBackgroundColor(128)
+  term.setCursorPos(1,1)
+  term.clearLine()
+  term.setTextColor(colors.cyan)
+  write "HbombOS Security Suite"
+  term.setCursorPos(1,2)
+  term.clearLine()
+  term.setTextColor(256)
+  write "Startup"
+end
+
+
+
+function main() --The main function, calls all child functions
+  --First all APIs must be loaded to perform the system checks later on
+  loadAPIs()
+  term.setBackgroundColor(256)
+  term.setTextColor(1)
+  bootLogo(1, bootX, bootY, 256)
+  PrintCentered("Checking For Colour Support", 18)
+  if systemCheck.checkColor() then PrintCentered("Computer Supports Colour", 19) end
+  bootLogo(3, bootX, bootY, 256)
+  sleep(0)
+  bootLogo(4, bootX, bootY, 256)
+  PrintCentered("Checking If Pocket", 18)
+  sleep(0)
+  if systemCheck.checkPocket() then
+  bootLogo(6, bootX, bootY, 256)
+  PrintCentered("Computer Is Not Pocket", 19)
+  end
+  sleep(0)
+  bootLogo(7, bootX, bootY, 256)
+  PrintCentered("Checking If Supports HTTP", 18)
+  sleep(0.5)
+  bootLogo(8, bootX, bootY, 256)
+  if systemCheck.checkhttp() then PrintCentered("System Check Complete!", 19) end
+  sleep(0)
+  PrintCentered("", 19)
+  PrintCentered("Checking For Updates", 18)
+  sleep(1)
+  if update.Check() then
+    PrintCentered("An Update Has Been Detected", 19)
+	sleep(0)
+    PrintCentered("Obtaining Latest Update From GitHub", 18)
+	PrintCentered("Seeking URL", 19)
+	sleep(1)
+	PrintCentered("Parsed", 19)
+	sleep(0)
+	PrintCentered("Downloading New Updater", 19)
+	download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
+	sleep(0)
+	PrintCentered("Download Complete, Running Updater",18)
+	sleep(0)
+	--[[PrintCentered("Rebooting In 3", 19)
+	sleep(1)
+	PrintCentered("Rebooting In 2", 19)
+	sleep(1)
+	PrintCentered("Rebooting In 1", 19)
+	sleep(1)
+	os.reboot()]]--
+  elseif not update.Check() then
+    PrintCentered("You Are Running The Latest Version!", 19)
+  end
+end
+
+--parallel.waitForAny(main, colorScreen)
+
+term.setBackgroundColor(256)
+term.clear()
+drawTitleBar()
+main()
+
+
+
+
+
+
