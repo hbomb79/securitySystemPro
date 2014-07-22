@@ -58,7 +58,7 @@ FileNames = {
 }
 
 drawTitleBar()
-
+--[[
 function downloadUpdate(url, name) --url: Where to download from, Name: Where to save file to
   term.setTextColor(1)
   response = http.get(url)
@@ -79,6 +79,27 @@ function downloadUpdate(url, name) --url: Where to download from, Name: Where to
     error ("An error occurred while waiting for a response from: "..url)
   end
 end
+]]--
+
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot0.nfp", "systemFiles/BootLogos/boot0.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot1.nfp", "systemFiles/BootLogos/boot1.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot2.nfp", "systemFiles/BootLogos/boot2.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot3.nfp", "systemFiles/BootLogos/boot3.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot4.nfp", "systemFiles/BootLogos/boot4.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot5.nfp", "systemFiles/BootLogos/boot5.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot0/boot6.nfp", "systemFiles/BootLogos/boot6.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot7.nfp", "systemFiles/BootLogos/boot7.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot8.nfp", "systemFiles/BootLogos/boot8.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/bootFinal.nfp", "systemFiles/bootFail.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/download", "systemFiles/api/download")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/systemCheck", "systemFiles/api/systemCheck")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/update", "systemFiles/api/update")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README.md", "README")
+--download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LISENCE", "LISENCE")
 
 --[[
 function downloadQue()
