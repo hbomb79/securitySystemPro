@@ -23,7 +23,7 @@ function PrintCentered(text, y)
 	term.clearLine()
     write(text)
 end
-
+--[[
 files = {
  [1] = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/installer",
  [2] = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version",
@@ -35,7 +35,7 @@ fileNames = {
  [2] = "version",
  [3] = "checker"
 }
-
+]]--
 
 function initBackground(color) --Draw The Background In The Specified Color
   term.setBackgroundColor(color)
@@ -58,6 +58,7 @@ end
 initBackground(256)
 drawTitleBar()
 
+--[[
 function downloadFiles(getUrl, toPath)
 term.setTextColor(1)
 term.setBackgroundColor(256)
@@ -66,14 +67,14 @@ term.setBackgroundColor(256)
     local response = http.get(getUrl)
 	if response then
 	  data = response.readAll()
-	   --[[ if fs.exists(toPath) then
+	      if fs.exists(toPath) then
 		  fs.delete(toPath)
 		  PrintCentered ("Deleted Previous File At Location: "..toPath, "19")
 		  term.setCursorPos(1,18)
 		  term.clearLine()
 		  term.setCursorPos(1,29)
 		  term.clearLine()
-		end]]--
+		end
 		if toPath then
 		  local file = io.open(toPath, "w")
 		  file:write(data)
@@ -107,6 +108,32 @@ function downloadQuery()
   end
   return true
 end
+]]--
+
+PrintCentered ("Downloading Scripts...", 18)
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot0.nfp", "systemFiles/BootLogos/boot0.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot1.nfp", "systemFiles/BootLogos/boot1.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot2.nfp", "systemFiles/BootLogos/boot2.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot3.nfp", "systemFiles/BootLogos/boot3.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot4.nfp", "systemFiles/BootLogos/boot4.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot5.nfp", "systemFiles/BootLogos/boot5.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot6.nfp", "systemFiles/BootLogos/boot6.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot7.nfp", "systemFiles/BootLogos/boot7.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot8.nfp", "systemFiles/BootLogos/boot8.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/bootFail.nfp", "systemFiles/bootFail.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/download", "systemFiles/api/download")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/systemCheck", "systemFiles/api/systemCheck")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/update", "systemFiles/api/update")
+--download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README.md", "README")
+--download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LISENCE", "LISENCE")
+PrintCentered("Complete", 19)
+os.reboot()
+
+
 
 
 if not fs.exists("/version") then
