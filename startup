@@ -175,10 +175,11 @@ function main() --The main function, calls all child functions
 	PrintCentered("Parsed", 19)
 	sleep(0)
 	PrintCentered("Downloading New Updater", 19)
-	download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
+	download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater")
 	sleep(0)
 	PrintCentered("Download Complete, Running Updater",18)
 	sleep(0)
+	shell.run("systemFiles/Install/updater")
 	--[[PrintCentered("Rebooting In 3", 19)
 	sleep(1)
 	PrintCentered("Rebooting In 2", 19)
@@ -197,7 +198,6 @@ term.setBackgroundColor(256)
 term.clear()
 drawTitleBar()
 main()
-
 
 
 
