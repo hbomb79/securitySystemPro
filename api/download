@@ -31,4 +31,3 @@ end
 function update()
   git(url, toPath)
 end
-

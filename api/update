@@ -8,7 +8,7 @@ for i=1, 3 do
  if url == nil then error "Update URL Is Nil, Please Report If It Isnt Your Fault!" end
   local response = http.get(url)
   if response then
-    local data = response.readAll()
+    local data = response.readLine()
 	local f = fs.open("version", "r")
 	currentVersion = f.readLine()
 	f.close()
