@@ -1,0 +1,21 @@
+--os.pullEvent = os.pullEventRaw --Stop termination outside of loop
+
+function checkConfig()
+  if not fs.exists("systemFiles/Programs/pinconfig") then --This means the config containing the password isnt created yet
+    return false
+  else
+    return true
+  end
+end
+
+
+function drawTitleBar()
+  term.clear()
+  --titleBar.draw("HbombOS Security Suite", "PIN Lock", colors.cyan, 256, 128, 256, 1) --Syntax: Text, Subtext, Text Color, SubText Color, Bg Color, DefaultBGcolor, DefaultTextColor
+end
+
+drawTitleBar()
+
+if not checkConfig() then
+  --print.centered
+end
