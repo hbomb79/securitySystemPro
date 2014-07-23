@@ -1,6 +1,6 @@
 -- This is the first time setup so the computer will
 -- Download all the required scripts.
-
+running = true
 
 -- Checking System Support
 if not http then
@@ -109,9 +109,7 @@ term.setTextColor(1)
 	end
 end
 
-function wait()
 
-end
 
 function downloadFiles(getUrl, toPath)
 term.setTextColor(1)
@@ -123,13 +121,13 @@ term.setBackgroundColor(256)
 	  data = response.readAll()
 	      if fs.exists(toPath) then
 		  fs.delete(toPath)
-		  PrintCentered ("Deleted Previous File At Location: "..toPath, 18)
+		 -- PrintCentered ("Deleted Previous File At Location: "..toPath, 18)
 		end
 		if toPath then
 		  local file = io.open(toPath, "w")
 		  file:write(data)
 		  file:close()
-		  PrintCentered ("Data Updated To File: "..toPath.."!", 18)
+		 -- PrintCentered ("Data Updated To File: "..toPath.."!", 18)
 		  return true
 		else
 		  error "We Believe The Path Specified Is Invalid, Report If Not Your Fault"
@@ -155,10 +153,79 @@ function downloadQuery()
   return true
 end
 
+--[[
+function wait()
+  runningStart = true
+  while runningStart == true do
+   if y == 1 then
+     PrintCentered("Downloading Files.", 19)
+     sleep(1)
+     y = y+1
+   elseif y == 2 then
+     PrintCentered("Downloading Files..", 19)
+     sleep(1)
+     y = y+1
+   elseif y == 3 then
+     PrintCentered("Downloading Files...", 19)
+     sleep(1)
+     y = 1
+  -- elseif y == "stop" then
+   else
+     return false
+   end
+  end
+end
+]]--
+
+function wait()
+  while true do
+  sleep(0)
+  end
+end
+
+function stop()
+runningStart = false
+y = "stop"
+sleep(0)
+y = "stop"
+end
+
+function waitForKey(key)
+  os.pullEvent("key")
+end
+
+function rebootCountdown()
+  for x=10, 0, -1 do
+    PrintCentered("Force Reboot In: "..x, 19)
+    sleep(1)
+  end
+end
+
+function thank()
+  stop()
+  local f = fs.open("version", "r")
+  vCurrent = f.readLine()
+  f.close()
+  term.clear()
+  drawTitleBar()
+  term.setBackgroundColor(256)
+  PrintCentered("Thank You For Updating The Latest Stable Build", 4)
+  PrintCentered("Your Use Of This Program Is Much Appreciated", 5)
+  PrintCentered("Report Any Bugs You Find", 7)
+  PrintCentered("Avoid Posting If Already Reported", 8)
+  sleep(0)
+  PrintCentered("Thanks Again, Hope You Enjoy", 10)
+  PrintCentered("Your Version: "..vCurrent.."", 12)
+  PrintCentered("Please Press Any Key To Reboot This PC Or Wait", 18)
+  parallel.waitForAny(waitForKey, rebootCountdown)
+  PrintCentered("Rebooting..", 19)
+  sleep(2)
+  os.reboot()
+end
 
 function download()
 term.setBackgroundColor(256)
-PrintCentered ("Downloading Scripts... Please Wait", 18)
+PrintCentered ("Downloading Scripts... Please Wait", 19)
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer")
@@ -178,9 +245,15 @@ downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/maste
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/update", "/api/update")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README", "/Documentation/README")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LICENSE", "/Documentation/LISENCE")
-PrintCentered("Complete, Rebooting", 19)
+PrintCentered("Complete", 19)
 sleep(1)
-os.reboot()
+term.clear()
+stop()
+thank()
 end
 
-if open() then download() end
+if open() then 
+--parallel.waitForAny(download, wait)
+stop()
+download()
+end
