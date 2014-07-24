@@ -264,7 +264,8 @@ function main() --The main function, calls all child functions
 	--[[if fileRun then
 	  shell.run(fileRun)
 	end]]--
-	printer.centered("No Default File Stored", 19)
+	shell.run"systemFiles/programs/pin"
+	--printer.centered("No Default File Stored", 19)
 	return true
   end
 end
