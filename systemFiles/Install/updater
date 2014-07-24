@@ -94,7 +94,7 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot6.nfp", "systemFiles/BootLogos/boot6.nfp")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot7.nfp", "systemFiles/BootLogos/boot7.nfp")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot8.nfp", "systemFiles/BootLogos/boot8.nfp")
-download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/bootFinal.nfp", "systemFiles/bootFail.nfp")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/bootFail.nfp", "systemFiles/bootFail.nfp")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/download", "systemFiles/api/download")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/systemCheck", "systemFiles/api/systemCheck")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/update", "systemFiles/api/update")
