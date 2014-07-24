@@ -18,7 +18,7 @@ function git(url, toPath) --Download From Git-hub To A PATH Specified in Argumen
 	  error "We Think The TOPATH Is Invalid!"
 	end
   else
-    error "The URL Cannot Be Parsed [404]"
+    error ("The URL:" ..url.." Cannot Be Parsed! [404]")
   end
  end
  error "An Error Occurred And The Request Timed Out [208]"
