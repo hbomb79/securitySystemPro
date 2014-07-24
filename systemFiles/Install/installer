@@ -243,6 +243,8 @@ downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/maste
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/download", "/api/download")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/systemCheck", "/api/systemCheck")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/update", "/api/update")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/printer", "/api/printer")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/titleBar", "/api/titleBar")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README", "/Documentation/README")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LICENSE", "/Documentation/LICENSE")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/dualKey", "/systemFiles/Programs/dualKey")
