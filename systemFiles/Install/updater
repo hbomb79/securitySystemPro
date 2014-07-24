@@ -80,7 +80,7 @@ function downloadUpdate(url, name) --url: Where to download from, Name: Where to
   end
 end
 ]]--
-
+PrintCentered("Downloading!", 6)
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer")
@@ -106,33 +106,6 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/pin", "/systemFiles/Programs/pin")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
 
-
---[[
-function downloadQue()
-  for _, urlDownloadQue in ipairs (urlPath) do
-   sleep(0)
-	  if fs.exists("/"..fileDownloadName) then
-	  fs.delete("/"..fileDownloadName)
-	  end
-	  downloadUpdate(details.urlPre..urlDownloadQue, urlPath)
-  end
-end
-]]--
-
-function downloadQue()
-  for _, urlDownloadQue in ipairs (urlPath) do
-   sleep(0)
-    for _, fileDownloadName in ipairs (FileNames) do
-	 sleep(0)
-	  if fs.exists("/"..fileDownloadName) then
-	  fs.delete("/"..fileDownloadName)
-	  end
-	  downloadUpdate(details.urlPre..urlDownloadQue, fileDownloadName)
-    end
-  end
-end
-
-downloadQue()
 
 PrintCentered("Finished Download", 6)
 sleep(0.5)
