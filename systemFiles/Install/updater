@@ -100,6 +100,12 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/update", "systemFiles/api/update")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README", "README")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LISENCE", "LISENCE")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/dualKey", "/systemFiles/Programs/dualKey")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycard", "/systemFiles/Programs/keycard")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycardDual", "/systemFiles/Programs/keycardDual")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/pin", "/systemFiles/Programs/pin")
+download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
+
 
 --[[
 function downloadQue()
