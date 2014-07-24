@@ -1,9 +1,62 @@
 -- This script loads the APIs Required as well as checks for missing files and updates via GitHub
 -- The Installer Will Check If The Computer is compatible
 
+os.pullEvent = os.pullEventRaw
+
 termX, termY = term.getSize()
 
-function initBackground(color)
+
+
+
+if fs.exists("systemFiles/programs/configuration") then
+  local f = fs.open("systemFiles/programs/configuration", "r")
+  fileRun = f.readLine()
+  f.close()
+end
+
+
+-- Fade In!
+term.setBackgroundColour(colours.black)	
+term.clear()
+sleep(0.1)
+term.setBackgroundColour(colours.grey)
+term.clear()
+sleep(0.1)
+term.setBackgroundColour(colours.lightGrey)
+term.clear()
+sleep(0.1)
+
+function RecieveStartupKey()
+	while true do
+	  local event, arg = os.pullEvent()
+	  if event == 'BootDone' then
+	    return nil
+	  elseif event == "key" then
+	    if arg == keys.leftAlt or key == keys.rightAlt then
+		bootKey = true
+	  	return arg 
+		end
+	  end
+	  
+	end
+end
+
+function checkStartKey()
+  term.setBackgroundColor(128)
+  term.setTextColor(256)
+  if bootKey then
+    Boottext = "Entering Setup"
+  else
+    Boottext = "[alt] Setup"
+  end
+    term.setCursorPos(termX-(#Boottext+1), 1)
+    write(Boottext)
+  term.setBackgroundColor(256)
+  term.setTextColor(1)
+end
+
+
+function initBackground(color) --Use To Quickly assemble GUI
   term.setBackgroundColor(color)
   term.clear()  
   drawTitleBar()
@@ -11,6 +64,24 @@ end
 
 bootX = termX/2-7
 bootY = termY/2-4
+
+function beta() --Beta notify, Ran at end of script if it is a beta build
+  term.setBackgroundColor(256)
+  term.clear()
+  drawTitleBar()
+  checkStartKey()
+  term.setBackgroundColor(256)
+  term.setTextColor(1)
+  printer.centered("Please remember that this is a BETA build", 6)
+  printer.centered("Various Bugs, Flaws and Security Vulnerabilities", 7)
+  printer.centered("Will Pop Up", 8)
+  printer.centered("But dont worry, The software auto updates", 10)
+  printer.centered("so you will always enjoy the most up-to-date", 11)
+  printer.centered("version!", 12)
+  printer.centered("Thanks for using the suite!", 14)
+  printer.centered("Press ANY Key To Continue", 19)
+  event, key = os.pullEvent("key")
+end
 
 -- Loads All Boot Images
 BL0 = paintutils.loadImage("systemFiles/BootLogos/boot0.nfp")
@@ -24,7 +95,7 @@ BL7 = paintutils.loadImage("systemFiles/BootLogos/boot7.nfp")
 BL8 = paintutils.loadImage("systemFiles/BootLogos/boot8.nfp")
 BLFinal = paintutils.loadImage('systemFiles/bootFail.nfp')
 
-color = true
+
 
 
 function bootLogo (state, x, y, bgcolor)
@@ -61,16 +132,43 @@ function PrintCentered(text, y)
     write(text)
 end
 
+
+if not fs.exists("systemFiles/Security/adminPass") then
+  PrintCentered("SECURITY VULNERABLITLTY NOTICE", 4)
+  PrintCentered("The Administrator Password Has Not Been Set", 6)
+  PrintCentered("Please Set It Below, You Can Change It", 7)
+  PrintCentered("Whilst Booting If You Press [ALT]", 8)
+  local adminPassText = "Password: "
+  term.setCursorPos(termX/2-(#adminPassText), 10)
+  write(adminPassText)
+  adminPassIn = read("*")
+  PrintCentered("Saving Password...", 19)
+  sleep(0.5)
+  PrintCentered("Opening File Handle", 19)
+  sleep(0.5)
+  local f = fs.open("systemFiles/Security/adminPass", "w")
+  PrintCentered("File Handle Open", 19)
+  sleep(0.5)
+  PrintCentered("Writing To File", 19)
+  f.writeLine(adminPassIn)
+  PrintCentered("Complete", 19)
+  sleep(1)
+  os.reboot()
+end
+
+
 function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
   local screenWidth, screenHeight = term.getSize()
   local x = (screenWidth - 14) / 2
   local y = (screenHeight - 9) / 2
   drawTitleBar()
+  checkStartKey()
   local currentImage = -1
 	local total = #fs.list("/api")
 	term.setBackgroundColor(256)
-	PrintCentered("Loading APIs", 6)
+	PrintCentered("Loading APIs", 17)
 	for _, fileApi in pairs(fs.list('/api')) do
+	checkStartKey()
 		if string.sub(fileApi,1,1) ~= "." then
 			if math.floor(_*(8/total)) ~= currentImage then
 				currentImage = math.floor(_*(8/total))
@@ -95,36 +193,10 @@ function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
 	term.clear()
 	initBackground(256)
 	drawTitleBar()
+	checkStartKey()
 	return true
 end
 
---[[
-function colorScreen(interval) --Provides a nice looking colour changing screen whilst booting
-  if interval == nil then 
-    interval = 1 
-  end
-  while color do
-    initBackground(256)
-    sleep(interval)
-    initBackground(colors.lightBlue)
-    sleep(interval)
-    initBackground(colors.blue)
-    sleep(interval)  
-    initBackground(colors.orange)
-    sleep(interval)
-    initBackground(colors.red)
-    sleep(interval)
-    initBackground(colors.purple)
-    sleep(interval)
-    initBackground(colors.orange)
-    sleep(interval)
-    initBackground(colors.blue)
-    sleep(interval)
-    initBackground(colors.lightBlue)
-    sleep(interval)
-  end
-end
-]]--
 function drawTitleBar()
   term.setBackgroundColor(128)
   term.setCursorPos(1,1)
@@ -144,6 +216,7 @@ function main() --The main function, calls all child functions
   loadAPIs()
   term.setBackgroundColor(256)
   term.setTextColor(1)
+  checkStartKey()
   bootLogo(1, bootX, bootY, 256)
   PrintCentered("Checking For Colour Support", 18)
   if systemCheck.checkColor() then PrintCentered("Computer Supports Colour", 19) end
@@ -156,6 +229,7 @@ function main() --The main function, calls all child functions
   bootLogo(6, bootX, bootY, 256)
   PrintCentered("Computer Is Not Pocket", 19)
   end
+  checkStartKey()
   sleep(0)
   bootLogo(7, bootX, bootY, 256)
   PrintCentered("Checking If Supports HTTP", 18)
@@ -167,6 +241,7 @@ function main() --The main function, calls all child functions
   PrintCentered("Checking For Updates", 18)
   sleep(1)
   if update.Check() then
+  checkStartKey()
     PrintCentered("An Update Has Been Detected", 19)
 	sleep(0)
     PrintCentered("Obtaining Latest Update From GitHub", 18)
@@ -180,23 +255,47 @@ function main() --The main function, calls all child functions
 	PrintCentered("Download Complete, Running Updater",18)
 	sleep(0)
 	shell.run("systemFiles/Install/updater")
-	--[[PrintCentered("Rebooting In 3", 19)
-	sleep(1)
-	PrintCentered("Rebooting In 2", 19)
-	sleep(1)
-	PrintCentered("Rebooting In 1", 19)
-	sleep(1)
-	os.reboot()]]--
   elseif not update.Check() then
-    PrintCentered("You Are Running The Latest Version!", 19)
+  checkStartKey()
+    PrintCentered("You Are Running The Latest BETA Version!", 19)
+	beta() --Remove when no longer a BETA build!
+	printer.centered("Reading Config File..", 19)
+	sleep(0.1)
+	--[[if fileRun then
+	  shell.run(fileRun)
+	end]]--
+	printer.centered("No Default File Stored", 19)
+	return true
   end
 end
 
---parallel.waitForAny(main, colorScreen)
+function bootMenu()
+  term.clear()
+  printer.centered("Welcome To The Security Suite BootMenu", 6)
+  printer.centered("You Are Here Because [alt] Was Pressed During Boot", 8)
+  printer.centered("Type In The Admin Password Below", 10)
+  printer.centered("Or Hold CTRL+R To Reboot", 11)
+  bootMenuText = "Admin Pass: "
+  term.setCursorPos(termX/2-(#bootMenuText), 13)
+  write (bootMenuText)
+  input = read()
+end
+
+function Start()
+    local key = nil
+	local success = false
+	parallel.waitForAll(function()success = main() os.queueEvent('BootDone') end, function() key = RecieveStartupKey() end)
+	if success and key == keys.leftAlt or key == keys.rightAlt then
+      success = bootMenu()
+	end
+	  return success
+  end
+   
+
 
 term.setBackgroundColor(256)
 term.clear()
 drawTitleBar()
-main()
-
+Start()
+--main()
 

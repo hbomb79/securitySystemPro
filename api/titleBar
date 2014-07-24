@@ -22,4 +22,3 @@ function draw(text, subtext, textcolor, subtextcolor, backgroundcolor, defaultbg
   term.setBackgroundColor(defaultbgcolor)
   term.setTextColor(defaulttextcolor)
 end
-
