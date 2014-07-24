@@ -165,7 +165,7 @@ term.setBackgroundColor(colors.black)
 term.clear()
 term.setCursorPos(1,1)
 term.clearLine()
-shell.run "shell"
+os.reboot()
 
 else
   term.clear()
