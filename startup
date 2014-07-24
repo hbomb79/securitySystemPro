@@ -276,10 +276,12 @@ function bootMenu()
   printer.centered("You Are Here Because [alt] Was Pressed During Boot", 8)
   printer.centered("Type In The Admin Password Below", 10)
   printer.centered("Or Hold CTRL+R To Reboot", 11)
+  printer.centered("NOT IMPLEMENTED YET!!", 12)
   bootMenuText = "Admin Pass: "
   term.setCursorPos(termX/2-(#bootMenuText), 13)
   write (bootMenuText)
   input = read()
+  os.shutdown()
 end
 
 function Start()
