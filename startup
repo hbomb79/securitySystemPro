@@ -441,7 +441,7 @@ function bootMenuOptions()
 			end
 			term.setTextColor(tc)
 			term.setBackgroundColor(bg)
-			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 4)
 		end
 	end
 	local wait = true
