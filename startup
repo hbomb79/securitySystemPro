@@ -333,7 +333,8 @@ function bootMenuOptions()
 			
 		end},
 		{'Use Shell/CraftOS', function()end},
-		{'Continue Boot', function() continue = true end}
+		{'Continue Boot', function() continue = true end},
+		{'Force Update', function() shell.run("systemFiles/Install/updater") end}
 	}
 
 	local selected = 1
