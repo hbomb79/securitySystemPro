@@ -54,6 +54,86 @@ function initBackground(color) --Use To Quickly assemble GUI
   drawTitleBar()
 end
 
+function start()
+  printer.centered("Password Changer", 4)
+  printer.centered("Here you may change your admin password", 6)
+  printer.centered("In just a few simple clicks and hits...", 7)
+end
+
+function newPassword2()
+	while newPassword2Wait do
+	  term.clear()
+	  start()
+	  printer.centered("Re-type your new password", 10)
+	  local newPassConfirm = "New Pass Again: "
+	  term.setCursorPos(termX/2-#newPassConfirm, 12)
+	  write (newPassConfirm)
+	  newPass = read("*")
+	  if newPass == newPass1 then break else printer.centered("Passwords Don't Match!", 19) sleep(0.6) newPassword() end
+    end
+  save(newPass)
+end
+		  
+function newPassword()
+  while newPassWait do
+    term.clear()
+	start()
+	printer.centered("Type your new password", 10)
+	local newPassText = "New Pass: "
+	term.setCursorPos(termX/2-#newPassText, 12)
+	write (newPassText)
+	newPass1 = read("*")
+	if newPass1 ~= nil then 
+	  newPassword2()
+	else
+	  printer.centered("Cannot Be Nil!", 19) 
+	end
+  end
+end
+		  
+		  
+function oldPassword()
+  while oldPassWait do 
+    printer.centered("Type your current password to get started", 10)
+	local oldPassText = "Current Pass: "
+    term.setCursorPos(termX/2-#oldPassText, 12)
+	write(oldPassText)
+	oldPass = read("*")
+	if oldPass == adminPassword then oldPassWait = false break end
+    end
+    newPassword()
+end
+		  
+		 
+function save(password)
+  if password then
+	printer.centered("Saving!", 18)
+	sleep(0)
+	printer.centered("Opening File Handler", 19)
+	sleep(0)
+	local f = fs.open('systemFiles/Security/adminPass', "w")
+	printer.centered("Preparing Write", 19)
+	sleep(0)
+	printer.centered("Writing To File", 19)
+	sleep(0)
+	f.writeLine(password)
+	printer.centered("File Data Written", 19)
+	sleep(0)
+    printer.centered("Closing File Handler", 19)
+	sleep(0)
+	f.close()
+	printer.centered("Data Saved", 19)
+	sleep(0)
+	printer.centered("Done... Rebooting", 19)
+    sleep(2)
+    os.reboot()
+  else
+	errora.err("generic", "Save Data invalid / NIL")
+  end
+end
+
+
+
 bootX = termX/2-7
 bootY = termY/2-4
 function beta() --Beta notify, Ran at end of script if it is a beta build
@@ -333,84 +413,15 @@ function bootMenuOptions()
 			
 		end},
 		{'Use Shell/CraftOS', function()end},
-		{'Change Admin Password', function()
-		  
-		  
-		  local function newPassword2()
-		    while newPassword2 do
-			  start()
-			  printer.centered("Re-type your new password", 10)
-			  local newPassConfirm = "New Pass Again: "
-			  term.setCursorPos(termX/2-#newPassConfirm, 12)
-			  write (newPassConfirm)
-			  newPass = read("*")
-			  if newPass == newPass1 then break else printer.centered("Passwords Dont Match!", 19) sleep(0.6) newPassword() end
-			end
-			save(newPass)
-		  end
-		  
-		  local function newPassword()
-		   while newPassWait do
-		    start()
-		    printer.centered("Type your new password", 10)
-			local newPassText = "New Pass: "
-			term.setCursorPos(termX/2-#newPassText, 12)
-			write (newPassText)
-			newPass1 = read("*")
-			if not newPass1 then printer.centered("Cannot Be Nil!", 19) end
-		  end
-		  
-		  
-		  local function oldPassword()
-		   while oldPassWait do 
-		    printer.centered("Type your current password to get started", 10)
-			local oldPassText = "Current Pass: "
-			term.setCursorPos(termX/2-#oldPassText, 12)
-			write(oldPassText)
-			oldPass = read("*")
-			  if oldPass == adminPassword then oldPassWait = false break end
-		   end
-		   newPassword()
-		  end
-		  
-		  
-		  local function save(password)
-		    if password then
-			  printer.centered("Saving!", 18)
-			  sleep(0)
-			  printer.centered("Opening File Handler", 19)
-			  sleep(0)
-			  local f = fs.open('systemFiles/Security/adminPass')
-			  printer.centered("Preparing Write", 19)
-			  sleep(0)
-			  printer.centered("Writing To File", 19)
-			  sleep(0)
-			  f.writeLine(password)
-			  printer.centered("File Data Written", 19)
-			  sleep(0)
-			  printer.centered("Closing File Handler", 19)
-			  sleep(0)
-			  f.close()
-			  printer.centered("Data Saved", 19)
-			  sleep(0)
-			  printer.centered("Done... Rebooting", 19)
-			  sleep(2)
-              os.reboot()
-			else
-			  errora.err("generic", "Save Data invalid / NIL")
-			end
-		  end
-		  
-		  local function start()
-		    printer.centered("Password Changer", 4)
-		    printer.centered("Here you may change your admin password", 6)
-		    printer.centered("In just a few simple clicks and hits...", 7)
-		  end
-		  
+		{'Change Admin Password', function()  
+		 term.clear()
+		 newPassword2Wait = true
+		 newPassWait = true
+		 oldPassWait = true
 		 start()
 		 oldPassword()
-		 errora.err("generic", "Password Changer CRASH, Report If Not Your Fault")
-		end),
+		 errora.err("generic", "Password Changer CRASH Report If Not Your Fault")
+		end},
 		{'Force Update', function() 
 		  term.clear()
 	   	  printer.centered("Downloading New Update Firmware", 19) 
@@ -523,4 +534,3 @@ term.setBackgroundColor(256)
 term.clear()
 drawTitleBar()
 if Start() then readFiles() else errora.err("generic", "Start-up Failed To Initiate Main Function") end
-
