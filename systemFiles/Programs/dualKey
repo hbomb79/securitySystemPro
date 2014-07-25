@@ -1,0 +1,228 @@
+--os.pullEvent = os.pullEventRaw
+termX, termY = term.getSize()
+
+text1 = "Username:"
+text2 = "Password:"
+
+function PrintCentered(text, y) --Swapped Out But Still Using Old One As It Does The Job It Does Well:P
+	local w, h = term.getSize()
+    x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
+    term.setCursorPos(x, y)
+	term.clearLine()
+    write(text)
+end
+
+function drawTitleBar()
+  titleBar.draw("HbombOS Security Suite", "Login Security", colors.cyan, 256, 128, 256, 1)
+end
+
+function drawFields()
+  paintutils.drawLine(termX/2, 8, termX/2+10, 8, colors.white)
+  paintutils.drawLine(termX/2, 11, termX/2+10, 11, colors.white)
+  term.setBackgroundColor(256)
+  term.setTextColor(colors.white)
+  term.setCursorPos(termX/2-(#text1), 8)
+  print(text1)
+  term.setCursorPos(termX/2-(#text2), 11)
+  print(text2)
+  term.setBackgroundColor(1, termY-1)
+end
+
+x, y = term.getSize()
+
+local function readN(len, replaceChar)
+  len = len or 10
+  local input=""
+  local key = 0
+  term.setCursorBlink(true)
+  repeat
+        local e,p1 = os.pullEvent()
+        if e=="char" then
+          if #input < len then
+                input = input .. p1
+                term.write(replaceChar or p1)
+          end
+        elseif e=="key" and p1==keys.backspace and #input > 0 then
+          input = input:sub(1,#input-1)
+          local x,y = term.getCursorPos()
+          term.setCursorPos(x-1,y)
+          term.write(" ")
+          term.setCursorPos(x-1,y)
+        end
+  until p1==keys.enter
+  term.setCursorBlink(false)
+  return input
+end
+
+function fileCheck()
+  if not fs.exists('systemFiles/Programs/dualKeyConfig') then	
+    waitinput = true
+      while waitinput do
+        term.clear()
+        printer.centered("It Appears You Have Not Used This Program Before", 6)
+        printer.centered("Setting Up Digital Lock", 8)
+        printer.centered("Enter Your Username Below", 10)
+        setUsername()
+	   end
+  else --The File Exists...
+    local f = fs.open ('systemFiles/Programs/dualKeyConfig', "r")
+	username = f.readLine()
+	password = f.readLine()
+	f.close()
+	fs.delete('systemFiles/Programs/dualKeyConfig')
+	error "Config Loaded"
+  end
+end
+
+function save ()
+  term.clear()
+  drawTitleBar()
+  printer.centered("Thank You For Setting Up Digital Lock", 4)
+  printer.centered("Your Use Of The Program Is Appreciated", 5)
+  printer.centered("Please Report Any Bugs That Aren't Already Reported", 8)
+  printer.centered("On MY Forum Page Found On Computercraft", 10)
+  printer.centered("Please Wait While We Save Your Settings...", 18)
+  
+  printer.centered("Opening File Handler", 19)
+  sleep(0)
+  local f = fs.open('systemFiles/Programs/dualKeyConfig', "w")
+  printer.centered("Handler Established", 19)
+  sleep(0)
+  printer.centered("Writing Username Data To File", 19)
+  sleep(0.5)
+  f.writeLine(userNameInput)
+  printer.centered("Username Written To File!", 19)
+  sleep(0)
+  printer.centered("Writing Password To File", 19)
+  f.writeLine(passWordInput)
+  sleep(0)
+  printer.centered("Password Written To File", 19)
+  sleep(0)
+  printer.centered("Writing Redstone Information To File", 19)
+  f.writeLine(rsInput)
+  f.writeLine(timeInput)
+  sleep(1)
+  printer.centered("Written", 19)
+  sleep(0)
+  printer.centered("Closing File Handler", 19)
+  f.close()
+  printer.centered("", 19)
+  printer.centered("Your Data Has Been Saved, Rebooting...", 18)
+  sleep(2)
+  os.reboot()
+end
+
+function redstoneConfig()
+while true do
+  term.clear()
+  drawTitleBar()
+  printer.centered("It Appears You Have Not Used This Program Before", 6)
+  printer.centered("Setting Up Digital Lock", 8)
+  printer.centered("What Side Would You Like To RS Output To Be?", 10)
+  redstoneText = "Output: "
+  term.setCursorPos(termX/2-#redstoneText, 13)
+  write(redstoneText)
+  local vside = false
+		rsInput = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == rsInput then
+				vside = true
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 14)
+		  sleep(0.5)
+		  term.clear()
+end
+		  term.clear()
+		  drawTitleBar()
+          printer.centered("It Appears You Have Not Used This Program Before", 6)
+          printer.centered("Setting Up PIN Lock", 8)
+	      printer.centered("How Long would you like the redstone output?",10)
+		  timeText = "Output Time: "
+		  term.setCursorPos(termX/2-(#timeText), 12)
+		  write (timeText)
+		  timeInput = readN(2)
+		    if not timeInput then
+		      printer.centered("Time Must Be Greater That One Second", 13)
+		    end
+			
+			save()
+end
+
+function setUsername()
+  drawTitleBar()
+  printer.centered("It Appears You Have Not Used This Program Before", 6)
+  printer.centered("Setting Up PIN Lock", 8)
+  printer.centered("Set Your New Username Below", 10)
+  waitUserInput = true
+  while waitUserInput do
+    userNameText = "Username: "
+	term.setCursorPos(termX/2-#userNameText, 12)
+	write(userNameText)
+    userNameInput = readN(15)
+	if userNameInput == "" then
+	  term.setTextColor(colors.red) 
+	  printer.centered("Needs More Than One Character", 13) 
+	  sleep(1) 
+	  term.setTextColor(1) 
+	else 
+	  setPassword() 
+	end
+  end
+end
+
+function setPassword()
+  term.clear()
+  drawTitleBar()
+  printer.centered("It Appears You Have Not Used This Program Before", 6)
+  printer.centered("Setting Up PIN Lock", 8)
+  printer.centered("Set Your New Password Below", 10)
+  waitPassInput = true
+  while waitPassInput do
+    passText = "Password: "
+	term.setCursorPos(termX/2-#passText, 12)
+	term.clearLine()
+	write(passText)
+	passWordInput = readN(15, "*")
+	  if passWordInput == nil or passWordInput == "" then
+	    error "NIL"
+	  else
+        redstoneConfig()
+	  end
+  end
+end
+  
+ 
+
+
+
+
+
+function loginCheck()
+   
+end
+
+function startTextBox()
+  term.setCursorPos(termX/2, 8)
+  inputUsername = readN(15)
+  term.setCursorPos(termX/2, 11)
+  inputPassword = readN(15, "*")
+end
+
+--[[
+drawTitleBar()
+sleep(0)
+drawLogin()
+drawFields()
+sleep(0)
+loginCheck()
+os.reboot()
+]]--
+
+term.setBackgroundColor(256)
+term.setTextColor(1)
+fileCheck()
+
+

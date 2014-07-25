@@ -108,12 +108,13 @@ function drawLoginField()
 end
 
 
-if not checkConfig() then
+if not checkConfig() then  
+  while waitinput do 
+  term.clear()
   printer.centered("It Appears You Have Not Used This Program Before", 6)
   printer.centered("Setting Up PIN Lock", 8)
   printer.centered("Enter Your NEW Pin, Can Only Be 4 Digits Long!", 10)
   waitinput = true
-  while waitinput do    
     term.setCursorPos(termX/2-#configText, 12)
 	write(configText)
 	term.setTextColor(1)
