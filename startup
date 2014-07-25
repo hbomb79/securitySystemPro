@@ -224,7 +224,7 @@ function main() --The main function, calls all child functions
   PrintCentered("Checking For Updates", 18)
   sleep(1)
   if update.Check() then
-  checkStartKey()
+    checkStartKey()
     PrintCentered("An Update Has Been Detected", 19)
 	sleep(0)
     PrintCentered("Obtaining Latest Update From GitHub", 18)
@@ -240,8 +240,9 @@ function main() --The main function, calls all child functions
 	shell.run("systemFiles/Install/updater")
   elseif not update.Check() then
   checkStartKey()
-    PrintCentered("You Are Running The Latest BETA Version!", 19)
-	beta() --Remove when no longer a BETA build!
+    PrintCentered("You Are Running The Latest STABLE Version!", 19)
+	sleep(1)
+	--beta() --Remove when no longer a BETA build!
 	printer.centered("Reading Config File..", 19)
 	sleep(0.1)
 	return true
