@@ -402,7 +402,7 @@ function bootMenuOptions()
 						os.reboot()
 					elseif key == 'n' then
 						_ = false
-						bootMenu()
+						bootMenuOptions()
 					end
 				end
 				term.setTextColor(colors.red)
