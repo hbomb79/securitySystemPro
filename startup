@@ -262,17 +262,15 @@ function adminPasswordE()
     if input == adminPassword then 
 	return true 
 	else 
-	printer.centered("Incorrect Password", 8)
 	return false
 	end
 end
 
 if adminPasswordE() then 
-printer.centered("Correct Password", 8)
 sleep(1)
 bootMenuOptions() 
 else 
-os.reboot() 
+bootMenu()
 end
 end
 
