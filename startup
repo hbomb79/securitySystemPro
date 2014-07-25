@@ -333,7 +333,7 @@ function bootMenuOptions()
 			
 		end},
 		{'Use Shell/CraftOS', function()end},
-		{'Force Update', function() shell.run("systemFiles/Install/updater") end},
+		{'Force Update', function() printer.centered("Downloading New Updater", 19) printer.centered("Force Update", 6) download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") printer.centered("Running Updater", 19) shell.run("systemFiles/Install/updater") end},
 		{'Continue Boot', function() continue = true end}
 
 	}
