@@ -1,20 +1,13 @@
 -- This script loads the APIs Required as well as checks for missing files and updates via GitHub
 -- The Installer Will Check If The Computer is compatible
-
 os.pullEvent = os.pullEventRaw
-
 termX, termY = term.getSize()
-
-
-
 
 if fs.exists("systemFiles/programs/configuration") then
   local f = fs.open("systemFiles/programs/configuration", "r")
   fileRun = f.readLine()
   f.close()
 end
-
-
 -- Fade In!
 term.setBackgroundColour(colours.black)	
 term.clear()
@@ -55,7 +48,6 @@ function checkStartKey()
   term.setTextColor(1)
 end
 
-
 function initBackground(color) --Use To Quickly assemble GUI
   term.setBackgroundColor(color)
   term.clear()  
@@ -64,7 +56,6 @@ end
 
 bootX = termX/2-7
 bootY = termY/2-4
-
 function beta() --Beta notify, Ran at end of script if it is a beta build
   term.setBackgroundColor(256)
   term.clear()
@@ -72,9 +63,9 @@ function beta() --Beta notify, Ran at end of script if it is a beta build
   checkStartKey()
   term.setBackgroundColor(256)
   term.setTextColor(1)
-  printer.centered("Please remember that this is a BETA build", 6)
-  printer.centered("Various Bugs, Flaws and Security Vulnerabilities", 7)
-  printer.centered("Will Pop Up", 8)
+  printer.centered("Please remember that this is a WIP", 6)
+  printer.centered("This means only one program is available...", 7)
+  printer.centered("The PIN Program", 8)
   printer.centered("But dont worry, The software auto updates", 10)
   printer.centered("so you will always enjoy the most up-to-date", 11)
   printer.centered("version!", 12)
@@ -82,7 +73,6 @@ function beta() --Beta notify, Ran at end of script if it is a beta build
   printer.centered("Press ANY Key To Continue", 19)
   event, key = os.pullEvent("key")
 end
-
 -- Loads All Boot Images
 BL0 = paintutils.loadImage("systemFiles/BootLogos/boot0.nfp")
 BL1 = paintutils.loadImage("systemFiles/BootLogos/boot1.nfp")
@@ -94,9 +84,6 @@ BL6 = paintutils.loadImage("systemFiles/BootLogos/boot6.nfp")
 BL7 = paintutils.loadImage("systemFiles/BootLogos/boot7.nfp")
 BL8 = paintutils.loadImage("systemFiles/BootLogos/boot8.nfp")
 BLFinal = paintutils.loadImage('systemFiles/bootFail.nfp')
-
-
-
 
 function bootLogo (state, x, y, bgcolor)
   if state == 0 then
@@ -123,7 +110,6 @@ function bootLogo (state, x, y, bgcolor)
   term.setBackgroundColor(bgcolor)
 end
 
-
 function PrintCentered(text, y)
 	local w, h = term.getSize()
     x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
@@ -132,13 +118,12 @@ function PrintCentered(text, y)
     write(text)
 end
 
-
 if not fs.exists("systemFiles/Security/adminPass") then
   PrintCentered("SECURITY VULNERABLITLTY NOTICE", 4)
   PrintCentered("The Administrator Password Has Not Been Set", 6)
   PrintCentered("Please Set It Below, You Can Change It", 7)
   PrintCentered("Whilst Booting If You Press [ALT]", 8)
-  local adminPassText = "Password: "
+  adminPassText = "Password: "
   term.setCursorPos(termX/2-(#adminPassText), 10)
   write(adminPassText)
   adminPassIn = read("*")
@@ -154,13 +139,13 @@ if not fs.exists("systemFiles/Security/adminPass") then
   PrintCentered("Complete", 19)
   sleep(1)
   os.reboot()
+else --The Files Exists
+  local file = fs.open("systemFiles/Security/adminPass", "r")
+  adminPassword = file.readLine()
+  file.close()
 end
 
-
 function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
-  local screenWidth, screenHeight = term.getSize()
-  local x = (screenWidth - 14) / 2
-  local y = (screenHeight - 9) / 2
   drawTitleBar()
   checkStartKey()
   local currentImage = -1
@@ -208,8 +193,6 @@ function drawTitleBar()
   term.setTextColor(256)
   write "Startup"
 end
-
-
 
 function main() --The main function, calls all child functions
   --First all APIs must be loaded to perform the system checks later on
@@ -261,27 +244,169 @@ function main() --The main function, calls all child functions
 	beta() --Remove when no longer a BETA build!
 	printer.centered("Reading Config File..", 19)
 	sleep(0.1)
-	--[[if fileRun then
-	  shell.run(fileRun)
-	end]]--
-	shell.run"systemFiles/programs/pin"
-	--printer.centered("No Default File Stored", 19)
 	return true
   end
 end
 
 function bootMenu()
-  term.clear()
-  printer.centered("Welcome To The Security Suite BootMenu", 6)
-  printer.centered("You Are Here Because [alt] Was Pressed During Boot", 8)
-  printer.centered("Type In The Admin Password Below", 10)
-  printer.centered("Or Hold CTRL+R To Reboot", 11)
-  printer.centered("NOT IMPLEMENTED YET!!", 12)
-  bootMenuText = "Admin Pass: "
-  term.setCursorPos(termX/2-(#bootMenuText), 13)
-  write (bootMenuText)
-  input = read()
-  os.shutdown()
+term.clear()
+function adminPasswordE()
+  PrintCentered("HbombOS Security Suite", 4)
+  PrintCentered("Boot Options", 5)
+  PrintCentered("Type In Password To Continue", 19)
+  adminPassText = "Password: "
+  term.setCursorPos(termX/2-#adminPassText, 7)
+  write (adminPassText)
+  local input = read("*")
+    if input == adminPassword then 
+	return true 
+	else 
+	printer.centered("Incorrect Password", 8)
+	return false
+	end
+end
+
+if adminPasswordE() then 
+printer.centered("Correct Password", 8)
+sleep(1)
+bootMenuOptions() 
+else 
+os.reboot() 
+end
+end
+
+function bootMenuOptions()
+    drawTitleBar()
+    term.setTextColor(1)
+    term.setBackgroundColor(256)
+    term.clear()
+	PrintCentered("HbombOS Security Suite", 4)
+	PrintCentered("Boot Options", 5)
+	PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
+	local continue = false
+	local options = {
+	    {'Reset Settings', function() 
+		term.clear()
+		PrintCentered("Removing Settings", 6)
+		sleep(0)
+		PrintCentered("Removing Administrator Password", 18)
+		sleep(1)
+		if fs.exists('/systemFiles/Security/adminPass') then fs.delete('/systemFiles/Security/adminPass') end 
+		PrintCentered("Removing Program Settings", 18)
+		sleep(0.2)
+		if fs.exists('/systemFiles/Programs/pinConfig') then fs.delete ('systemFiles/Programs/pinConfig') end
+		PrintCentered("Removing System Configuration", 18)
+		sleep(0)
+		if fs.exists('/systemFiles/Programs/configuration') then fs.delete ('systemFiles/Programs/configuration') end
+		PrintCentered("Settings Reset, Rebooting!", 18)
+		sleep(2)
+		os.reboot()
+		end},
+		
+		{'Uninstall Security Suite', function()
+			term.setCursorPos(1,1)
+			term.setBackgroundColor(colours.black)
+			term.setTextColor(colours.white)
+			term.clear()
+			local function rmFold(path)
+				if path == '/rom' or path == "/openp" then
+					return
+				end
+				for i, v in ipairs(fs.list(path)) do
+				  term.setTextColor(1)
+				  term.setBackgroundColor(256)
+					if fs.isDir(path..'/'..v) then
+						rmFold(path..'/'..v)
+					else
+						if fs.delete(path..'/'..v) then
+						  PrintCentered('Removed: '..path..'/'..v, 18)
+						  sleep(0)
+						end
+					end
+				end
+				if path ~= '' then
+					fs.delete(path)
+				end
+			end
+			rmFold('')
+			sleep(0)
+			
+		end},
+		{'Use Shell/CraftOS', function()end},
+		{'Continue Boot', function() continue = true end}
+	}
+
+	local selected = 1
+	local function draw()
+		for i, v in ipairs(options) do
+			local bg = 256
+			local tc = colours.white
+			if i == selected then
+				bg = 256
+				tc = colours.blue
+			end
+			term.setTextColor(tc)
+			term.setBackgroundColor(bg)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
+		end
+	end
+	local wait = true
+	draw()
+	while wait do
+		local event, key = os.pullEvent('key')
+		if key == keys.up then
+			selected = selected - 1
+			if selected < 1 then
+				selected = 1
+			end
+		elseif key == keys.down then
+			selected = selected + 1
+			if selected > #options then
+				selected = #options
+			end
+		elseif key == keys.enter then
+			if options[selected][1] == 'Uninstall Security Suite' then
+			  term.setTextColor(1)
+              term.setBackgroundColor(256)
+              term.clear()
+	          PrintCentered("HbombOS Security Suite", 4)
+	          PrintCentered("Boot Options", 5)
+	          PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
+	          PrintCentered("Are You Sure, ALL Files Will Be Removed", 10)
+	          PrintCentered("Including Files Not From Security Suite", 11)
+	          PrintCentered("Y To Continue, N To Cancel", 15)
+			  PrintCentered("", 19)
+				local _ = true
+				while _ do
+					local ev, key = os.pullEvent('char')
+					if key == 'y' then
+					    sleep(0)
+						term.clear()
+						term.setTextColor(1)
+						term.setBackgroundColor(256)
+						PrintCentered("Removing HbombOS Security Suite", 6)
+						sleep(1)
+						options[selected][2]()
+						sleep(2)
+						os.reboot()
+					elseif key == 'n' then
+						_ = false
+						bootMenu()
+					end
+				end
+				term.setTextColor(colors.red)
+				term.setBackgroundColor(colors.white)
+				PrintCentered('                          ', 0)
+				term.setTextColor(1)
+				term.setBackgroundColor(256)
+			else
+				options[selected][2]()
+				wait = false
+			end
+		end
+		draw()
+	end
+	return continue
 end
 
 function Start()
@@ -294,11 +419,19 @@ function Start()
 	  return success
   end
    
+function readFiles()
+    printer.centered("Reading Configuration Files", 19)
+  	if fileRun then
+	  shell.run(fileRun)
+	end
+	shell.run"systemFiles/programs/pin"
+	printer.centered("No Default File Stored", 19)
+	--picker()
+end
 
 
 term.setBackgroundColor(256)
 term.clear()
 drawTitleBar()
-Start()
---main()
+if Start() then readFiles() else errora.err("generic", "Start-up Failed To Initiate Main Function") end
 

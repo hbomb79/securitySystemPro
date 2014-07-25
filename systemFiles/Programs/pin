@@ -117,7 +117,7 @@ if not checkConfig() then
     term.setCursorPos(termX/2-#configText, 12)
 	write(configText)
 	term.setTextColor(1)
-	pinInput = readN(4)
+	pinInput = readN(4, "*")
     if pinInput then
      if #pinInput < 4 then
 	  term.setTextColor(colors.red)
@@ -196,10 +196,9 @@ else
     printer.centered("HbombOS Security Suite", 4)
     printer.centered("Running PIN LOCK", 5)
     printer.centered("Please Enter The Pin Below", 7)
-    printer.centered("To Emit A Redstone Signal", 8)
-    term.setCursorPos(termX/2-(#enterText), 10)
+    term.setCursorPos(termX/2-(#enterText-2), 10)
     write(enterText)
-    textIready = readN(4)
+    textIready = readN(4, "*")
 	if textIready then
       if check(textIready) then
         printer.centered("Correct PIN", 12)
@@ -209,7 +208,6 @@ else
 	    shell.run ("systemFiles/Programs/pin")
       else
         printer.centered("Incorrect PIN", 12)
-	    sleep(0.5)
       end
 	end
   end
