@@ -27,6 +27,7 @@ function RecieveStartupKey()
 	  elseif event == "key" then
 	    if arg == keys.leftAlt or key == keys.rightAlt then
 		bootKey = true
+		checkStartKey()
 	  	return arg 
 		end
 	  end
@@ -140,7 +141,6 @@ function beta() --Beta notify, Ran at end of script if it is a beta build
   term.setBackgroundColor(256)
   term.clear()
   drawTitleBar()
-  checkStartKey()
   term.setBackgroundColor(256)
   term.setTextColor(1)
   printer.centered("Please remember that this is a WIP", 6)
@@ -227,13 +227,11 @@ end
 
 function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
   drawTitleBar()
-  checkStartKey()
   local currentImage = -1
 	local total = #fs.list("/api")
 	term.setBackgroundColor(256)
 	PrintCentered("Loading APIs", 17)
 	for _, fileApi in pairs(fs.list('/api')) do
-	checkStartKey()
 		if string.sub(fileApi,1,1) ~= "." then
 			if math.floor(_*(8/total)) ~= currentImage then
 				currentImage = math.floor(_*(8/total))
@@ -258,7 +256,6 @@ function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
 	term.clear()
 	initBackground(256)
 	drawTitleBar()
-	checkStartKey()
 	return true
 end
 
@@ -272,6 +269,7 @@ function drawTitleBar()
   term.clearLine()
   term.setTextColor(256)
   write "Startup"
+  checkStartKey()
 end
 
 function main() --The main function, calls all child functions
@@ -279,7 +277,6 @@ function main() --The main function, calls all child functions
   loadAPIs()
   term.setBackgroundColor(256)
   term.setTextColor(1)
-  checkStartKey()
   bootLogo(1, bootX, bootY, 256)
   PrintCentered("Checking For Colour Support", 18)
   if systemCheck.checkColor() then PrintCentered("Computer Supports Colour", 19) end
@@ -292,7 +289,6 @@ function main() --The main function, calls all child functions
   bootLogo(6, bootX, bootY, 256)
   PrintCentered("Computer Is Not Pocket", 19)
   end
-  checkStartKey()
   sleep(0)
   bootLogo(7, bootX, bootY, 256)
   PrintCentered("Checking If Supports HTTP", 18)
@@ -304,7 +300,6 @@ function main() --The main function, calls all child functions
   PrintCentered("Checking For Updates", 18)
   sleep(1)
   if update.Check() then
-    checkStartKey()
     PrintCentered("An Update Has Been Detected", 19)
 	sleep(0)
     PrintCentered("Obtaining Latest Update From GitHub", 18)
@@ -319,7 +314,6 @@ function main() --The main function, calls all child functions
 	sleep(0)
 	shell.run("systemFiles/Install/updater")
   elseif not update.Check() then
-  checkStartKey()
     PrintCentered("You Are Running The Latest STABLE Version!", 19)
 	sleep(1)
 	--beta() --Remove when no longer a BETA build!
@@ -331,31 +325,31 @@ end
 
 function bootMenu()
 term.clear()
-function adminPasswordE()
-  PrintCentered("HbombOS Security Suite", 4)
-  PrintCentered("Boot Options", 5)
-  PrintCentered("Type In Password To Continue", 18)
-  PrintCentered("Or Reboot (CTRL+R) To Cancel", 19)
-  adminPassText = "Password: "
-  term.setCursorPos(termX/2-#adminPassText, 7)
-  write (adminPassText)
-  local input = read("*")
-    if input == adminPassword then 
-	return true 
-	else 
-	return false
-	end
-end
+  function adminPasswordE()
+    PrintCentered("HbombOS Security Suite", 4)
+    PrintCentered("Boot Options", 5)
+    PrintCentered("Type In Password To Continue", 18)
+    PrintCentered("Or Reboot (CTRL+R) To Cancel", 19)
+    adminPassText = "Password: "
+    term.setCursorPos(termX/2-#adminPassText, 7)
+    write (adminPassText)
+    local input = read("*")
+      if input == adminPassword then 
+  	    return true 
+	  else 
+	    return false
+	  end
+  end
 
-if adminPasswordE() then 
-sleep(1)
-bootMenuOptions() 
-else 
-bootMenu()
-end
+  if adminPasswordE() then 
+    return true
+  else 
+    return false
+  end
 end
 
 function bootMenuOptions()
+  if not bootMenu() then bootMenu() end
     drawTitleBar()
     term.setTextColor(1)
     term.setBackgroundColor(256)
@@ -412,7 +406,7 @@ function bootMenuOptions()
 			sleep(0)
 			
 		end},
-		{'Use Shell/CraftOS', function()end},
+		{'Use Shell/CraftOS', function() term.setBackgroundColor(colors.black) term.clear() term.setCursorPos(1,1) shell.run ("shell") end},
 		{'Change Admin Password', function()  
 		 term.clear()
 		 newPassword2Wait = true
@@ -510,11 +504,12 @@ function bootMenuOptions()
 end
 
 function Start()
+    checkStartKey()
     local key = nil
 	local success = false
 	parallel.waitForAll(function()success = main() os.queueEvent('BootDone') end, function() key = RecieveStartupKey() end)
 	if success and key == keys.leftAlt or key == keys.rightAlt then
-      success = bootMenu()
+      success = bootMenuOptions()
 	end
 	  return success
   end
@@ -533,4 +528,8 @@ end
 term.setBackgroundColor(256)
 term.clear()
 drawTitleBar()
-if Start() then readFiles() else errora.err("generic", "Start-up Failed To Initiate Main Function") end
+if Start() then 
+readFiles() 
+else 
+errora.err("generic", "Start-up Failed To Initiate Main Function, Returned:") 
+end
