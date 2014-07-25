@@ -58,28 +58,6 @@ FileNames = {
 }
 
 drawTitleBar()
---[[
-function downloadUpdate(url, name) --url: Where to download from, Name: Where to save file to
-  term.setTextColor(1)
-  response = http.get(url)
-  if response then
-    data = response.readAll()
-	if fs.exists(name) then
-	  fs.delete(name)
-	end
-	if name then
-	  local file = io.open(name, "w")
-	  file:write(data)
-	  file:close()
-      PrintCentered("The Script: "..name.." Was Successfully Downloaded", 6)
-	  return true
-	end
-	error ("The Path Provided Is Invalid, Path: "..name)
-  else
-    error ("An error occurred while waiting for a response from: "..url)
-  end
-end
-]]--
 PrintCentered("Downloading!", 6)
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
@@ -110,47 +88,6 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 
 
 PrintCentered("Finished Download", 6)
-sleep(0.5)
-PrintCentered("Installing", 6)
-sleep(0)
-PrintCentered ("Installing DirectX", 6)
-sleep(0.5)
-PrintCentered ("Loading Cache Properties", 6)
-sleep(1)
-PrintCentered ("Installing Key Combo", 6)
-sleep(0.3)
-PrintCentered ("Installing Key Card Combo", 6)
-sleep(1)
-PrintCentered ("Installing Key Card Single", 6)
-sleep(0)
-PrintCentered ("Installing Key Card Macro", 6)
-sleep(0)
-PrintCentered ("Installing Key Card API", 6)
-sleep(0.4)
-PrintCentered ("Installing Key Card Subsystem", 6)
-sleep(0)
-PrintCentered ("Installing PIN API", 6)
-sleep(1)
-PrintCentered ("Scanning Reactor System Files", 6)
-sleep(0.1)
-PrintCentered ("Installing Reactor Script", 6)
-sleep(2)
-PrintCentered ("Installing Door Control API", 6)
-sleep(0)
-PrintCentered ("Installing Redstone Control API", 6)
-sleep(0.1)
-PrintCentered ("Verifying Scanner System", 6)
-sleep(1)
-PrintCentered ("Configuring Scanner Properties", 6)
-sleep(3)
-PrintCentered ("Installing Player Scanner API", 6)
-sleep(0.5)
-PrintCentered ("Configuring Security Suite", 6)
-sleep(1)
-PrintCentered ("Almost Done!", 7)
-sleep(3)
-PrintCentered("", 7)
-PrintCentered("Install Complete", 6)
 sleep(1)
 term.clear()
 drawTitleBar()
@@ -158,8 +95,6 @@ PrintCentered ("Thank You For Updating", 6)
 PrintCentered ("We Hope You Enjoy Your New Security Suite", 8)
 PrintCentered ("Please Report Any Bugs You Find On The Forums", 10)
 PrintCentered ("Verifying Update With GitHub..", 19)
-sleep(4)
-PrintCentered ("Scanning Files..", 19)
 sleep(2)
 PrintCentered ("Press Any Key To Finish", 19)
 os.pullEvent("key")
@@ -175,10 +110,6 @@ else
   PrintCentered("Cancelling...", 6)
   sleep(1)
   PrintCentered ("Cancelled, Come Back Soon", 6)
-  sleep(4)
-  term.setBackgroundColor(colors.black)
-  term.setTextColor(1)
-  term.setCursorPos(1,1)  
-  term.clear()
-  shell.run"shell"
+  sleep(2)
+  os.shutdown()
 end
