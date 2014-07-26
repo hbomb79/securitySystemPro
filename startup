@@ -417,7 +417,7 @@ function main() --The main function, calls all child functions
 	sleep(0)
 	PrintCentered("Downloading New Updater", 19)
 	download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater")
-	sleep(0)
+	sleep(1)
 	PrintCentered("Download Complete, Running Updater",18)
 	sleep(0)
 	shell.run("systemFiles/Install/updater")
