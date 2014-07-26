@@ -45,18 +45,6 @@ details = {
 urlPre = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/"
 }
 
-urlPath = {
- [1] = "version",
- [2] = "checker",
- [3] = "installer"
-}
-
-FileNames = {
- [1] = "version",
- [2] = "checker",
- [3] = "installer"
-}
-
 drawTitleBar()
 PrintCentered("Downloading Scripts From GitHub... Please Wait", 6)
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
