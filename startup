@@ -453,8 +453,8 @@ end
 
 function bootMenu()
 while true do
-term.clear()
-titleBar.draw("HbombOS Security Suite", "BIOS Login", colors.cyan, 256, 128, 256, 1)
+  term.clear()
+  titleBar.draw("HbombOS Security Suite", "BIOS Login", colors.cyan, 256, 128, 256, 1)
   function adminPasswordE()
     PrintCentered("HbombOS Security Suite", 4)
     PrintCentered("Boot Options", 5)
@@ -465,21 +465,22 @@ titleBar.draw("HbombOS Security Suite", "BIOS Login", colors.cyan, 256, 128, 256
     write (adminPassText)
     local input = read("*")
       if input == adminPassword then 
-  	    return true 
-	  else 
-	    return false
+  	    return true
 	  end
   end
   if adminPasswordE() then 
     return true
 	break
+  else
+    printer.centered("Incorrect!", 8)
+	sleep(1)
   end
 end
 
 end
 
 function bootMenuOptions(continue)
-    bootMenu()
+    if not bootMenu() then bootMenu() end
     term.setTextColor(1)
     term.setBackgroundColor(256)
     term.clear()
