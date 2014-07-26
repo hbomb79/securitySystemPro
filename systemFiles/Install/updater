@@ -58,7 +58,7 @@ FileNames = {
 }
 
 drawTitleBar()
-PrintCentered("Downloading!", 6)
+PrintCentered("Downloading Scripts From GitHub... Please Wait", 6)
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer")
@@ -88,7 +88,7 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
 
 
-PrintCentered("Finished Download", 6)
+PrintCentered("Finished Downloading Scripts", 6)
 sleep(1)
 term.clear()
 drawTitleBar()
