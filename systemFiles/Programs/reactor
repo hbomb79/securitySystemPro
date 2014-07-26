@@ -264,6 +264,9 @@ running = true
 		checkEnergy()
 		printer.centered("Energy Currently Stored: "..tostring(energyStore), 7)
 		printer.centered("Current Amount Of Fuel Rods: "..tostring(rods), 8)
+		printer.centered("Fuel Amount: "..tostring(fuelAmount), 9)
+		printer.centered("Waste Amount: "..tostring(wasteAmount), 10)
+		printer.centered("Hold S To Change Modes, F To Return To Auto", 17)
 		return true
 	  end
   --end
@@ -287,10 +290,12 @@ end
 function reactorSet()
   manOverride = true
   if reactor.getActive() then reactor.setActive(false) else reactor.setActive(true) end
+  sleep(0.5)
 end
 
 function reactorUnset()
   manOverride = false
+  sleep(0.5)
 end
 
 
