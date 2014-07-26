@@ -452,6 +452,7 @@ function main() --The main function, calls all child functions
 end
 
 function bootMenu()
+while true do
 term.clear()
 titleBar.draw("HbombOS Security Suite", "BIOS Login", colors.cyan, 256, 128, 256, 1)
   function adminPasswordE()
@@ -471,15 +472,14 @@ titleBar.draw("HbombOS Security Suite", "BIOS Login", colors.cyan, 256, 128, 256
   end
   if adminPasswordE() then 
     return true
-  else 
-    return false
+	break
   end
 end
 
-function bootMenuOptions(continue)
-if not continue or not continue then 
-  if not bootMenu() then bootMenu() end
 end
+
+function bootMenuOptions(continue)
+    bootMenu()
     term.setTextColor(1)
     term.setBackgroundColor(256)
     term.clear()
