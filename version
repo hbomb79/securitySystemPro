@@ -1,4 +1,4 @@
-1.0.3
+1.0.4
 
 --STABLE BUILD!
 
@@ -11,16 +11,7 @@ computer will update continuously
 --This Version ChangeLog--
 --------------------------
 
--- Added GUI In BIOS
--- Added BIOS Change Startup Option
--- Added GUI In Digital Lock
--- Implemented BSoD
--- Started Automatic BSoD
--- Added DualKey Support In BIOS
--- Changed Source Script Of DualKey, Should work alot smoother now
--- Changed GitHub Api
--- Updated updater, installer to account for the new configuration layout
--- Remade Config layout, now has one main config
+-- Added Pre Reactor Program
 
    ------------------
    --END OF CHANGES--

@@ -1,0 +1,288 @@
+os.pullEvent = os.pullEventRaw
+
+function peripheralSetNew(side)
+  local reactor = peripheral.wrap(side)
+end
+
+function save()
+  term.clear()
+  titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
+  printer.centered("Thank You For Setting Up Your Reactor", 6)
+  printer.centered("Management System", 7)
+  printer.centered("Report Any Bugs On The Forum", 8)
+  printer.centered("Please Wait While We Save Your Settings...", 18)
+  printer.centered("Seeking File Paths", 19)
+  sleep(0)
+  printer.centered("Opening File Handlers", 19)
+  local f = fs.open("systemFiles/Programs/reactorConfig", "w")
+  printer.centered("Opened..", 19)
+  sleep(0)
+  printer.centered("Writing Information To File", 19)
+  sleep(0)
+  printer.centered("Saving Reactor Positioning", 19)
+  f.writeLine(reactorSide)
+  sleep(0)
+  printer.centered("Saved Reactor Positioning", 19)
+  sleep(0)
+  printer.centered("Saving Reactor Shut-down Buffer", 19)
+  sleep(0)
+  printer.centered("Preparing shut-down reactor information", 19)
+  sleep(0)
+  reactorShutdownAmount = tostring(bufferShutInput)
+  sleep(0)
+  printer.centered("Saving Reactor Shutdown Information", 19)
+  f.writeLine(reactorShutdownAmount)  
+  printer.centered("Preparing turn-down reactor information", 19)
+  sleep(0)
+  reactorTurndownAmount = tostring(bufferDownInput)
+  sleep(0)
+  printer.centered("Saving Reactor Turndown information", 19)
+  sleep(0)
+  f.writeLine(reactorTurndownAmount)
+  printer.centered("Save Complete",  19)
+  sleep(1)
+  printer.centered("Click Anywhere To Continue", 19)
+  printer.centered("Your Settings Have Been Saved", 18)
+  os.pullEvent("mouse_click")
+  os.reboot()
+end
+
+_int = 1
+_string = ""
+
+termX, termY = term.getSize()
+
+function readN(len, replaceChar)
+  term.setTextColor(1)
+  len = len or 10
+  local input=""
+  local key = 0
+  term.setCursorBlink(true)
+  repeat
+        e,p1 = os.pullEvent()
+		if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
+		  p1 = tonumber(p1)
+		elseif type(p1) == type(_string) then
+		  term.setTextColor(colors.red)
+		  printer.centered("Only Numbers! You Entered: "..p1.." Of Type: "..type(p1), 19)
+		  return nil
+		end
+        if e=="char" then
+          if #input < len then
+		    if type(p1) == type(_int) then
+                input = input .. p1
+                term.write(replaceChar or p1)
+			end
+          end
+        elseif e=="key" and p1==keys.backspace and #input > 0 then
+          input = input:sub(1,#input-1)
+          local x,y = term.getCursorPos()
+          term.setCursorPos(x-1,y)
+          term.write(" ")
+          term.setCursorPos(x-1,y)
+        end
+  until p1==keys.enter
+  term.setCursorBlink(false)
+  return input
+end
+
+function waitForSetupKey()
+	while true do
+	  local event, arg = os.pullEvent()
+	  if event == 'setupQue' then
+	    return nil
+	  elseif event == "key" then
+	    if arg == keys.leftAlt or key == keys.rightAlt then
+	  	return arg 
+		end
+	  end
+	end
+end
+
+function welcome()
+  titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
+  printer.centered("Follow The Steps Ahead To Setup Your Reactor", 6)
+  printer.centered("Management System", 7)
+  printer.centered("Click Anywhere To Get Started", 19)
+  os.pullEvent("mouse_click")
+  setup()
+end
+
+function sideSetup()
+rsWait = true
+  while rsWait do
+    term.clear()
+    titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1) --Text, Subtext, Text Color, SubText Color, BG color, defaultbgcolor, defaultTextColor
+    printer.centered("What Side Is The Reactor On?", 6)
+    sideText = "Side: "
+	term.setCursorPos(termX/2-#sideText, 10)
+	write (sideText)
+	local vside = false
+    reactorSide = read()
+      for k,v in pairs(rs.getSides()) do
+		if v == reactorSide then
+		  vside = true
+		  rsWait = false
+		  break
+		end
+	  end
+	  if vside then break end
+		printer.centered("Invalid Side", 11)
+		sleep(0.5)
+  end
+  return true
+end
+
+function bufferShutSetup()
+  waitingforAnswer = true
+  while waitingforAnswer do
+    sleep(0)
+    term.clear()
+    titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
+      printer.centered("At What Amount Of RF Stored Do You Want", 5)
+      printer.centered("The Reactor To Shutdown", 6)
+    printer.centered("Maximum Amount Is 10,000,000RF", 8)
+    bufferText = "RF AMOUNT: "
+    term.setCursorPos(termX/2-#bufferText, 10)
+	write(bufferText)
+	bufferShutInput = readN(8)
+	if bufferShutInput == nil or bufferShutInput == "" then
+	  printer.centered("Cannot Be A Nil Value Or String!", 19)
+	  sleep(1)
+	else
+	  bufferShutInput = tonumber(bufferShutInput)
+	  if bufferShutInput > 10000000 then printer.centered("Maximum Amount Is 10,000,000RF!", 19) sleep(1)
+	  elseif bufferShutInput == 0 then printer.centered("Must Not Be NIL", 19) sleep(1) else waitingforAnswer = false break end
+	end
+  end
+  bufferDownSetup()
+end
+
+function bufferDownSetup()
+  _2 = true
+    while _2 do
+	  sleep(0)
+	  term.clear()
+	  titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
+      printer.centered("At What Amount Of RF Stored Do You Want", 5)
+      printer.centered("The Reactor To Decrease Power Output", 6)
+	  printer.centered("Maximum Is Shutdown Amount: "..tostring(bufferShutInput), 8)
+	  bufferText = "RF AMOUNT: "
+	  term.setCursorPos(termX/2-#bufferText, 10)
+	  write(bufferText)
+	  bufferDownInput = readN(8)
+	    if bufferDownInput == nil or bufferDownInput == "" then  
+		  printer.centered("Cannot Be A Nil Value!", 19)
+		  sleep(1)
+		else
+		  bufferDownInput = tonumber(bufferDownInput)
+		  if bufferDownInput >= bufferShutInput then printer.centered("Max Amount Is: "..bufferShutInput.."!", 19) sleep(1)
+	      elseif bufferDownInput == 0 then printer.centered("Cannot Be Nil!", 19) sleep(1) else _2 = false break end
+		end
+	end
+	save()
+end
+
+function setup()
+  if not sideSetup() then errora.err(nil, "Side Setup Function Crashed On Return") end
+  if not bufferShutSetup() then end
+  bufferDownSetup()
+end
+
+function removeConfig()
+  term.clear()
+  printer.centered("Deleting Configuration", 19)
+  fs.delete('systemFiles/Programs/reactorConfig')
+  sleep(1)
+  os.reboot()
+end
+
+function checkreactorStatus()
+  
+end
+
+
+function Start()
+ keyrunning = true
+  while keyrunning do
+    local key = nil
+    local success = false
+    parallel.waitForAll(function()success = main() os.queueEvent('setupQue') end, function() key = waitForSetupKey() end)
+	  if success and key == keys.leftAlt or key == keys.rightAlt then
+        success = removeConfig()
+	  elseif success and key == keys.s then
+	    success = reactorSet()
+	  end
+	    return success
+  end  
+end
+
+function checkEnergy()
+if energyStore ~= nil then
+  if tonumber(energyStore) >= tonumber(shutDownBuffer) then 
+    printer.centered("Reactor Full Of Power, Turning Off!", 19)
+    reactor.setActive(false)
+  elseif energyStore >= tonumber(turnDownBuffer) and tonumber(energyStore) < tonumber(shutDownBuffer) then 
+    reactor.setAllControlRodLevels(50)
+	printer.centered("Fuel Rods At 50% Run!", 19)
+    reactor.setActive(true)
+  else 
+    reactor.setActive(true) 
+    reactor.setAllControlRodLevels(0)
+	printer.centered("running at full power!", 19)
+  end
+else
+  printer.centered("energy stored is nil", 19)
+end
+end
+
+function main()
+term.clear()
+printer.centered("Monitoring Reactor Activities...", 6)
+keyrunning = true
+running = true
+  while running do
+	  reactor = peripheral.wrap(side)
+	  if reactor.getConnected() then
+	    fuelAmount = reactor.getFuelAmount()
+		wasteAmount = reactor.getWasteAmount()
+		energy = reactor.getEnergyProducedLastTick()
+		temp = reactor.getCasingTemperature()
+		energyStore = reactor.getEnergyStored()
+		checkEnergy()
+		printer.centered("Energy Currently Stored: "..tostring(energyStore), 7)
+		return true
+	  else
+	    errora.err(nil, "reactor program returned NO REACTOR ON SIDE")
+	  end
+  end
+end
+
+
+function reactorSet()
+  if reactor.getActive() then reactor.setActive(false) else reactor.setActive(true) end
+end
+
+
+if not fs.exists ('systemFiles/Programs/reactorConfig') then
+  welcome()
+  sideSetup()
+  bufferShutSetup()
+  bufferDownSetup()
+  save()
+else
+  term.clear()
+  titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
+  printer.centered("Please Wait While We Load Your Settings", 19)
+  sleep(1)
+  local f = fs.open('systemFiles/Programs/reactorConfig', 'r')
+  side = f.readLine()
+  --lastState = f.readLine()
+  shutDownBuffer = f.readLine()
+  turnDownBuffer = f.readLine()
+  f.close()
+  while true do
+    sleep(0)
+    if Start() then Start() else os.reboot() end
+  end
+end
