@@ -79,10 +79,13 @@ function newPassword()
 	term.setCursorPos(termX/2-#newPassText, 12)
 	write (newPassText)
 	newPass1 = read("*")
-	if newPass1 ~= nil then 
+	if newPass1 == "" or newPass1 == nil then 
+	  printer.centered("Cannot Be NIL!", 19)
+	elseif newPass1 ~= "" or newPass ~= nil then
+	  printer.centered("Accepted", 19) 	  
 	  newPassword2()
 	else
-	  printer.centered("Cannot Be Nil!", 19) 
+	  errora.err("generic", "Unknown Exception, Cannot Handle Input: "..newPass1)
 	end
   end
 end
@@ -419,8 +422,9 @@ function main() --The main function, calls all child functions
 	download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater")
 	sleep(1)
 	PrintCentered("Download Complete, Running Updater",18)
-	sleep(0)
+	sleep(0.5)
 	shell.run("systemFiles/Install/updater")
+	errora.err(nil, "The Updater Experienced An Unknown Exception, Or It Ended With No Protocol, If the issue persists, report it")
   elseif not update.Check() then
     PrintCentered("You Are Running The Latest STABLE Version!", 19)
 	sleep(1)
@@ -433,10 +437,11 @@ end
 
 function bootMenu()
 term.clear()
+titleBar.draw("HbombOS Security Suite", "BIOS Login", colors.cyan, 256, 128, 256, 1)
   function adminPasswordE()
     PrintCentered("HbombOS Security Suite", 4)
     PrintCentered("Boot Options", 5)
-    PrintCentered("Type In Password To Continue", 18)
+    PrintCentered("Type In Admin Password To Continue", 18)
     PrintCentered("Or Reboot (CTRL+R) To Cancel", 19)
     adminPassText = "Password: "
     term.setCursorPos(termX/2-#adminPassText, 7)
@@ -448,7 +453,6 @@ term.clear()
 	    return false
 	  end
   end
-
   if adminPasswordE() then 
     return true
   else 
@@ -456,12 +460,14 @@ term.clear()
   end
 end
 
-function bootMenuOptions()
+function bootMenuOptions(continue)
+if not continue or not continue then 
   if not bootMenu() then bootMenu() end
-    drawTitleBar()
+end
     term.setTextColor(1)
     term.setBackgroundColor(256)
     term.clear()
+    titleBar.draw("HbombOS Security Suite", "Settings", colors.cyan, 256, 128, 256, 1)
 	PrintCentered("HbombOS Security Suite", 4)
 	PrintCentered("Boot Options", 5)
 	PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
@@ -490,22 +496,27 @@ function bootMenuOptions()
 		
 		{'Uninstall Security Suite', function()
 			term.setCursorPos(1,1)
-			term.setBackgroundColor(colours.black)
+			term.setBackgroundColor(256)
 			term.setTextColor(colours.white)
 			term.clear()
+			titleBar.draw("HbombOS BIOS", "Uninstaller", colors.cyan, 256, 128, 256, 1)
+			printer.centered("Please Wait While We Uninstall Security Suite 2014", 6)
+			sleep(4)
 			local function rmFold(path)
 				if path == '/rom' or path == "/openp" then
 					return
 				end
 				for i, v in ipairs(fs.list(path)) do
+				 sleep(0.5)
 				  term.setTextColor(1)
 				  term.setBackgroundColor(256)
 					if fs.isDir(path..'/'..v) then
 						rmFold(path..'/'..v)
 					else
 						if fs.delete(path..'/'..v) then
+						  term.setTextColor(1)
 						  PrintCentered('Removed: '..path..'/'..v, 18)
-						  sleep(0)
+						  sleep(1)
 						end
 					end
 				end
@@ -514,12 +525,13 @@ function bootMenuOptions()
 				end
 			end
 			rmFold('')
-			sleep(0)
+			sleep(1)
 			
 		end},
 		{'Use Shell/CraftOS', function() term.setBackgroundColor(colors.black) term.clear() term.setCursorPos(1,1) shell.run ("shell") end},
 		{'Change Admin Password', function()  
 		 term.clear()
+		 titleBar.draw("HbombOS Security Suite", "Password Management", colors.cyan, 256, 128, 256, 1)
 		 newPassword2Wait = true
 		 newPassWait = true
 		 oldPassWait = true
@@ -529,6 +541,7 @@ function bootMenuOptions()
 		end},
 		{'Force Update', function() 
 		  term.clear()
+		  titleBar.draw("HbombOS Security Suite", "Force Updating", colors.cyan, 256, 128, 256, 1)
 	   	  printer.centered("Downloading New Update Firmware", 19) 
 		  printer.centered("Force Updating Client", 6) 
 		  sleep(3)
@@ -575,6 +588,7 @@ function bootMenuOptions()
 			  term.setTextColor(1)
               term.setBackgroundColor(256)
               term.clear()
+			  titleBar.draw("HbombOS Security Suite", "Settings", colors.cyan, 256, 128, 256, 1)
 	          PrintCentered("HbombOS Security Suite", 4)
 	          PrintCentered("Boot Options", 5)
 	          PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
@@ -590,14 +604,24 @@ function bootMenuOptions()
 						term.clear()
 						term.setTextColor(1)
 						term.setBackgroundColor(256)
+					    titleBar.draw("HbombOS Security Suite", "Uninstall", colors.cyan, 256, 128, 256, 1)
 						PrintCentered("Removing HbombOS Security Suite", 6)
-						sleep(1)
 						options[selected][2]()
-						sleep(2)
+						term.clear()
+					    titleBar.draw("HbombOS Security Suite", "Uninstall", colors.cyan, 256, 128, 256, 1)
+						printer.centered("Thanks For Using Security Suite", 6)
+						printer.centered("If Bugs Made You Uninstall, Please Report Them!", 8)
+						printer.centered("Click Anywhere On-screen To Reboot", 19)
+					    os.pullEvent("mouse_click")
 						os.reboot()
 					elseif key == 'n' then
 						_ = false
-						bootMenuOptions()
+						term.clear()
+						titleBar.draw("HbombOS Security Suite", "Settings", colors.cyan, 256, 128, 256, 1)
+				        PrintCentered("HbombOS Security Suite", 4)
+	                    PrintCentered("Boot Options", 5)
+	                    PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
+						--bootMenuOptions(true)
 					end
 				end
 				term.setTextColor(colors.red)
@@ -612,14 +636,18 @@ function bootMenuOptions()
 		end
 		draw()
 	end
+	term.setTextColor(colors.white)
+	printer.centered("Continuing Boot...", 19)
+	sleep(0.1)
+	printer.centered("Returning continue Variable", 19)
 	return continue
 end
 
 function Start()
-    checkStartKey()
-    local key = nil
-	local success = false
-	parallel.waitForAll(function()success = main() os.queueEvent('BootDone') end, function() key = RecieveStartupKey() end)
+  checkStartKey()
+  local key = nil
+  local success = false
+  parallel.waitForAll(function()success = main() os.queueEvent('BootDone') end, function() key = RecieveStartupKey() end)
 	if success and key == keys.leftAlt or key == keys.rightAlt then
       success = bootMenuOptions()
 	end
@@ -627,20 +655,19 @@ function Start()
   end
    
 function readFiles()
-    printer.centered("Reading Configuration Files", 19)
-	local f = fs.open('systemFiles/Programs/configuration', 'r')
-	fileStartup = f.readLine()
-	f.close()
+  printer.centered("Reading Configuration Files", 19)
+  local f = fs.open('systemFiles/Programs/configuration', 'r')
+  fileStartup = f.readLine()
+  f.close()
   	if fileStartup then
 	  printer.centered("Running: "..fileStartup, 19)
-	  sleep(0.5)
 	  shell.run(fileStartup)
 	  sleep(1)
-	  errora.err("generic", "The Program: "..fileStartup.." Appears To Have Crashed, Or Ended With No Closing Protocol")
+	  errora.err("generic", "The Program: "..fileStartup.." Appears To Have Crashed, Or Ended With No Closing Protocol, Or Experienced A Hiccup")
 	end
-	printer.centered("No Default File Stored", 19)
-	sleep(2)
-	programMenu()
+  printer.centered("No Default File Stored", 19)
+  sleep(2)
+  programMenu()
 end
 
 
@@ -650,5 +677,5 @@ drawTitleBar()
 if Start() then 
 readFiles() 
 else 
-errora.err("generic", "Start-up Failed To Initiate Main Function, Returned:") 
+errora.err("generic", "Start-up Failed To Initiate Main Function, Returned: FALSE, Please try rebooting, If the issue persists, Report it on the forums") 
 end

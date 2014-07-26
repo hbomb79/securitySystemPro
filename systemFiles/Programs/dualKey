@@ -45,7 +45,7 @@ function PrintCentered(text, y) --Swapped Out But Still Using Old One As It Does
 end
 
 function drawTitleBar()
-  titleBar.draw("HbombOS Security Suite", "Login Security", colors.cyan, 256, 128, 256, 1)
+  titleBar.draw("HbombOS Security Suite", "Digital Lock", colors.cyan, 256, 128, 256, 1)
   term.setBackgroundColor(256)
   printer.centered("HbombOS Security Suite", 4)
   printer.centered("Running DualKey Digital Lock", 5)
