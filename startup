@@ -470,7 +470,6 @@ while true do
   end
   if adminPasswordE() then 
     return true
-	break
   else
     printer.centered("Incorrect!", 8)
 	sleep(1)
