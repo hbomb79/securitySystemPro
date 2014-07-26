@@ -1,6 +1,6 @@
-1.0.1
+1.0.2
 
---STABLE BUILD
+--STABLE BUILD, May Contain Bugs In Program 'DualKey'
 --[[ This contains the version number of all the files, if this is changed on GitHub then local computers will update to the 
 new version number and download all the files again, please ensure you leave the version number in the first line or else the 
 computer will update continuously
