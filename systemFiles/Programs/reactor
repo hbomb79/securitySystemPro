@@ -92,7 +92,7 @@ function waitForSetupKey()
 	  if event == 'setupQue' then
 	    return nil
 	  elseif event == "key" then
-	    if arg == keys.leftAlt or key == keys.rightAlt then
+	    if arg == keys.leftAlt or arg == keys.rightAlt or arg == keys.s or arg == keys.f then
 	  	return arg 
 		end
 	  end
@@ -212,12 +212,17 @@ function Start()
         success = removeConfig()
 	  elseif success and key == keys.s then
 	    success = reactorSet()
+	  elseif success and key == keys.f then
+	    success = reactorUnset()
 	  end
 	    return success
   end  
 end
 
 function checkEnergy()
+if manOverride then
+  printer.centered("Manual Override Engaged, Reactor Is: "..tostring(state), 19)
+else
 if energyStore ~= nil then
   if tonumber(energyStore) >= tonumber(shutDownBuffer) then 
     printer.centered("Reactor Full Of Power, Turning Off!", 19)
@@ -229,38 +234,63 @@ if energyStore ~= nil then
   else 
     reactor.setActive(true) 
     reactor.setAllControlRodLevels(0)
-	printer.centered("running at full power!", 19)
+	printer.centered("Running Reactor At Max Power!", 19)
   end
 else
-  printer.centered("energy stored is nil", 19)
+  printer.centered("Energy stored is Nil", 19)
+end
 end
 end
 
 function main()
 term.clear()
-printer.centered("Monitoring Reactor Activities...", 6)
+titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
+printer.centered("Monitoring Reactor Activities...", 4)
 keyrunning = true
 running = true
-  while running do
+ -- while running do
 	  reactor = peripheral.wrap(side)
-	  if reactor.getConnected() then
+	  --if checkReactorError() then
+	  if not reactor.getConnected() then
+	    error "No Reactor Detected!"
+	  else
+	    state = reactor.getActive()
 	    fuelAmount = reactor.getFuelAmount()
 		wasteAmount = reactor.getWasteAmount()
 		energy = reactor.getEnergyProducedLastTick()
 		temp = reactor.getCasingTemperature()
 		energyStore = reactor.getEnergyStored()
+		rods = reactor.getNumberOfControlRods()
 		checkEnergy()
 		printer.centered("Energy Currently Stored: "..tostring(energyStore), 7)
+		printer.centered("Current Amount Of Fuel Rods: "..tostring(rods), 8)
 		return true
-	  else
-	    errora.err(nil, "reactor program returned NO REACTOR ON SIDE")
 	  end
+  --end
+end
+
+function checkReactorStatement()
+  reactor = peripheral.wrap(side)
+  reactor.getConnected()
+end
+
+function checkReactorError()
+  ok, err = pcall(checkReactorStatement)
+  if not ok then
+	errora.err(err, ok)
+  else
+    return true
   end
 end
 
 
 function reactorSet()
+  manOverride = true
   if reactor.getActive() then reactor.setActive(false) else reactor.setActive(true) end
+end
+
+function reactorUnset()
+  manOverride = false
 end
 
 
@@ -283,6 +313,6 @@ else
   f.close()
   while true do
     sleep(0)
-    if Start() then Start() else os.reboot() end
+    Start()
   end
 end
