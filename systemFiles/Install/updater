@@ -19,7 +19,7 @@ function drawTitleBar()
   term.setCursorPos(1,2)
   term.clearLine()
   term.setTextColor(256)
-  write "Updater"
+  write "Updating Wizzard"
   term.setTextColor(1)
   term.setBackgroundColor(256)
 end
