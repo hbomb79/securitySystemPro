@@ -109,6 +109,7 @@ end
 
 
 if not checkConfig() then  
+  waitinput = true
   while waitinput do 
   term.clear()
   printer.centered("It Appears You Have Not Used This Program Before", 6)

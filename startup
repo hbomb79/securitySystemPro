@@ -3,11 +3,6 @@
 os.pullEvent = os.pullEventRaw
 termX, termY = term.getSize()
 
-if fs.exists("systemFiles/programs/configuration") then
-  local f = fs.open("systemFiles/programs/configuration", "r")
-  fileRun = f.readLine()
-  f.close()
-end
 -- Fade In!
 term.setBackgroundColour(colours.black)	
 term.clear()
@@ -272,9 +267,122 @@ function drawTitleBar()
   checkStartKey()
 end
 
+
+function programMenu()
+    drawTitleBar()
+    term.setTextColor(1)
+    term.setBackgroundColor(256)
+    term.clear()
+	PrintCentered("HbombOS Security Suite", 4)
+	PrintCentered("Programs", 5)
+	PrintCentered("The Suite Offers Several Programs For You To Use", 7)
+	PrintCentered("Select One You Would Like To Use", 8)
+	PrintCentered("You Can Change It At Any Time Using The BootMenu", 9)
+	PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
+	local continue = false
+	local options = {
+		{'PIN', function() 
+		  printer.centered("Opening File Handler", 19)
+		  sleep(0)
+		  local f = fs.open('systemFiles/Programs/configuration', "w")
+		  printer.centered("File Handler Open", 19)
+		  sleep(0)
+		  printer.centered("Writing To File", 19)
+		  sleep(0)
+		  f.writeLine('"systemFiles/Programs/pin"')
+		  printer.centered("File written", 19)
+		  sleep(0)
+		  printer.centered("Closing Handler", 19)
+		  f.close()
+		  printer.centered("Saved, Rebooting!", 19)
+		  sleep(2)
+		  os.reboot()
+		end},
+		{'Digital Lock', function() 
+		  printer.centered("Opening File Handler", 19)
+		  sleep(0)
+		  local f = fs.open('systemFiles/Programs/configuration', "w")
+		  printer.centered("File Handler Open", 19)
+		  sleep(0)
+		  printer.centered("Writing To File", 19)
+		  sleep(0)
+		  f.writeLine('"systemFiles/Programs/dualKey"')
+		  printer.centered("File written", 19)
+		  sleep(0)
+		  printer.centered("Closing Handler", 19)
+		  f.close()
+		  printer.centered("Saved, Rebooting!", 19)
+		  sleep(2)
+		  os.reboot()
+		end}, 
+		{'Cancel', function()
+		printer.centered("You Must Use A Program!", 18)
+		printer.centered("Therefore, Shutting Down", 19)
+		sleep(1)
+		os.shutdown()
+		end}
+	}
+
+	local selected = 1
+	local function draw()
+		for i, v in ipairs(options) do
+			local bg = 256
+			local tc = colours.white
+			if i == selected then
+				bg = 256
+				tc = colours.blue
+			end
+			term.setTextColor(tc)
+			term.setBackgroundColor(bg)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 10)
+		end
+	end
+	local wait = true
+	draw()
+	while wait do
+		local event, key = os.pullEvent('key')
+		if key == keys.up then
+			selected = selected - 1
+			if selected < 1 then
+				selected = 1
+			end
+		elseif key == keys.down then
+			selected = selected + 1
+			if selected > #options then
+				selected = #options
+			end
+		elseif key == keys.enter then
+			--if options[selected][1] == 'Uninstall Security Suite' then
+			--else
+				options[selected][2]()
+				wait = false
+			--end
+		end
+		draw()
+	end
+	return continue
+end
+
+function programCheckConfig()
+  if not fs.exists('systemFiles/Programs/configuration') then programMenu() else
+    local f = fs.open('systemFiles/Programs/configuration', "r")
+	programStart = f.readLine()
+	f.close()
+	if not programStart then programMenu() else
+	  if programStart == "" then programMenu() else 
+	    local f = fs.open('systemFiles/Programs/configuration', 'r')
+		fileStartup = f.readLine()
+		f.close()
+	  end
+	end
+  end
+end
+
+
 function main() --The main function, calls all child functions
   --First all APIs must be loaded to perform the system checks later on
   loadAPIs()
+  programCheckConfig()
   term.setBackgroundColor(256)
   term.setTextColor(1)
   bootLogo(1, bootX, bootY, 256)
@@ -369,6 +477,9 @@ function bootMenuOptions()
 		PrintCentered("Removing Program Settings", 18)
 		sleep(0.2)
 		if fs.exists('/systemFiles/Programs/pinConfig') then fs.delete ('systemFiles/Programs/pinConfig') end
+		PrintCentered("Removing DualKey Configuration", 18)
+		sleep(0)
+		if fs.exists('/systemFiles/Programs/dualKeyConfig') then fs.delete ('systemFiles/Programs/dualKeyConfig') end
 		PrintCentered("Removing System Configuration", 18)
 		sleep(0)
 		if fs.exists('/systemFiles/Programs/configuration') then fs.delete ('systemFiles/Programs/configuration') end
@@ -426,6 +537,7 @@ function bootMenuOptions()
 		  sleep(0)
 		  shell.run("systemFiles/Install/updater") 
 		end},
+		{'Change Startup File', function() programMenu() end},
 		{'Continue Boot', function() continue = true end}
 
 	}
@@ -516,12 +628,19 @@ function Start()
    
 function readFiles()
     printer.centered("Reading Configuration Files", 19)
-  	if fileRun then
-	  shell.run(fileRun)
+	local f = fs.open('systemFiles/Programs/configuration', 'r')
+	fileStartup = f.readLine()
+	f.close()
+  	if fileStartup then
+	  printer.centered("Running: "..fileStartup, 19)
+	  sleep(0.5)
+	  shell.run(fileStartup)
+	  sleep(1)
+	  errora.err("generic", "The Program: "..fileStartup.." Appears To Have Crashed, Or Ended With No Closing Protocol")
 	end
-	shell.run"systemFiles/programs/pin"
 	printer.centered("No Default File Stored", 19)
-	--picker()
+	sleep(2)
+	programMenu()
 end
 
 
