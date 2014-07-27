@@ -259,6 +259,7 @@ if levelinput then
   elseif levelinput == nil then printer.centered("Cannot Be NIL", 19) sleep(0.5)
   else
     printer.centered("Adjusting Contorl Rod Levels", 19)
+	sleep(0)
 	reactor.setAllControlRodLevels(levelinput)
 	printer.centered("Adjusted!", 19)
 	break
@@ -274,7 +275,7 @@ if manOverride then
 else
 if energyStore ~= nil then
   if tonumber(energyStore) >= tonumber(shutDownBuffer) then 
-    printer.centered("Reactor Shut-down Buffer Reached, Turning Off!", 19)
+    printer.centered("Reactor Full Of Power, Turning Off!", 19)
     reactor.setActive(false)
   elseif energyStore >= tonumber(turnDownBuffer) and tonumber(energyStore) < tonumber(shutDownBuffer) then 
     reactor.setAllControlRodLevels(50)
@@ -310,21 +311,18 @@ running = true
 		temp = reactor.getCasingTemperature()
 		energyStore = reactor.getEnergyStored()
 		rods = reactor.getNumberOfControlRods()
-		eProduce = reactor.getEnergyProducedLastTick()
 		checkEnergy()
 		printer.centered("Energy Currently Stored: "..tostring(energyStore), 6)
-		printer.centered("Energy Per Tick: "..tostring(eProduce), 8)
-		printer.centered("Current Amount Of Fuel Rods: "..tostring(rods), 10)
-		printer.centered("Fuel Amount: "..tostring(fuelAmount), 11)
-		printer.centered("Waste Amount: "..tostring(wasteAmount), 12)
-		printer.centered("Casing Temperature "..tostring(temp).." C", 13)
+		printer.centered("Current Amount Of Fuel Rods: "..tostring(rods), 8)
+		printer.centered("Fuel Amount: "..tostring(fuelAmount), 9)
+		printer.centered("Waste Amount: "..tostring(wasteAmount), 10)
+		printer.centered("Casing Temperature "..tostring(temp).." C", 11)
 		term.setCursorPos(termX-#tostring(state), 1)
 		term.setBackgroundColor(128)
 		write(tostring(state))
 		term.setBackgroundColor(256)
 		printer.centered("Hold S To Change Modes, F To Return To Auto", 16)
 		printer.centered("C To Change Reactor Control Rod Levels", 17)
-		sleep(0)
 		return true
 	  end
   --end
@@ -375,6 +373,7 @@ else
   turnDownBuffer = f.readLine()
   f.close()
   while true do
+    sleep(0)
     Start()
   end
 end

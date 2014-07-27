@@ -5,6 +5,7 @@ termX, termY = term.getSize()
 --Assign Text Variables
 configText = "PIN: "
 rsText = "OutputSide: "
+rsTextin = "InputSide: "
 timeText = "OutputTime: "
 enterText = "PIN: "
 
@@ -108,7 +109,7 @@ function RSinSideSetup()
     printer.centered("To Respond To Redstone As If The Password",11)
     printer.centered("Was Entered, What Side Do You Want The Input",12)
     printer.centered("To Have To Come From?",13)
-	term.setCursorPos(termX/2-(#rsText), 15)
+	term.setCursorPos(termX/2-(#rsTextin), 15)
 	  write (rsText)
 	  local vside = false
 		rsInputSide = read()
@@ -168,11 +169,6 @@ function drawTitleBar()
 end
 
 drawTitleBar()
-
-function drawLoginField()
-
-end
-
 
 if not checkConfig() then  
   setup = true

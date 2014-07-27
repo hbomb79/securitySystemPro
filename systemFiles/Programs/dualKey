@@ -4,9 +4,63 @@ termX, termY = term.getSize()
 text1 = "Username:"
 text2 = "Password:"
 
+setup = false
 -----------------
 --API FUNCTIONS--
 -----------------
+
+function RSinSetup()
+ while true do
+  term.clear()
+  drawTitleBar()
+  printer.centered("It Appears You Have Not Used This Program Before", 6)
+  printer.centered("Setting Up PIN Lock", 8)
+  printer.centered("Would You Like The Computer To Act As If",10)
+  printer.centered("The Password was Entered If It Receives A",11)
+  printer.centered("Redstone Signal On The Designated Side?",12)
+  printer.centered("Y/N",12)
+  printer.centered("You May Pick Which Side New Step",19)
+  ev, arg = os.pullEvent()
+   if ev == "key" then
+	if arg == keys.y then
+	  rsInSetting = true
+	  break
+	elseif arg == keys.n then
+	  rsInSetting = false
+	  break
+	end
+   end
+  end
+  return
+end
+
+function RSinSideSetup()
+  while true do
+    printer.centered("It Appears You Have Not Used This Program Before", 6)
+    printer.centered("Setting Up PIN Lock", 8)
+    printer.centered("You Picked That You Would Like The Computer",10)
+    printer.centered("To Respond To Redstone As If The Password",11)
+    printer.centered("Was Entered, What Side Do You Want The Input",12)
+    printer.centered("To Have To Come From?",13)
+	rsTextin = "InputSide: "
+	term.setCursorPos(termX/2-(#rsTextin), 15)
+	  write (rsTextin)
+	  local vside = false
+		rsInputSide = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == rsInputSide then
+				vside = true
+				break
+			end
+		end
+		if vside then break end
+		  print("Invalid side!")
+		  sleep(0.5)
+		  term.clear()
+		end
+	 return true
+  end 
+
 
 
 x, y = term.getSize()
@@ -15,7 +69,12 @@ local function readN(len, replaceChar)
   local input=""
   local key = 0
   term.setCursorBlink(true)
-  term.setTextColor(colors.black)
+  if not setup then
+    checkKey()
+    term.setTextColor(colors.black)
+  else
+    term.setTextColor(1)
+  end
   repeat
         local e,p1 = os.pullEvent()
         if e=="char" then
@@ -53,26 +112,26 @@ end
 
 function drawUserField()
   drawPassField()
-  term.setTextColor(colors.black)
+  term.setTextColor(1)
   term.setBackgroundColor(256)
   paintutils.drawLine(termX/2-2, 8, termX/2+13, 8, colors.white)
   term.setCursorPos(termX/2-(#text1+2), 8)
   term.setBackgroundColor(256)
-  term.setTextColor(1)
   write(text1)
   term.setBackgroundColor(256)
   paintutils.drawLine(termX/2-2, 8, termX/2+13, 8, colors.white)
+  term.setTextColor(colors.black)
 end
 
 function drawPassField()
-  term.setTextColor(colors.black)
+  term.setTextColor(1)
   term.setBackgroundColor(256)
   paintutils.drawLine(termX/2-2, 11, termX/2+13, 11, colors.white)
   term.setCursorPos(termX/2-(#text2+2), 11)
-  term.setTextColor(1)
   term.setBackgroundColor(256)
   write(text2)
   paintutils.drawLine(termX/2-2, 11, termX/2+13, 11, colors.white)
+  term.setTextColor(colors.black)
 end
 
 function getUsername()
@@ -100,16 +159,13 @@ function checkLoginUser()
   drawTitleBar()
   checkingUser = true
   while checkingUser do
-   drawUserField()
 	if getUsername() == username then
 	  term.setBackgroundColor(256)
 	  term.setTextColor(1)
-      printer.centered("Correct Username", 19)
-	  sleep(0)
-	  checkLoginPass()
-    --else
-     -- error "Incorrect Username..."
-    end
+	  if checkLoginPass() then
+	  return true
+	  end
+	end
   end
 end
 
@@ -120,10 +176,7 @@ function checkLoginPass()
 	  if getPassword() == password then
 	    term.setBackgroundColor(256)
 	    term.setTextColor(1)
-	    printer.centered("Correct Password", 19)
-	    open()
-	  --else
-		--error "Incorrect Password..."
+        return true
 	  end
 	end
 end
@@ -142,12 +195,14 @@ function fileCheck()
     waitinput = true
       while waitinput do
         term.clear()
+		setup = true
         printer.centered("It Appears You Have Not Used This Program Before", 6)
         printer.centered("Setting Up Digital Lock", 8)
         printer.centered("Enter Your Username Below", 10)
         setUsername()
 	   end
   else --The File Exists...
+    setup = false
     term.clear()
 	term.setTextColor(1)
     local f = fs.open ('systemFiles/Programs/dualKeyConfig', "r")
@@ -155,12 +210,16 @@ function fileCheck()
 	password = f.readLine()
 	side = f.readLine()
 	timeSide = f.readLine()
+	rsSettingUse = f.readLine()
+	if rsSettingUse == "true" then
+	  rsSettingSide = f.readLine()
+	end
 	f.close()
 	return true
   end
 end
 
-function save ()
+function save()
   term.clear()
   drawTitleBar()
   printer.centered("Thank You For Setting Up Digital Lock", 4)
@@ -186,6 +245,10 @@ function save ()
   printer.centered("Writing Redstone Information To File", 19)
   f.writeLine(rsInput)
   f.writeLine(timeInput)
+  f.writeLine(tostring(rsInSetting))
+  if rsInSetting then
+    f.writeLine(rsInputSide)
+  end
   sleep(1)
   printer.centered("Written", 19)
   sleep(0)
@@ -232,8 +295,13 @@ end
 		    if not timeInput then
 		      printer.centered("Time Must Be Greater That One Second", 13)
 		    end
-			
-			save()
+	        RSinSetup()
+			if rsInSetting then
+			  RSinSideSetup()
+			  save()
+			else
+			  save()
+			end
 end
 
 function setUsername()
@@ -251,7 +319,7 @@ function setUsername()
 	  term.setTextColor(colors.red) 
 	  printer.centered("Needs More Than One Character", 13) 
 	  sleep(1) 
-	  term.setTextColor(colors.black) 
+	  term.setTextColor(colors.white) 
 	else 
 	  setPassword() 
 	end
@@ -279,7 +347,115 @@ function setPassword()
   end
 end
 
+function removeConfig()
+local function removeSet()
+  term.clear()
+  titleBar.draw("HbombOS Security Suite", "Digital Lock", colors.cyan, 256, 128, 256, 1)
+  printer.centered("Type in your administrator password", 4)
+  printer.centered("To reset the reactor configuration", 5)
+  local f = fs.open("systemFiles/Security/adminPass", "r")
+  adminPassword = f.readLine()
+  f.close()
+  configText = "Admin Password: "
+  term.setCursorPos(termX/2-#configText, 7)
+  write(configText)
+  adminPasswordInput = read("*")
+  if adminPasswordInput == adminPassword then
+    return true
+  else
+    pressed = false
+    return false
+  end
+end
+
+if removeSet() then
+  printer.centered("Removing Configuration File", 19)
+  sleep(0)
+  fs.delete('systemFiles/Programs/dualKeyConfig')
+  printer.centered("Removed Config", 19)
+  sleep(1)
+  os.reboot()
+else shell.run('systemFiles/Programs/dualKey') end
+end
+
+function waitForSetupKey()
+	while true do
+	  local event, arg = os.pullEvent()
+	  if event == 'setupQue' then
+	    return nil
+	  elseif event == "key" then
+	    if arg == keys.leftAlt or arg == keys.rightAlt then
+		pressed = true
+		checkKey()
+	  	return arg 
+		end
+	  end
+	end
+end
+
+function checkKey()
+term.setTextColor(1)
 term.setBackgroundColor(256)
-term.setTextColor(colors.black)
-if fileCheck() then checkLoginUser() else error.a("generic", "The DUALKEY Program Has Crashed, And Rebooted In An Effort To Fix") end
-error "The Program Has Ended!"
+if not setup then
+  if pressed then
+    oldX, oldY = term.getCursorPos()
+    printer.centered("Type your normal pin to continue", 19)
+	term.setTextColor(colors.black)
+    term.setCursorPos(oldX, oldY)
+	term.setBackgroundColor(1)
+  else
+    oldX, oldY = term.getCursorPos()
+    printer.centered("Press [alt] To Change Your Settings", 19)
+    term.setCursorPos(oldX, oldY)
+	term.setTextColor(colors.black)
+	term.setBackgroundColor(1)
+  end
+end
+end
+
+function RedstoneInputReceive()
+  while true do
+    sleep(0)
+	rsReceive = redstone.getInput(rsSettingSide)
+	  if rsReceive then
+        break
+	  end
+  end
+  return true
+end
+
+function Start()
+ keyrunning = true
+  while keyrunning do
+    local key = nil
+    local success = false
+    parallel.waitForAll(function()success = checkLoginUser() os.queueEvent('setupQue') end, function() key = waitForSetupKey() end)
+	  if success and key == keys.leftAlt or key == keys.rightAlt then
+		checkKey()
+        success = removeConfig()
+	  end
+	    return success
+  end  
+end
+
+fileCheck()
+
+while true do
+  if rsSettingUse == "true" then
+    checkKey()
+    parallel.waitForAny(Start, RedstoneInputReceive)
+    term.setCursorBlink(false)
+	term.setTextColor(1)
+	term.setBackgroundColor(256)
+    open()
+	term.setBackgroundColor(1)
+	term.setTextColor(colors.black)
+    term.setCursorBlink(true)
+	rsReceive = false
+    parallel.waitForAny(Start, RedstoneInputReceive)
+  else
+    Start()
+    open()
+    Start()
+  end
+end
