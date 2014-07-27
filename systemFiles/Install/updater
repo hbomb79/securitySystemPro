@@ -43,7 +43,6 @@ PrintCentered("Connection Established", 6)
 sleep(0.1)
 PrintCentered("Starting Download", 6)
 downloader()
-
 PrintCentered("Finished Downloading Scripts", 6)
 sleep(1)
 term.clear()
@@ -102,7 +101,7 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycardDual", "/systemFiles/Programs/keycardDual")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/pin", "/systemFiles/Programs/pin")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
-if quietDownload then os.reboot() end
+if quietDownload then os.reboot() else return true end
 end
 
 if args[1] == "quiet" then term.setTextColor(1) term.setBackgroundColor(256) downloader(true) else welcome() end
