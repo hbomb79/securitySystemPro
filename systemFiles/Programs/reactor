@@ -301,7 +301,7 @@ running = true
  -- while running do
 	  reactor = peripheral.wrap(side)
 	  --if checkReactorError() then
-	  if not checkReactorError() then
+	  if not reactor.getActive() then
 	    error "No Reactor Detected!"
 	  else
 	    state = reactor.getActive()
