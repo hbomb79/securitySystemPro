@@ -104,4 +104,11 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 if quietDownload then os.reboot() else return true end
 end
 
-if args[1] == "quiet" then term.setTextColor(1) term.setBackgroundColor(256) downloader(true) else welcome() end
+if args[1] == "quiet" then 
+  term.setBackgroundColor(256)
+  term.clear()
+  drawTitleBar() 
+  downloader(true) 
+else 
+  welcome() 
+end
