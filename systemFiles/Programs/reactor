@@ -324,6 +324,7 @@ running = true
 		term.setBackgroundColor(256)
 		printer.centered("Hold S To Change Modes, F To Return To Auto", 16)
 		printer.centered("C To Change Reactor Control Rod Levels", 17)
+		sleep(0)
 		return true
 	  end
   --end
