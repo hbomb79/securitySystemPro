@@ -253,6 +253,7 @@ while true do
   term.setCursorPos(termX/2-#levelText, 7)
   levelinput = read()
   levelinput = tonumber(levelinput)
+if levelinput then
   if levelinput > 100 then printer.centered("Max Is 100%", 19) sleep(0.5)
   elseif levelinput == "" then printer.centered("Cannot Be Nil", 19) sleep(0.5)
   elseif levelinput == nil then printer.centered("Cannot Be NIL", 19) sleep(0.5)
@@ -263,6 +264,7 @@ while true do
 	printer.centered("Adjusted!", 19)
 	break
   end
+end
 end
 return
 end
@@ -299,7 +301,7 @@ running = true
  -- while running do
 	  reactor = peripheral.wrap(side)
 	  --if checkReactorError() then
-	  if not reactor.getConnected() then
+	  if not checkReactorError() then
 	    error "No Reactor Detected!"
 	  else
 	    state = reactor.getActive()
@@ -334,7 +336,7 @@ end
 function checkReactorError()
   ok, err = pcall(checkReactorStatement)
   if not ok then
-	errora.err(err, ok)
+	errora.err(err, "There Might Not Be A Rector On Side: "..side)
   else
     return true
   end
