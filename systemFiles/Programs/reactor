@@ -92,7 +92,7 @@ function waitForSetupKey()
 	  if event == 'setupQue' then
 	    return nil
 	  elseif event == "key" then
-	    if arg == keys.leftAlt or arg == keys.rightAlt or arg == keys.s or arg == keys.f then
+	    if arg == keys.leftAlt or arg == keys.rightAlt or arg == keys.s or arg == keys.f or arg == keys.c then
 	  	return arg 
 		end
 	  end
@@ -190,11 +190,33 @@ function setup()
 end
 
 function removeConfig()
+local function removeSet()
   term.clear()
-  printer.centered("Deleting Configuration", 19)
+  titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
+  printer.centered("Type in your administrator password", 4)
+  printer.centered("To reset the reactor configuration", 5)
+  local f = fs.open("systemFiles/Security/adminPass", "r")
+  adminPassword = f.readLine()
+  f.close()
+  configText = "Admin Password: "
+  term.setCursorPos(termX/2-#configText, 7)
+  write(configText)
+  adminPasswordInput = read("*")
+  if adminPasswordInput == adminPassword then
+    return true
+  else
+    return false
+  end
+end
+
+if removeSet() then
+  printer.centered("Removing Configuration File", 19)
+  sleep(0)
   fs.delete('systemFiles/Programs/reactorConfig')
+  printer.centered("Removed Config", 19)
   sleep(1)
   os.reboot()
+else return end
 end
 
 function checkreactorStatus()
@@ -214,9 +236,35 @@ function Start()
 	    success = reactorSet()
 	  elseif success and key == keys.f then
 	    success = reactorUnset()
+	  elseif success and key == keys.c then
+	    success = reactorControl()
 	  end
 	    return success
   end  
+end
+
+function reactorControl()
+while true do
+  term.clear()
+  titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
+  printer.centered("What Would You Like To Set The Control Rod Levels To?", 4)
+  printer.centered("0-100 %", 5)
+  levelText = "Percent: "
+  term.setCursorPos(termX/2-#levelText, 7)
+  levelinput = read()
+  levelinput = tonumber(levelinput)
+  if levelinput > 100 then printer.centered("Max Is 100%", 19) sleep(0.5)
+  elseif levelinput == "" then printer.centered("Cannot Be Nil", 19) sleep(0.5)
+  elseif levelinput == nil then printer.centered("Cannot Be NIL", 19) sleep(0.5)
+  else
+    printer.centered("Adjusting Contorl Rod Levels", 19)
+	sleep(0)
+	reactor.setAllControlRodLevels(levelinput)
+	printer.centered("Adjusted!", 19)
+	break
+  end
+end
+return
 end
 
 function checkEnergy()
@@ -262,11 +310,17 @@ running = true
 		energyStore = reactor.getEnergyStored()
 		rods = reactor.getNumberOfControlRods()
 		checkEnergy()
-		printer.centered("Energy Currently Stored: "..tostring(energyStore), 7)
+		printer.centered("Energy Currently Stored: "..tostring(energyStore), 6)
 		printer.centered("Current Amount Of Fuel Rods: "..tostring(rods), 8)
 		printer.centered("Fuel Amount: "..tostring(fuelAmount), 9)
 		printer.centered("Waste Amount: "..tostring(wasteAmount), 10)
-		printer.centered("Hold S To Change Modes, F To Return To Auto", 17)
+		printer.centered("Casing Temperature "..tostring(temp).." C", 11)
+		term.setCursorPos(termX-#tostring(state), 1)
+		term.setBackgroundColor(128)
+		write(tostring(state))
+		term.setBackgroundColor(256)
+		printer.centered("Hold S To Change Modes, F To Return To Auto", 16)
+		printer.centered("C To Change Reactor Control Rod Levels", 17)
 		return true
 	  end
   --end
