@@ -275,16 +275,22 @@ if manOverride then
 else
 if energyStore ~= nil then
   if tonumber(energyStore) >= tonumber(shutDownBuffer) then 
-    printer.centered("Reactor Full Of Power, Turning Off!", 19)
+    term.setTextColor(colors.blue)
+    printer.centered("Reached Shutdown Buffer, Turning Off!", 19)
+	term.setTextColor(1)
     reactor.setActive(false)
   elseif energyStore >= tonumber(turnDownBuffer) and tonumber(energyStore) < tonumber(shutDownBuffer) then 
     reactor.setAllControlRodLevels(50)
+	term.setTextColor(colors.yellow)
 	printer.centered("Fuel Rods At 50% Run!", 19)
+	term.setTextColor(1)
     reactor.setActive(true)
   else 
     reactor.setActive(true) 
     reactor.setAllControlRodLevels(0)
+	term.setTextColor(colors.red)
 	printer.centered("Running Reactor At Max Power!", 19)
+	term.setTextColor(1)
   end
 else
   printer.centered("Energy stored is Nil", 19)
@@ -295,7 +301,9 @@ end
 function main()
 term.clear()
 titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
-printer.centered("Monitoring Reactor Activities...", 4)
+term.setTextColor(128)
+printer.centered("Reactor Information", 4)
+term.setTextColor(1)
 keyrunning = true
 running = true
  -- while running do
@@ -321,7 +329,9 @@ running = true
 		printer.centered("Casing Temperature "..tostring(temp).." C", 13)
 		term.setCursorPos(termX-#tostring(state), 1)
 		term.setBackgroundColor(128)
+		if state == false then term.setTextColor(colors.red) elseif state == true then term.setTextColor(colors.lime) end
 		write(tostring(state))
+		term.setTextColor(1)
 		term.setBackgroundColor(256)
 		printer.centered("Hold S To Change Modes, F To Return To Auto", 16)
 		printer.centered("C To Change Reactor Control Rod Levels", 17)
