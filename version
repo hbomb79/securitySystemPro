@@ -1,4 +1,4 @@
-1.1.5
+1.1.6
 
 --STABLE BUILD!
 
@@ -11,7 +11,8 @@ computer will update continuously
 --This Version ChangeLog--
 --------------------------
 
--- Added Pre Reactor Program
+-- Added Reactor
+-- New features in Pin and Digital Lock programs, Check the forum changelog
 
    ------------------
    --END OF CHANGES--
