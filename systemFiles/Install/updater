@@ -1,3 +1,5 @@
+local args = { ... }
+
 -- This is the program/script that actually re-installs all of the scripts on the computer
 termX, termY = term.getSize()
 
@@ -9,7 +11,7 @@ function PrintCentered(text, y)
     write(text)
 end
 
-
+function welcome()
 function drawTitleBar()
   term.setBackgroundColor(128)
   term.setCursorPos(1,1)
@@ -40,11 +42,37 @@ sleep(1)
 PrintCentered("Connection Established", 6)
 sleep(0.1)
 PrintCentered("Starting Download", 6)
+downloader()
 
-details = {
-urlPre = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/"
-}
+PrintCentered("Finished Downloading Scripts", 6)
+sleep(1)
+term.clear()
+drawTitleBar()
+PrintCentered ("Thank You For Updating", 6)
+PrintCentered ("We Hope You Enjoy Your New Security Suite", 8)
+PrintCentered ("Please Report Any Bugs You Find On The Forums", 10)
+PrintCentered ("Verifying Update With GitHub..", 19)
+sleep(2)
+PrintCentered ("Press Any Key To Finish", 19)
+os.pullEvent("key")
+term.setBackgroundColor(colors.black)
+term.clear()
+term.setCursorPos(1,1)
+term.clearLine()
+os.reboot()
 
+else
+  term.clear()
+  drawTitleBar()
+  PrintCentered("Cancelling...", 6)
+  sleep(1)
+  PrintCentered ("Cancelled, Come Back Soon", 6)
+  sleep(2)
+  os.shutdown()
+end
+end
+
+function downloader(quietDownload)
 drawTitleBar()
 PrintCentered("Downloading Scripts From GitHub... Please Wait", 6)
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
@@ -74,31 +102,7 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycardDual", "/systemFiles/Programs/keycardDual")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/pin", "/systemFiles/Programs/pin")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
-
-
-PrintCentered("Finished Downloading Scripts", 6)
-sleep(1)
-term.clear()
-drawTitleBar()
-PrintCentered ("Thank You For Updating", 6)
-PrintCentered ("We Hope You Enjoy Your New Security Suite", 8)
-PrintCentered ("Please Report Any Bugs You Find On The Forums", 10)
-PrintCentered ("Verifying Update With GitHub..", 19)
-sleep(2)
-PrintCentered ("Press Any Key To Finish", 19)
-os.pullEvent("key")
-term.setBackgroundColor(colors.black)
-term.clear()
-term.setCursorPos(1,1)
-term.clearLine()
-os.reboot()
-
-else
-  term.clear()
-  drawTitleBar()
-  PrintCentered("Cancelling...", 6)
-  sleep(1)
-  PrintCentered ("Cancelled, Come Back Soon", 6)
-  sleep(2)
-  os.shutdown()
+if quietDownload then os.reboot() end
 end
+
+if args[1] == "quiet" then term.setTextColor(1) term.setBackgroundColor(256) downloader(true) else welcome() end
