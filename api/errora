@@ -16,7 +16,7 @@ function err(code, reason)
 	printer.centered("Has Called This Error", 8)
 	code = code or "No Code Provided"
 	reason = reason or "No Description Provided"
-	printer.centered("Error Code: "..code, 10)
+	printer.centered(code, 10)
 	printer.centered("Error Description:", 12)
 	term.setCursorPos(1,15)
 	reasonLength = reason
