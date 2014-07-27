@@ -244,7 +244,6 @@ function Start()
 end
 
 function reactorControl()
-sleep(0.5)
 while true do
   term.clear()
   titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
@@ -276,7 +275,7 @@ if manOverride then
 else
 if energyStore ~= nil then
   if tonumber(energyStore) >= tonumber(shutDownBuffer) then 
-    printer.centered("Reactor Shutdown Buffer Reached, Turning Off!", 19)
+    printer.centered("Reactor Full Of Power, Turning Off!", 19)
     reactor.setActive(false)
   elseif energyStore >= tonumber(turnDownBuffer) and tonumber(energyStore) < tonumber(shutDownBuffer) then 
     reactor.setAllControlRodLevels(50)

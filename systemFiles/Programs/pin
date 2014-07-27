@@ -39,7 +39,7 @@ function check(pass)
 end
 
 function RSstart(Oside)
-  if Oside == nil then error "No Side Given" end
+  Oside = Oside or back
   rs.setOutput(Oside, true)
   return true
 end
@@ -75,6 +75,56 @@ function thank()
   os.reboot()
 end
 
+function RSinSetup()
+ while true do
+  term.clear()
+  drawTitleBar()
+  printer.centered("It Appears You Have Not Used This Program Before", 6)
+  printer.centered("Setting Up PIN Lock", 8)
+  printer.centered("Would You Like The Computer To Act As If",10)
+  printer.centered("The Password was Entered If It Receives A",11)
+  printer.centered("Redstone Signal On The Designated Side?",12)
+  printer.centered("Y/N",12)
+  printer.centered("You May Pick Which Side New Step",19)
+  ev, arg = os.pullEvent()
+   if ev == "key" then
+	if arg == keys.y then
+	  rsInSetting = true
+	  break
+	elseif arg == keys.n then
+	  rsInSetting = false
+	  break
+	end
+   end
+  end
+  return
+end
+
+function RSinSideSetup()
+  while true do
+    printer.centered("It Appears You Have Not Used This Program Before", 6)
+    printer.centered("Setting Up PIN Lock", 8)
+    printer.centered("You Picked That You Would Like The Computer",10)
+    printer.centered("To Respond To Redstone As If The Password",11)
+    printer.centered("Was Entered, What Side Do You Want The Input",12)
+    printer.centered("To Have To Come From?",13)
+	term.setCursorPos(termX/2-(#rsText), 15)
+	  write (rsText)
+	  local vside = false
+		rsInputSide = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == rsInputSide then
+				vside = true
+				break
+			end
+		end
+		if vside then break end
+		  print("Invalid side!")
+		  sleep(0.5)
+		  term.clear()
+		end
+	 return true
+  end 
 
 function readN(len, replaceChar)
   term.setTextColor(1)
@@ -178,6 +228,10 @@ if not checkConfig() then
 		    if not timeInput then
 		      printer.centered("Time Must Be Greater That One Second", 13)
 		    end
+  RSinSetup()
+    if rsInSetting then
+	  RSinSideSetup()
+	end
   term.clear()
   drawTitleBar()
   printer.centered ("Please Wait While We Save Your Settings...", 6)
@@ -193,6 +247,15 @@ if not checkConfig() then
   f.writeLine(timeInput)
   printer.centered("Saved Time Ouput", 7)
   sleep(0)
+  f.writeLine(tostring(rsInSetting))
+  printer.centered("Saved Redstone Input Setting", 7)
+  sleep(0)
+  if rsInSetting then
+    f.writeLine(rsInputSide)
+  end
+  sleep(0)
+  printer.centered("Saved Redstone Input Side", 7)
+  sleep(0)
   f.close()
   printer.centered("Saving Root Path", 7)
   sleep(1)
@@ -206,9 +269,14 @@ else
   pin = f.readLine()
   side = f.readLine()
   sideTime = f.readLine()
+  rsInputUse = f.readLine()
+  if rsInputUse == "true" then
+    rsInputUseSide = f.readLine()
+  end
   f.close()
   printer.centered("Loaded!", 4)
   sleep(0)
+  
 function login()
 waiting = true
   while waiting do
@@ -297,7 +365,32 @@ function Start()
   end  
 end
 
-Start()
-RSstart(side)
-RSstop()
-Start()
+function RedstoneInputReceive()
+  while true do
+    sleep(0)
+	rsReceive = redstone.getInput(rsInputUseSide)
+	  if rsReceive then
+	    break
+	  end
+  end
+  return true
+end
+
+while true do
+  if rsInputUse == "true" then
+    parallel.waitForAny(Start, RedstoneInputReceive)
+    term.setCursorBlink(false)
+    RSstart(side)
+    RSstop()
+    term.setCursorBlink(true)
+	rsReceive = false
+    rsReceive = redstone.getInput(rsInputUseSide)
+   -- parallel.waitForAny(Start, RedstoneInputReceive)
+  else
+    Start()
+    RSstart(side)
+    RSstop()
+    Start()
+  end
+end
+

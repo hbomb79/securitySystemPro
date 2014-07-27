@@ -48,6 +48,7 @@ urlPre = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/"
 drawTitleBar()
 PrintCentered("Downloading Scripts From GitHub... Please Wait", 6)
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
+sleep(1)
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater")
@@ -74,8 +75,6 @@ download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycardDual", "/systemFiles/Programs/keycardDual")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/pin", "/systemFiles/Programs/pin")
 download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
-
-
 PrintCentered("Finished Downloading Scripts", 6)
 sleep(1)
 term.clear()
