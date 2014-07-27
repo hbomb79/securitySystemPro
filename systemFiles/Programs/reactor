@@ -244,6 +244,7 @@ function Start()
 end
 
 function reactorControl()
+sleep(0.5)
 while true do
   term.clear()
   titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
