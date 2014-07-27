@@ -222,6 +222,16 @@ else --The Files Exists
   file.close()
 end
 
+function saveUpdate()
+  local f = fs.open('systemFiles/Install/updateConfig', 'w')
+  f.writeLine(tostring(quietUse))
+  f.close()
+  sleep(0)
+  PrintCentered("Settings Saved, Setting set to: "..tostring(quietUse), 19)
+  sleep(1)
+  os.reboot()
+end
+
 if not fs.exists('systemFiles/Install/updateConfig') then
   term.clear()
   PrintCentered("Updater Mode Selection", 4)
@@ -230,26 +240,17 @@ if not fs.exists('systemFiles/Install/updateConfig') then
   PrintCentered("your decision on whether you would like to update", 8)
   PrintCentered("Instead, it will do it automatically!", 9)
   PrintCentered("Press Y to enable or N to disable this setting", 11)
-  while true do
-    sleep(0)
-    ev, arg = os.pullEvent()
-    if event == "key" then
-      if arg == keys.y then
+  updateLoop = true
+  while updateLoop do
+    event, press = os.pullEvent("key")
+      if press == keys.y then
         quietUse = true
-		break
-	  elseif arg == keys.n then
+		saveUpdate()
+	  elseif press == keys.n then
 	    quietUse = false
-		break
-	  end
-    end
+		saveUpdate()
+      end
   end
-  local f = fs.open('systemFiles/Install/updateConfig', 'w')
-  f.writeLine(tostring(quietUse))
-  f.close()
-  sleep(0)
-  PrintCentered("Settings Saved, Setting set to: "..tostring(quietUse))
-  sleep(1)
-  os.reboot()
 end
 
 function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
@@ -469,10 +470,10 @@ function main() --The main function, calls all child functions
 	sleep(1)
 	PrintCentered("Download Complete, Running Updater",18)
 	sleep(0)
-	local f = fs.open('systemFiles/Programs/updateConfig', 'r')
+	local f = fs.open('systemFiles/Install/updateConfig', 'r')
 	useSettingQuiet = f.readLine()
 	f.close()
-	if useSettingQuiet == "true" then shell.run("systemFiles/Install/updater", "quiet") elseif useSettingQuiet == "false" then shell.run("systemFiles/Install/updater") else errora.err(nil, "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(useSettingQuiet))
+	if useSettingQuiet == "true" then shell.run("systemFiles/Install/updater", "quiet") elseif useSettingQuiet == "false" then shell.run("systemFiles/Install/updater") else errora.err(nil, "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(useSettingQuiet)) end
 	errora.err(nil, "The Updater Experienced An Unknown Exception, Or It Ended With No Protocol, If the issue persists, report it")
   elseif not update.Check() then
     PrintCentered("You Are Running The Latest STABLE Version!", 19)
