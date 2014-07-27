@@ -14,6 +14,21 @@ _string = ""
 
 -- Starting Variable For PIN Loop
 waiting = true
+pressed = false
+
+function checkKey()
+if not setup then
+  if pressed then
+    oldX, oldY = term.getCursorPos()
+    printer.centered("Type your normal pin to continue", 19)
+    term.setCursorPos(oldX, oldY)
+  else
+    oldX, oldY = term.getCursorPos()
+    printer.centered("Press [alt] To Change Your Settings", 19)
+    term.setCursorPos(oldX, oldY)
+  end
+end
+end
 
 function check(pass)
   if pass == pin then
@@ -68,6 +83,7 @@ function readN(len, replaceChar)
   local key = 0
   term.setCursorBlink(true)
   repeat
+   checkKey()
         e,p1 = os.pullEvent()
 		if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
 		  p1 = tonumber(p1)
@@ -109,9 +125,11 @@ end
 
 
 if not checkConfig() then  
+  setup = true
   waitinput = true
   while waitinput do 
   term.clear()
+  drawTitleBar()
   printer.centered("It Appears You Have Not Used This Program Before", 6)
   printer.centered("Setting Up PIN Lock", 8)
   printer.centered("Enter Your NEW Pin, Can Only Be 4 Digits Long!", 10)
@@ -191,6 +209,8 @@ else
   f.close()
   printer.centered("Loaded!", 4)
   sleep(0)
+function login()
+waiting = true
   while waiting do
     term.clear()
 	drawTitleBar()
@@ -204,13 +224,80 @@ else
 	if textIready then
       if check(textIready) then
         printer.centered("Correct PIN", 12)
-	    RSstart(side)
-	    RSstop()
-	    waiting = false
-	    shell.run ("systemFiles/Programs/pin")
+	    return true
       else
         printer.centered("Incorrect PIN", 12)
       end
 	end
   end
 end
+end
+
+function removeConfig()
+local function removeSet()
+  term.clear()
+  drawTitleBar()
+  printer.centered("Type in your administrator password", 4)
+  printer.centered("To reset the PIN Lock configuration", 5)
+  local f = fs.open("systemFiles/Security/adminPass", "r")
+  adminPassword = f.readLine()
+  f.close()
+  configText = "Admin Password: "
+  term.setCursorPos(termX/2-#configText, 7)
+  write(configText)
+  adminPasswordInput = read("*")
+  if adminPasswordInput == adminPassword then
+    return true
+  else
+    return false
+  end
+end
+
+if removeSet() then
+  printer.centered("Removing Configuration File", 19)
+  sleep(0)
+  fs.delete('systemFiles/Programs/pinConfig')
+  printer.centered("Removed Config", 19)
+  sleep(1)
+  os.reboot()
+else pressed = false shell.run('systemFiles/Programs/pin') end
+end
+
+
+function waitForSetupKey()
+	while true do
+	 checkKey()
+	  local event, arg = os.pullEvent()
+	  if event == 'setupQue' then
+	    return nil
+	  elseif event == "key" then
+	    if arg == keys.leftAlt or arg == keys.rightAlt then
+		pressed = true
+		checkKey()
+	  	return arg 
+		end
+	  end
+	end
+end
+
+
+function Start()
+ setup = false
+ keyrunning = true
+  while keyrunning do
+    local key = nil
+    local success = false
+    parallel.waitForAll(function()success = login() os.queueEvent('setupQue') end, function() key = waitForSetupKey() end)
+	  if success and key == keys.leftAlt or key == keys.rightAlt then
+	    setup = true
+		checkKey()
+        success = removeConfig()
+	  end
+	    return success
+  end  
+end
+
+Start()
+RSstart(side)
+RSstop()
+Start()
