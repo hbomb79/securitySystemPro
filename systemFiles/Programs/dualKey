@@ -399,7 +399,7 @@ term.setBackgroundColor(256)
 if not setup then
   if pressed then
     oldX, oldY = term.getCursorPos()
-    printer.centered("Type your normal pin to continue", 19)
+    printer.centered("Type your normal details to continue", 19)
 	term.setTextColor(colors.black)
     term.setCursorPos(oldX, oldY)
 	term.setBackgroundColor(1)
