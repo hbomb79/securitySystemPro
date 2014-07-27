@@ -300,8 +300,8 @@ keyrunning = true
 running = true
  -- while running do
 	  reactor = peripheral.wrap(side)
-	  --if checkReactorError() then
-	  if not reactor.getConnected() then
+	  if not checkReactorError() then
+	  --if not reactor.getConnected() then
 	    errora.err("Reactor", "No Reactor Can Be Found On Side: "..side)
 	  else
 	    state = reactor.getActive()
