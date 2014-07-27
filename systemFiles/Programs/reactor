@@ -275,7 +275,7 @@ if manOverride then
 else
 if energyStore ~= nil then
   if tonumber(energyStore) >= tonumber(shutDownBuffer) then 
-    printer.centered("Reactor Full Of Power, Turning Off!", 19)
+    printer.centered("Reactor Shut-down Buffer Reached, Turning Off!", 19)
     reactor.setActive(false)
   elseif energyStore >= tonumber(turnDownBuffer) and tonumber(energyStore) < tonumber(shutDownBuffer) then 
     reactor.setAllControlRodLevels(50)
