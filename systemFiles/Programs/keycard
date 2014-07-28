@@ -17,6 +17,8 @@ RedstoneTimeText = "Time: "
 -------------------------
 _int = 1
 _string = ""
+setup = false
+config = false
 
 -------
 --END--
@@ -90,17 +92,17 @@ function RedstoneInputReceive()
 end
 
 function checkKey()
-if not setup then
+--if not setup then
   if pressed then
     oldX, oldY = term.getCursorPos()
-    printer.centered("Type your normal pin to continue", 19)
+    printer.centered("Insert A Valid Key-card To Enter Set-up", 19)
     term.setCursorPos(oldX, oldY)
   else
     oldX, oldY = term.getCursorPos()
     printer.centered("Press [alt] To Change Your Settings", 19)
     term.setCursorPos(oldX, oldY)
   end
-end
+--end
 end
 
 function waitForSetupKey()
@@ -134,14 +136,146 @@ function checkDisk()
   end
 end
 
+function configMenu()
+  drawTitleBar()
+  term.setTextColor(1)
+  term.setBackgroundColor(256)
+  term.clear()
+  PrintCentered("HbombOS Security Suite", 4)
+  PrintCentered("Keycard Configuration", 5)
+  PrintCentered("Please Enter Your Administrator Password", 7)
+  PrintCentered("To Open The Settings Menu", 8)
+  local continue = false
+  local options = {
+  	    {'Register Key Cards', function()
+		  local function diskInit()
+            disksReg = 0
+            while true do
+	           titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
+	           printer.centered("Insert Disks Into The Disk Drives Now To Sync Them", 6)
+	           printer.centered("Press ALT To Save", 9)
+	           printer.centered("Registered Disks: "..disksReg, 11)
+	           event, side = os.pullEvent()
+	             if event == "disk" then
+		           if side == driveSide then
+		             local f = fs.open("disk/"..diskPath, "w")
+			           f.writeLine(diskKey)
+			           f.close()
+			           printer.centered("Files Written To Disk Drive", 19)
+			           disksReg = disksReg + 1
+			           disk.eject(driveSide)
+					end
+	             elseif event == 'key' then
+				   if side == keys.leftAlt or side == keys.rightAlt then
+				      pressed = false
+					  config = true
+				      --os.reboot()
+					  return
+					  
+				   end
+				 end
+			end
+		end
+    diskInit()
+		end},
+		{'Unregister Keycards', function() 
+		  local function diskUnInit()
+            disksReg = 0
+            while true do
+	           titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
+	           printer.centered("Insert Disks Into The Disk Drives Now To Remove Their", 6)
+	           printer.centered("Right To Use This Computer", 7)
+	           printer.centered("Press ALT To Save", 9)
+	           event, side = os.pullEvent()
+	             if event == "disk" then
+		           if side == driveSide then
+				       fs.delete("disk/"..diskPath)
+			           printer.centered("Files Deleted To Disk Drive", 19)
+			           disk.eject(driveSide)
+					end
+	             elseif event == 'key' then
+				   if side == keys.leftAlt or side == keys.rightAlt then
+				      pressed = false
+					  config = true
+				      --os.reboot()
+					  return
+					  
+				   end
+				 end
+			end
+		end
+    diskUnInit()
+		end}, 
+		{'Reset Config', function()
+		  fs.delete('systemFiles/Programs/keycardConfig')
+		  pressed = false
+		  config = true
+		  printer.centered('Removed!', 19)
+		  sleep(1)
+		  os.reboot()
+		end},
+		{'Cancel', function()
+		  pressed = false
+		  config = true
+          return
+		end}
+	}
+	local selected = 1
+	local function draw()
+		for i, v in ipairs(options) do
+			local bg = 256
+			local tc = colours.white
+			if i == selected then
+				bg = 256
+				tc = colours.blue
+			end
+			term.setTextColor(tc)
+			term.setBackgroundColor(bg)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 10)
+		end
+	end
+	local wait = true
+	draw()
+	while wait do
+		local event, key = os.pullEvent('key')
+		if key == keys.up then
+			selected = selected - 1
+			if selected < 1 then
+				selected = 1
+			end
+		elseif key == keys.down then
+			selected = selected + 1
+			if selected > #options then
+				selected = #options
+			end
+		elseif key == keys.enter then
+		  options[selected][2]()
+		  wait = false
+		end
+		draw()
+	end
+	return continue
+end
+
 function configEdit()
-  shell.run'systemFiles/Programs/keycard'
+  config = true
+  disk.eject(driveSide)
+  titleBar.draw('HbombOS Security Suite', 'Keycard Lock Setup', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Please Enter Your Administrator Password', 6)
+  printer.centered('As Added Security!', 7)
+  configText = 'Password: '
+  ConfigInput = read("*")
+  local f = fs.open('systemFiles/Security/adminPass', 'r')
+  adminPasswordFile = f.readLine()
+  f.close()
+  if ConfigInput == adminPasswordFile then configMenu() else pressed = false return end
 end
 
 function main() --Where the magic happens
   while true do
     term.clear()
     titleBar.draw('HbombOS Security Suite', 'Keycard Lock', colors.cyan, 256, 128, 256, 1)
+	checkKey()
     printer.centered('Awaiting Disk Insert In Drive Side: '..driveSide, 6)
     event, side = os.pullEvent("disk")
 	  if event == "disk" then
@@ -177,15 +311,23 @@ while true do
   if useInput == "true" then
     term.setCursorBlink(false)
     parallel.waitForAny(Start, RedstoneInputReceive)
-	disk.eject(driveSide)
-    RSstart(rsOutput)
-    RSstop()
-    term.setCursorBlink(true)
+	if config == false then
+	  disk.eject(driveSide)
+      RSstart(rsOutput)
+      RSstop()
+      term.setCursorBlink(true)
+	else
+	  config = false
+	end
   else
     Start()
-	disk.eject(driveSide)
-    RSstart(rsOutput)
-    RSstop()
+	if config == false then
+	  disk.eject(driveSide)
+      RSstart(rsOutput)
+      RSstop()
+	else
+	  config = false
+	end
   end
 end
 end

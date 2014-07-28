@@ -1,4 +1,4 @@
-1.1.7
+1.1.8
 
 --STABLE BUILD!
 
@@ -11,8 +11,7 @@ computer will update continuously
 --This Version ChangeLog--
 --------------------------
 
--- Added Reactor
--- New features in Pin and Digital Lock programs, Check the forum changelog
+-- Added Keycard Lock
 -- Added Quiet Updating
 
    ------------------
