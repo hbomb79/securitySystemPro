@@ -215,7 +215,9 @@ if not fs.exists("systemFiles/Security/adminPass") then
   PrintCentered("Writing To File", 19)
   f.writeLine(adminPassIn)
   PrintCentered("Complete", 19)
-  os.reboot()
+  if fs.exists('systemFiles/Install/updateConfig') then
+    os.reboot()
+  end
 else --The Files Exists
   local file = fs.open("systemFiles/Security/adminPass", "r")
   adminPassword = file.readLine()
@@ -314,7 +316,8 @@ function programMenu()
 	PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
 	local continue = false
 	local options = {
-		{'PIN', function() 
+		{'PIN', function()
+		  term.setTextColor(1)
 		  printer.centered("Opening File Handler", 19)
 		  sleep(0)
 		  local f = fs.open('systemFiles/Programs/configuration', "w")
@@ -322,7 +325,7 @@ function programMenu()
 		  sleep(0)
 		  printer.centered("Writing To File", 19)
 		  sleep(0)
-		  f.writeLine('"systemFiles/Programs/pin"')
+		  f.writeLine('systemFiles/Programs/pin')
 		  printer.centered("File written", 19)
 		  sleep(0)
 		  printer.centered("Closing Handler", 19)
@@ -332,6 +335,7 @@ function programMenu()
 		  os.reboot()
 		end},
 		{'Digital Lock', function() 
+		  term.setTextColor(1)
 		  printer.centered("Opening File Handler", 19)
 		  sleep(0)
 		  local f = fs.open('systemFiles/Programs/configuration', "w")
@@ -339,7 +343,7 @@ function programMenu()
 		  sleep(0)
 		  printer.centered("Writing To File", 19)
 		  sleep(0)
-		  f.writeLine('"systemFiles/Programs/dualKey"')
+		  f.writeLine('systemFiles/Programs/dualKey')
 		  printer.centered("File written", 19)
 		  sleep(0)
 		  printer.centered("Closing Handler", 19)
@@ -349,6 +353,7 @@ function programMenu()
 		  os.reboot()
 		end}, 
 		{'Reactor Control', function() 
+		  term.setTextColor(1)
 		  printer.centered("Opening File Handler", 19)
 		  sleep(0)
 		  local f = fs.open('systemFiles/Programs/configuration', "w")
@@ -356,7 +361,7 @@ function programMenu()
 		  sleep(0)
 		  printer.centered("Writing To File", 19)
 		  sleep(0)
-		  f.writeLine('"systemFiles/Programs/reactor"')
+		  f.writeLine('systemFiles/Programs/reactor')
 		  printer.centered("File written", 19)
 		  sleep(0)
 		  printer.centered("Closing Handler", 19)
@@ -365,11 +370,23 @@ function programMenu()
 		  sleep(2)
 		  os.reboot()
 		end},
-		{'Cancel', function()
-		printer.centered("You Must Use A Program!", 18)
-		printer.centered("Therefore, Shutting Down", 19)
-		sleep(1)
-		os.shutdown()
+		{'Keycard Lock', function()
+		  term.setTextColor(1)
+		  printer.centered("Opening File Handler", 19)
+		  sleep(0)
+		  local f = fs.open('systemFiles/Programs/configuration', "w")
+		  printer.centered("File Handler Open", 19)
+		  sleep(0)
+		  printer.centered("Writing To File", 19)
+		  sleep(0)
+		  f.writeLine('systemFiles/Programs/keycard')
+		  printer.centered("File written", 19)
+		  sleep(0)
+		  printer.centered("Closing Handler", 19)
+		  f.close()
+		  printer.centered("Saved, Rebooting!", 19)
+		  sleep(2)
+		  os.reboot()
 		end}
 	}
 
@@ -457,7 +474,8 @@ function main() --The main function, calls all child functions
   PrintCentered("", 19)
   PrintCentered("Checking For Updates", 18)
   sleep(0)
-  if update.Check() then
+  updateState = update.Check()
+  if updateState == true then
     PrintCentered("An Update Has Been Detected", 19)
 	sleep(0)
     PrintCentered("Obtaining Latest Update From GitHub", 18)
@@ -466,7 +484,7 @@ function main() --The main function, calls all child functions
 	PrintCentered("Parsed", 19)
 	sleep(0)
 	PrintCentered("Downloading New Updater", 19)
-	download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater")
+	if not download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") then printer.centered('Error Occured While Downloading Updater!', 19) sleep(1) os.reboot() end
 	sleep(1)
 	PrintCentered("Download Complete, Running Updater",18)
 	sleep(0)
@@ -475,12 +493,20 @@ function main() --The main function, calls all child functions
 	f.close()
 	if useSettingQuiet == "true" then shell.run("systemFiles/Install/updater", "quiet") elseif useSettingQuiet == "false" then shell.run("systemFiles/Install/updater") else errora.err(nil, "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(useSettingQuiet)) end
 	errora.err(nil, "The Updater Experienced An Unknown Exception, Or It Ended With No Protocol, If the issue persists, report it")
-  elseif not update.Check() then
+  elseif updateState == false then
     PrintCentered("You Are Running The Latest STABLE Version!", 19)
 	--beta() --Remove when no longer a BETA build!
 	printer.centered("Reading Config File..", 19)
 	sleep(0.1)
 	return true
+  elseif updateState == 'ERROR' then
+    term.setTextColor(colors.red)
+    printer.centered('The Update Checker Experienced Problems, Rebooting!', 18)
+    printer.centered('If This Persits Shutdown Computer And Report!', 19)
+	sleep(3)
+	os.reboot()
+  else
+    os.reboot()
   end
 end
 
@@ -535,9 +561,15 @@ function bootMenuOptions(continue)
 		PrintCentered("Removing Reactor Configuration", 18)
 		sleep(0)
 		if fs.exists('/systemFiles/Programs/reactorConfig') then fs.delete ('systemFiles/Programs/reactorConfig') end
+		PrintCentered("Removing Keycard Configuration", 18)
+		sleep(0)
+		if fs.exists('/systemFiles/Programs/keycardConfig') then fs.delete ('systemFiles/Programs/keycardConfig') end
 		PrintCentered("Removing DualKey Configuration", 18)
 		sleep(0)
 		if fs.exists('/systemFiles/Programs/dualKeyConfig') then fs.delete ('systemFiles/Programs/dualKeyConfig') end
+		PrintCentered("Removing Updater Configuration", 18)
+		sleep(0)
+	    if fs.exists('/systemFiles/Install/updateConfig') then fs.delete ('systemFiles/Install/updateConfig') end
 		PrintCentered("Removing System Configuration", 18)
 		sleep(0)
 		if fs.exists('/systemFiles/Programs/configuration') then fs.delete ('systemFiles/Programs/configuration') end
