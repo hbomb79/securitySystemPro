@@ -190,7 +190,7 @@ function configMenu()
 	             if event == "disk" then
 		           if side == driveSide then
 				       fs.delete("disk/"..diskPath)
-			           printer.centered("Files Deleted To Disk Drive", 19)
+			           printer.centered("Files Deleted From Disk", 19)
 			           disk.eject(driveSide)
 					end
 	             elseif event == 'key' then
@@ -264,6 +264,8 @@ function configEdit()
   printer.centered('Please Enter Your Administrator Password', 6)
   printer.centered('As Added Security!', 7)
   configText = 'Password: '
+  term.setCursorPos(termX/2-#configText, 10)
+  write(configText)
   ConfigInput = read("*")
   local f = fs.open('systemFiles/Security/adminPass', 'r')
   adminPasswordFile = f.readLine()
