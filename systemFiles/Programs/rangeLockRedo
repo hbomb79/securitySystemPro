@@ -1,0 +1,345 @@
+os.pullEvent = os.pullEventRaw --Termination Defence Layer 1!
+isRunning = true
+
+current = {}
+security = {}
+
+
+Peripheral = { --Credit To oeed For This Bit Of Code!!
+	GetPeripheral = function(_type)
+		for i, p in ipairs(Peripheral.GetPeripherals()) do
+			if p.Type == _type then
+				return p
+			end
+		end
+	end,
+
+	Call = function(type, ...)
+		local tArgs = {...}
+		local p = GetPeripheral(type)
+		peripheral.call(p.Side, unpack(tArgs))
+	end,
+
+	GetPeripherals = function(filterType)
+		local peripherals = {}
+		for i, side in ipairs(peripheral.getNames()) do
+			local name = peripheral.getType(side):gsub("^%l", string.upper)
+			local code = string.upper(side:sub(1,1))
+			if side:find('_') then
+				code = side:sub(side:find('_')+1)
+			end
+
+			local dupe = false
+			for i, v in ipairs(peripherals) do
+				if v[1] == name .. ' ' .. code then
+					dupe = true
+				end
+			end
+
+			if not dupe then
+				local _type = peripheral.getType(side)
+				local isWireless = false
+				if _type == 'modem' then
+					if not pcall(function()isWireless = peripheral.call(sSide, 'isWireless') end) then
+						isWireless = true
+					end     
+					if isWireless then
+						_type = 'wireless_modem'
+						name = 'W '..name
+					end
+				end
+				if not filterType or _type == filterType then
+					table.insert(peripherals, {Name = name:sub(1,8) .. ' '..code, Fullname = name .. ' ('..Capitalise(side)..')', Side = side, Type = _type, Wireless = isWireless})
+				end
+			end
+		end
+		return peripherals
+	end,
+
+	GetPeripheral = function(_type)
+		for i, p in ipairs(Peripheral.GetPeripherals()) do
+			if p.Type == _type then
+				return p
+			end
+		end
+	end,
+
+	PresentNamed = function(name)
+		return peripheral.isPresent(name)
+	end,
+
+	CallType = function(type, ...)
+		local tArgs = {...}
+		local p = Peripheral.GetPeripheral(type)
+		return peripheral.call(p.Side, unpack(tArgs))
+	end,
+
+	CallNamed = function(name, ...)
+		local tArgs = {...}
+		return peripheral.call(name, unpack(tArgs))
+	end
+}
+
+
+function hostSetup() --Creates The Setup GUI If The Config File Is Not Found
+  local function setupTitleBar()
+    term.setBackgroundColor(128)
+	term.setTextColor(colors.cyan)
+    term.setCursorPos(1,1)
+	term.clearLine()
+	term.write('HbombOS Security Suite')
+	term.setCursorPos(1,2)
+	term.clearLine()
+	term.setTextColor(1)
+	term.setBackgroundColor(256)
+	--titleBar.draw('HbombOS Secuity Suite', 'Range Detector Setup', colors.cyan, 256, 128, 256, 1)
+  end
+  
+  local function welcome()
+    setupTitleBar()
+    printer.centered('It appears you have not yet used this', 6)
+    printer.centered('program before', 7)
+    printer.centered('Click Anywhere On Screen To Get Started!', 10)
+	os.pullEvent('mouse_click')
+  end
+  
+  local function redstoneOutSide()
+   while true do
+    setupTitleBar()
+	printer.centered("On What Side Is The Disk Drive On?", 6)
+	term.setCursorPos(termX/2-(#rsText),10)
+	  write (rsText)
+	  local vside = false
+		redstoneOutsideSetup = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == diskDriveSide then
+				vside = true
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 11)
+		  sleep(0.5)
+		  term.clear()
+		end
+	
+  end
+  
+  local function redstoneOutputTime()
+    while true do
+      setupTitleBar()
+	  printer.centered('How long would you like the Redstone', 6)
+	  printer.centered('Ouput to last (In Seconds)', 7)
+	  redstoneOuttimeSetup = readN(3)
+	  if redstoneOuttimeSetup ~= "" then 
+	    redstoneOuttimeSetup = tonumber(redstoneOuttimeSetup)
+	    break 
+	  end
+    end
+  end
+  
+  local function redstoneInputOption()
+  
+  end
+  
+  local function redstoneInputSide()
+  
+  end
+  
+  local function saveSetup()
+  
+  end
+  
+--Call all the functions in order to setup the system!
+welcome()
+redstoneOutSide()
+redstoneOutputTime()
+if redstoneInputOption() then redstoneInputSide() end
+saveSetup()
+end
+
+-- Modem Functions Called For Info On Modems, Or To Change Modem Status
+modem = {
+  channels = {
+    ping = 6019,
+    request = 6021,
+	reply = 6023,
+  },
+  isOpen = function(channel) --Returns if the channel is open or not
+    Peripheral.CallType('wireless_modem', 'isOpen', channel)
+  end,
+  
+  Open = function(channel) --Open a channel if not already open
+    if not modem.isOpen then
+	  Peripheral.CallType('wireless_modem', 'open', channel)
+	end
+  end, 
+  
+  Close = function(channel) --Close channel specified
+    Peripheral.CallType('wireless_modem', 'close', channel)
+  end,
+  
+  CloseAll = function() --Close all channels
+    Peripheral.CallType('wireless_modem', 'closeAll')
+  end, 
+  
+  Transmit = function(channel, replyChannel, message) --Transmit a message over the modem... The message is serialized first so it can hold data.... Use FormatMessage()
+    Peripheral.CallType('wireless_modem', 'transmit', channel, replyChannel, textutils.serialize(message))
+  end,
+
+  RecieveMessage = function(_channel, messageID, timeout)
+		open(_channel)
+		local done = false
+		local event, side, channel, replyChannel, message = nil
+		Timeout(function()
+			while not done do
+				event, side, channel, replyChannel, message = os.pullEvent('modem_message')
+				if channel ~= _channel then
+					event, side, channel, replyChannel, message = nil
+				else
+					message = textutils.unserialize(message)
+					message.content = textutils.unserialize(message.content)
+					if messageID and messageID ~= message.messageID or (message.destinationID ~= nil and message.destinationID ~= os.getComputerID()) then
+						event, side, channel, replyChannel, message = nil
+					else
+						done = true
+					end
+				end
+			end
+		end,
+		timeout)
+		return event, side, channel, replyChannel, message
+	end,
+
+  SendMessage = function(channel, message, reply, messageID, destinationID)
+    reply = reply or channel + 1
+	Wireless.Open(channel)
+	Wireless.Open(reply)
+	local _message = Wireless.FormatMessage(message, messageID, destinationID)
+	Wireless.transmit(channel, reply, _message)
+	return _message
+  end,
+
+  HandleMessage = function(event, side, channel, replyChannel, message, distance)
+    message = textutils.unserialize(message)
+	message.content = textutils.unserialize(message.content)
+	  if channel == Wireless.Channels.Ping then
+	    if message.content == 'Ping!' then
+		  SendMessage(replyChannel, 'Pong!', nil, message.messageID)
+		end
+	  elseif message.destinationID ~= nil and message.destinationID ~= os.getComputerID() then
+	  elseif Wireless.Responder then
+	    Wireless.Responder(event, side, channel, replyChannel, message, distance)
+	  end
+  end,
+
+  FormatMessage = function(message, messageID, destinationID)
+    return {
+	  content = textutils.serialize(message),
+  	  senderID = os.getComputerID(),
+	  senderName = os.getComputerLabel(),
+	  channel = channel,
+	  replyChannel = reply,
+	  messageID = messageID or math.random(10000),
+	  destinationID = destinationID
+    }
+  end
+}
+
+function saveSettings()
+
+end
+Events ={}
+
+function eventRegister(event, functionToRun)
+	if not Events[event] then
+		Events[event] = {}
+	end
+	table.insert(Events[event], functionToRun)
+end
+
+function startHost() --Run if the user is on the host computer... Aka, the one that controls the door
+  if fs.exists('systemFiles/Programs/rangeLockSettings') then
+  
+  else
+    hostSetup()
+	saveSettings()
+  end
+end
+
+function startPda() --Run If User Is On A PDA
+
+end
+
+function pingPDA()
+
+end
+
+function timerHandler()
+  if timer == 'pingTimer' then
+    pingPDA()
+  end
+end
+
+function initialise() --Registers All Events To Autorun Functions, e.g If i press a key it will run keyPress
+  eventRegister('key', keyPress)
+  eventRegister('timer', timerHandler)
+  eventRegister('terminate', function(event) os.reboot() end)
+  eventRegister('modem_message', HandleMessage)
+  
+  if pocket then
+    startPda() --Set up the PDA system
+  else
+    startHost() --Set up the host system
+  end
+  
+  eventLoop() --Starts the program waiting for the events to occur
+  
+end
+
+
+function eventLoop() --This runs the functions that was assigned to the event in initialise()
+  while isRunning do
+	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+	  if Events[event] then
+		for i, e in ipairs(Events[event]) do
+		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+		end
+      end
+   end
+end
+
+function createFingerprint() --Saves the fingerprint to the PDA
+  if not fs.exists('.fingerprint') then
+    local fingerprint = generateFingerprint() --Generates the finger print and stores it in a variable
+	if #fingerprint < 256 then --Checks if the fingerprint is at least 256 chars long
+	  local fingerprint = generateFingerprint()
+	end
+	local f = fs.open('.fingerprint', 'w') --Opens the '.fingerprint' file on PDA
+	f.write(fingerprint) --Writes the fingerprint
+	security.Fingerprint = fingerprint --Stores the fingerprint in the table 'security'
+  else
+    os.reboot()
+  end
+end
+
+function generateFingerprint()
+  for i=1, 256 do --Repeats 256 times
+    digit = math.random(32, 126) --Creates A Random Digit
+	fingerprint = fingerprint .. string.char(digit) --Adds the random digit on the end of the others
+  end
+  return fingerprint --Returns the fingerprint completed after the loop has finished
+end
+
+
+if not term.isColor() then
+  printer.centered('The Software Requires An Advanced Machine Run', 19)
+  sleep(3)
+  os.shutdown()
+end
+  local _, err = pcall(initialise) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    print(err)
+	
+	--errora.err('RangeLock', 'Range Lock Has Crashed... Error: '..err, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+  end

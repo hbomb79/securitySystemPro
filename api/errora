@@ -4,7 +4,8 @@ function getSize()
   termX, termY = term.getSize()
 end
 
-function err(code, reason)
+function err(code, reason, autorestart)
+  autorestart = autorestart or false
   getSize()
   term.setBackgroundColor(colors.blue)
   term.setTextColor(1)
@@ -29,7 +30,16 @@ function err(code, reason)
 	else
 	  print("No Description Provided")
 	end
-    printer.centered("Press Any Key To Continue", 19)
-    os.pullEvent("key")
-    os.reboot()	
+	if not autorestart then
+      printer.centered("Press Any Key To Continue", 19)
+      os.pullEvent("key")
+      os.reboot()	
+	elseif autorestart then
+	  printer.centered('Rebooting In 5 Seconds...', 19)
+	  sleep(5)
+	  os.reboot()
+	else
+	  sleep(1)
+	  os.reboot()
+	end
 end
