@@ -339,7 +339,5 @@ if not term.isColor() then
 end
   local _, err = pcall(initialise) --Error Catching, All Functions Are Called From initialise() at some point...
   if err then
-    print(err)
-	
-	--errora.err('RangeLock', 'Range Lock Has Crashed... Error: '..err, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+    errora.err('RangeLock', 'Range Lock Has Crashed... Error: '..err, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end
