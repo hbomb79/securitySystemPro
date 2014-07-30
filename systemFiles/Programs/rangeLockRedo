@@ -208,8 +208,6 @@ function hostSetup() --Creates The Setup GUI If The Config File Is Not Found
 	printer.centered('But Will Be Moved To A Directory Called')
 	printer.centered('/oldStartup')
 	
-	path = 
-	
   end
   
   local function saveSetup()
@@ -441,19 +439,13 @@ function initialise() --Registers All Events To Autorun Functions, e.g If i pres
   eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program!' , true) end)
   eventRegister('modem_message', HandleMessage)
   eventRegister('disk', RegisterPDA)
-  
   --Loading Configuration
-  local f = fs.open('systemFiles/Programs/rangeLockSettings', 'r')
-  current.RedstoneOutput = f.readLine()
-  current.Fingerprint = f.readLine()
-  current.useInput = f.readLine()
-  if current.useInput == 'true' then
-    current.inputSide = f.readLine()
+  loadSettings() --Loads settings into current.Settings!
+  if pocket then
+    pocketStart()
+  else
+    startHost() --Set up the host system
   end
-  
-  
-  startHost() --Set up the host system
-  
   eventLoop() --Starts the program waiting for the events to occur
   
 end
