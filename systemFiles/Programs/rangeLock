@@ -544,11 +544,14 @@ while true do
 		if fs.exists(path..'/startup') then --Removes Startup File
 		  fs.delete(path..'/startup')
 		end
-		if fs.exists(path..'/api/') then --Removes APIs
+		if fs.exists(path..'/api/') then --Removes API Directory And Contents
 		  fs.delete(path..'/api/')
 		end
+		if fs.exists(path..'/version') then --Removes the version file
+		  fs.delete(path..'/version')
+		end
 		disk.eject(side)
-		printer.centered('All Data On PDA Removed')
+		printer.centered('All Data On PDA Removed', 19)
 		sleep(1)
 	end
   elseif event == 'key' then
@@ -574,7 +577,7 @@ while true do
 		  fs.delete(path..'/.fingerprint')
 		end
 		disk.eject(side)
-        printer.centered('PDA Registered', 19)
+        printer.centered('PDA Un-registered', 19)
         sleep(1)
 	end
   elseif event == 'key' then
@@ -693,11 +696,11 @@ end
       if h then
         current.Fingerprint = h.readAll()
 	  else
-  	    MakeFingerprint()
+  	    createFingerprint()
 	  end
 	  h.close()
   else
-    MakeFingerprint()
+    createFingerprint()
   end
 
 	modem.Responder = function(event, side, channel, replyChannel, message, distance)
