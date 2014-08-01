@@ -1,20 +1,19 @@
 --os.pullEvent = os.pullEventRaw Termination Defence Layer 1!
 isRunning = true
-
 termX, termY = term.getSize()
 
 rsText = 'Side: '
 rsTimeText = 'Time: '
+
+
 
 current = {
   Settings = {
     Whitelist = {}
   },
 }
-
+current.status = 'Booting! '
 security = {}
-
-
 _int = 1
 _string = 'a'
 function readN(len, replaceChar)
@@ -439,6 +438,8 @@ function OpenDoor()
 	end
 end
 function CloseDoor()
+    current.Allow = false
+	current.Denied = false
 	if current.Settings.redstoneOutsideSetup then
 	  redstone.setOutput(current.Settings.redstoneOutsideSetup, false)
 	end
@@ -478,6 +479,7 @@ while true do
   titleBar.draw('HbombOS Secuity Suite', 'RangeLock Registration', colors.cyan, 256, 128, 256, 1)
   printer.centered('Please Insert Your PDA Into A Disk Drive', 6)
   printer.centered('Attached To This Computer', 7)
+  printer.centered('Press [ALT] To Reload Settings And Return', 19)
   event, side = os.pullEvent()
   if event == 'disk' then
 	if disk.hasData(side) then
@@ -501,7 +503,7 @@ while true do
 			h.close()
 			addStartup = true
 			if addStartup then
-				local h = fs.open('systemFiles/Programs/rangeLockRedo', 'r')
+				local h = fs.open('systemFiles/Programs/rangeLock', 'r')
 				local startup = h.readAll()
 				h.close()
 				local h = fs.open(path..'/startup', 'w')
@@ -518,7 +520,7 @@ while true do
           sleep(1)
 	end
   elseif event == 'key' then
-    if side == keys.leftAlt or side == keys.rightAlt then break end
+    if side == keys.leftAlt or side == keys.rightAlt then initialise() break end
   end
 end
   return
@@ -558,12 +560,27 @@ function startHost() --Register Function ' Wireless.Responder' On Host Computer 
   if channel == modem.channels.request and distance < current.Settings.distance then
     if FingerprintIsOnWhitelist(message.content) then
 	  modem.SendMessage(modem.channels.reply, true)
+	  current.Allow = true
+	  current.Denied = false
+	  getStatus()
 	  OpenDoor()
 	else
+	  current.Allow = false
+	  current.Denied = true
+	  getStatus()
 	  modem.SendMessage(modem.channels.reply, false)
+	  refreshTimer = os.startTimer(0)
 	end
   end
+  if distance > current.Settings.distance then 
+    modem.SendMessage(modem.channels.reply, 'OutOfRange')
+	current.Denied = false
+	getStatus()
+  end  
  end
+--[[if current.Status == 'Access Denied!' then term.setTextColor(colors.red) elseif current.Status == 'Access Granted!' then term.setTextColor(colors.lime) end
+printer.centered(current.status, 8)
+term.setTextColor(1)]]--
 pingPDA()
 end
 
@@ -571,22 +588,23 @@ end
 function getStatus()
  local function hostStatus()
     if current.Allow then
-	  current.status('Access Granted!')
+	  current.status = ('Access Granted!')
+	elseif current.Denied then
+	  current.status = ('Access Denied!')
 	else
-	  current.status('Ready! ')
+	  current.status = ('System Ready!')
 	end
   end
   
   local function PDAstatus()
     if current.Denied then
       current.status = 'Access Denied!'
-	  printer.centered('Access Denied!', 8)
     elseif current.Allow then
       current.status = 'Access Granted!'
-	  printer.centered('Access Granted!!', 8)
     else
-      current.status = 'Ready!'
+      current.status = 'System Ready!'
     end
+	printer.centered(current.status, 8)
   end
   if pocket then PDAstatus() else hostStatus() end
 end
@@ -629,13 +647,19 @@ end
 			modem.SendMessage(modem.channels.request, current.Fingerprint, modem.channels.reply, nil, message.senderID)
 		elseif channel == modem.channels.reply then
 			if message.content == true then
-              os.reboot()
+              current.Allow = true
+			  current.Denied = false
+			elseif message.content == false then
+			  current.Allow = false
+			  current.Denied = true
 			else
-				current.Allow = false
-				current.Denied = true
+			  current.Allow = false
+			  current.Denied = false
 			end
 		end
 	end
+--getStatus()
+--printer.centered(current.status, 8)
 end
 
 function timerHandler(event, timer) --Handles timer completion events and carries out the appropriate action
@@ -643,6 +667,8 @@ function timerHandler(event, timer) --Handles timer completion events and carrie
     pingPDA()
   elseif timer == DoorTimer then
     CloseDoor()
+  elseif timer == refreshTimer then
+	getStatus()
   end
 end
 
@@ -674,7 +700,7 @@ function configMenu()
   	    {'Register Pocket Computers', function()
           RegisterPDA()
 		end},
-		{'Unregister Keycards', function() 
+		{'Unregister Pocket Computers', function() 
 		  unRegisterPDA()
 		end}, 
 		{'Reset Config', function()
@@ -748,9 +774,10 @@ function eventLoop() --This runs the functions that was assigned to the event in
     term.clear()
     titleBar.draw('HbombOS Security Suite', 'Range Lock', colors.cyan, 256, 128, 256, 1)
     term.setTextColor(1)
-    printer.centered('Range Lock Security', 6)
-    term.setTextColor(colors.blue)
-    printer.centered('System Ready', 7)
+    printer.centered('Range Lock Security', 6)    
+	getStatus()
+    if current.status == 'Access Denied!' then term.setTextColor(colors.red) elseif current.status == 'Access Granted!' then term.setTextColor(colors.lime) elseif current.status == 'System Ready!' then term.setTextColor(colors.blue) end
+	printer.centered(current.status, 8)
     term.setTextColor(1)
     if not pocket then printer.centered('Press [alt] To Enter Setup', 19) end
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
