@@ -9,7 +9,6 @@ rsTimeText = 'Time: '
 
 current = {
   Settings = {
-    distance = 0,
     Whitelist = {}
   },
 }
@@ -266,6 +265,59 @@ function hostSetup() --Creates The Setup GUI If The Config File Is Not Found
 	 return
   end
   
+  local function firstRegistartion()
+  while true do
+    sleep(0)
+    setupTitleBar()
+    printer.centered('Please Insert Your PDA Into A Disk Drive', 6)
+    printer.centered('Attached To This Computer To Sync Them', 7)
+    printer.centered('You Can Do This Again Through Your Settings', 8)
+    printer.centered('Press [ALT] To Continue To Next Step', 19)
+    event, side = os.pullEvent()
+    if event == 'disk' then
+	  if disk.hasData(side) then
+		local path = disk.getMountPath(side)
+		local fingerprint = nil
+		if fs.exists(path..'/.fingerprint') then
+			local h = fs.open(path..'/.fingerprint', 'r')
+			if h then
+				local str = h.readAll()
+				if #str == 256 then
+					fingerprint = str
+				end
+			end
+			h.close()
+		else
+		end
+		if not fingerprint then
+			fingerprint = generateFingerprint()
+			local h = fs.open(path..'/.fingerprint', 'w')
+			h.write(fingerprint)
+			h.close()
+			addStartup = true
+			if addStartup then
+				local h = fs.open('systemFiles/Programs/rangeLock', 'r')
+				local startup = h.readAll()
+				h.close()
+				local h = fs.open(path..'/startup', 'w')
+				h.write(startup)
+				h.close()
+			end
+		end
+		if not FingerprintIsOnWhitelist(fingerprint) then
+			table.insert(current.Settings.Whitelist, fingerprint)
+		end  
+		  disk.eject(side)
+          printer.centered('PDA Registered', 19)
+          sleep(1)
+	end
+  elseif event == 'key' then
+    if side == keys.leftAlt or side == keys.rightAlt then return end
+  end
+end
+  return
+end
+  
   local function distance()
   while true do
       setupTitleBar()
@@ -300,6 +352,7 @@ function hostSetup() --Creates The Setup GUI If The Config File Is Not Found
 welcome()
 redstoneOutSide()
 distance()
+firstRegistartion()
 if redstoneInputOption() then redstoneInputSide() end
 saveSetup()
 end
