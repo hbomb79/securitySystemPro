@@ -387,6 +387,24 @@ function programMenu()
 		  printer.centered("Saved, Rebooting!", 19)
 		  sleep(2)
 		  os.reboot()
+		end},
+		{'PDA Range Lock', function()
+		  term.setTextColor(1)
+		  printer.centered("Opening File Handler", 19)
+		  sleep(0)
+		  local f = fs.open('systemFiles/Programs/configuration', "w")
+		  printer.centered("File Handler Open", 19)
+		  sleep(0)
+		  printer.centered("Writing To File", 19)
+		  sleep(0)
+		  f.writeLine('systemFiles/Programs/rangeLock')
+		  printer.centered("File written", 19)
+		  sleep(0)
+		  printer.centered("Closing Handler", 19)
+		  f.close()
+		  printer.centered("Saved, Rebooting!", 19)
+		  sleep(2)
+		  os.reboot()
 		end}
 	}
 
@@ -747,7 +765,7 @@ function readFiles()
   f.close()
   	if fileStartup then
 	  printer.centered("Running: "..fileStartup, 19)
-	  shell.run('systemFiles/Programs/rangeLockRedo')
+	  shell.run(fileStartup)
 	  sleep(4)
 	  errora.err("Fatal Runtime Exception", "The Program: "..fileStartup.." Appears To Have Crashed, Or Ended")
 	end
