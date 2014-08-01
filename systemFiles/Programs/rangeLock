@@ -429,14 +429,19 @@ modem = {
   HandleMessage = function(event, side, channel, replyChannel, message, distance)
     message = textutils.unserialize(message)
 	message.content = textutils.unserialize(message.content)
-	  if channel == modem.channels.ping and message.content == 'Ping!' and not pocket then
-		modem.SendMessage(replyChannel, 'Pong!', nil, message.messageID)
-	  elseif channel == modem.channels.ping and message.content == 'Ping!' and pocket then
-	    modem.SendMessage(replyChannel, current.Fingerprint, nil, message.messageID)
+	  if channel == modem.channels.ping and not pocket then
+	    if message.content == 'Ping!' then
+		  modem.SendMessage(replyChannel, 'Pong!', nil, message.messageID)
+	    end
+	  elseif channel == modem.channels.ping and pocket then
+	    if message.content == 'Ping!' then
+	      modem.SendMessage(replyChannel, current.Fingerprint, nil, message.messageID)
+		end
 	  elseif message.destinationID ~= nil and message.destinationID ~= os.getComputerID() then
 	  elseif modem.Responder then
 	    modem.Responder(event, side, channel, replyChannel, message, distance)
 	  end
+	 sleep(0)
   end,
 
   FormatMessage = function(message, messageID, destinationID)
@@ -489,7 +494,7 @@ local DoorTimer = nil
 function OpenDoor()
 	if current.Settings.redstoneOutsideSetup then
 		redstone.setOutput(current.Settings.redstoneOutsideSetup, true)
-		DoorTimer = os.startTimer(0.5)
+		DoorTimer = os.startTimer(1)
 	end
 end
 function CloseDoor()
