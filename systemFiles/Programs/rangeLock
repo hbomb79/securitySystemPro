@@ -341,7 +341,7 @@ end
     printer.centered('Thank You For Setting Up Your RangeLock', 6)
 	printer.centered('Secuity System! Please Report Any Bugs', 8)
     printer.centered('Saving Settings', 19)
-	sleep(1)
+	sleep(0)
     SaveSettings()
 	printer.centered('Click Anywhere To Reboot', 19)
 	os.pullEvent('mouse_click')
@@ -533,7 +533,8 @@ while true do
  sleep(0)
   titleBar.draw('HbombOS Secuity Suite', 'RangeLock Registration', colors.cyan, 256, 128, 256, 1)
   printer.centered('Please Insert Your PDA Into A Disk Drive', 6)
-  printer.centered('Attached To This Computer To Register The Pocket Computer', 7)
+  printer.centered('Attached To This Computer To Sync It With The System', 7)
+  printer.centered('You Can Have One PDA For All Your Systems!', 8)
   printer.centered('Press [ALT] To Reload Settings And Return', 19)
   event, side = os.pullEvent()
   if event == 'disk' then
@@ -586,8 +587,7 @@ while true do
  sleep(0)
   titleBar.draw('HbombOS Secuity Suite', 'RangeLock Remove', colors.cyan, 256, 128, 256, 1)
   printer.centered('Please Insert Your PDA Into A Disk Drive', 6)
-  printer.centered('Attached To This Computer', 7)
-  printer.centered('To Delete The Files Off The Pocket Computer', 8)
+  printer.centered('Attached To This Computer To Delete Files Off Of It', 7)
   printer.centered('Press [ALT] To Reload Settings And Return', 19)
   event, side = os.pullEvent()
   if event == 'disk' then
@@ -622,7 +622,7 @@ while true do
  sleep(0)
   titleBar.draw('HbombOS Secuity Suite', 'RangeLock Un-Registration', colors.cyan, 256, 128, 256, 1)
   printer.centered('Please Insert Your PDA Into A Disk Drive', 6)
-  printer.centered('Attached To This Computer To Un-Register The PDA', 7)
+  printer.centered('Attached To This Computer To Un-Register It', 7)
   printer.centered('Press [ALT] To Reload Settings And Return', 19)
   event, side = os.pullEvent()
   if event == 'disk' then
@@ -687,7 +687,7 @@ function startHost() --Register Function ' Wireless.Responder' On Host Computer 
 	  CloseDoor()
 	  getStatus()
 	  modem.SendMessage(modem.channels.reply, false)
-	  refreshTimer = os.startTimer(0)
+	  refreshTimer = os.startTimer(0.5)
 	end
   end
   if distance > current.Settings.distance then 
