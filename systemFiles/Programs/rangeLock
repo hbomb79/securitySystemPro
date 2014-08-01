@@ -429,19 +429,20 @@ modem = {
   HandleMessage = function(event, side, channel, replyChannel, message, distance)
     message = textutils.unserialize(message)
 	message.content = textutils.unserialize(message.content)
-	  if channel == modem.channels.ping and not pocket then
-	    if message.content == 'Ping!' then
-		  modem.SendMessage(replyChannel, 'Pong!', nil, message.messageID)
-	    end
-	  elseif channel == modem.channels.ping and pocket then
-	    if message.content == 'Ping!' then
-	      modem.SendMessage(replyChannel, current.Fingerprint, nil, message.messageID)
+	 --[[ if channel == modem.channels.ping and message.content == 'Ping!' and not pocket then
+	  --  modem.SendMessage(replyChannel, 'Pong!', nil, message.messageID)
+	  if channel == modem.channels.ping and message.content == 'Ping!' and pocket then
+	    modem.SendMessage(replyChannel, current.Fingerprint, nil, message.messageID)
+	  elseif message.destinationID ~= nil and message.destinationID ~= os.getComputerID() then]]--
+	  if pocket then 
+	    if message.content == 'Ping!' or message.content =='OutOfRange' or message.content == true or message.content == false then
+	      modem.Responder(event, side, channel, replyChannel, message, distance)
 		end
-	  elseif message.destinationID ~= nil and message.destinationID ~= os.getComputerID() then
-	  elseif modem.Responder then
-	    modem.Responder(event, side, channel, replyChannel, message, distance)
+	  elseif not pocket then
+	    if message.content ~= 'Pong!' and message.content ~= 'OutOfRange' and message.content ~= 'Ping!' then
+	      modem.Responder(event, side, channel, replyChannel, message, distance)
+	    end
 	  end
-	 sleep(0)
   end,
 
   FormatMessage = function(message, messageID, destinationID)
@@ -487,20 +488,18 @@ end
 
 function pingPDA()
   modem.SendMessage(modem.channels.ping, 'Ping!', modem.channels.request)
-  pingTimer = os.startTimer(0.5)
+  pingTimer = os.startTimer(0.6)
 end
 
 local DoorTimer = nil
 function OpenDoor()
 	if current.Settings.redstoneOutsideSetup then
 		redstone.setOutput(current.Settings.redstoneOutsideSetup, true)
-		DoorTimer = os.startTimer(1)
+		DoorTimer = os.startTimer(0.6)
 	end
 end
 function CloseDoor()
-    current.Allow = false
-	current.Denied = false
-	if current.Settings.redstoneOutsideSetup then
+	if current.Settings.redstoneOutsideSetup and current.Allow ~= true then
 	  redstone.setOutput(current.Settings.redstoneOutsideSetup, false)
 	end
 end
@@ -692,12 +691,14 @@ function startHost() --Register Function ' Wireless.Responder' On Host Computer 
 	  CloseDoor()
 	  getStatus()
 	  modem.SendMessage(modem.channels.reply, false)
-	  refreshTimer = os.startTimer(0.5)
+	  refreshTimer = os.startTimer(0)
 	end
   end
   if distance > current.Settings.distance then 
     modem.SendMessage(modem.channels.reply, 'OutOfRange')
 	current.Denied = false
+	current.Allow = false
+	CloseDoor()
 	getStatus()
   end  
  end
@@ -766,7 +767,7 @@ end
   end
 
 	modem.Responder = function(event, side, channel, replyChannel, message, distance)
-		if channel == modem.channels.ping then
+		if channel == modem.channels.ping and message.content == 'Ping!' then
 			modem.SendMessage(modem.channels.request, current.Fingerprint, modem.channels.reply, nil, message.senderID)
 		elseif channel == modem.channels.reply then
 			if message.content == true then
@@ -775,14 +776,18 @@ end
 			elseif message.content == false then
 			  current.Allow = false
 			  current.Denied = true
-			else
-			  current.Allow = false
-			  current.Denied = false
+			elseif message.content == 'OutOfRange' then
+			  if current.Allow == true or current.Denied == true then
+			    sleep(1)
+                current.Allow = false
+			    current.Denied = false
+			    current.status = 'System Ready!'
+			    printer.centered(current.status, 8)
+			  end
 			end
 		end
 	end
---getStatus()
---printer.centered(current.status, 8)
+	
 end
 
 function timerHandler(event, timer) --Handles timer completion events and carries out the appropriate action
@@ -896,8 +901,8 @@ end
 
 
 function eventLoop() --This runs the functions that was assigned to the event in initialise()
+
   while isRunning do
-    term.clear()
     titleBar.draw('HbombOS Security Suite', 'Range Lock', colors.cyan, 256, 128, 256, 1)
     term.setTextColor(1)
     printer.centered('Range Lock Security', 6)    
