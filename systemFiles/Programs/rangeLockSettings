@@ -1,0 +1,8 @@
+{
+  redstoneOutsideSetup = "right",
+  distance = 3,
+  Whitelist = {
+    "yl:;vG=`)7%axp$7]_f*hdtMoQo5JDU5*rZ:z85CM 6\"c5%$):\\8E6'Nts[e\"S8g$crs<@xhNehc?!Cd%ti|Dn@D1]FmY28!Q5?;.%u2}LlAUyy;em\\y3!o%xHK*v'&6&6+Z4kcp+Z!LpI93\\azWuP6QI Y#`W3+<+WwJjH ~gvPZ{+YG~/i~7eG=Ow^Q)3;9 4Un9hDv`\\CKjYJ1zU|<y*ukdvVv:DxEELoz9 c++L$x*W$0lhvrilzb`ic6g&x",
+  },
+  inputOption = false,
+}

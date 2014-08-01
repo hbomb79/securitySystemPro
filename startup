@@ -747,7 +747,7 @@ function readFiles()
   f.close()
   	if fileStartup then
 	  printer.centered("Running: "..fileStartup, 19)
-	  shell.run(fileStartup)
+	  shell.run('systemFiles/Programs/rangeLockRedo')
 	  sleep(4)
 	  errora.err("Fatal Runtime Exception", "The Program: "..fileStartup.." Appears To Have Crashed, Or Ended")
 	end

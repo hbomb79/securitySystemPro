@@ -10,8 +10,9 @@ function err(code, reason, autorestart)
   term.setBackgroundColor(colors.blue)
   term.setTextColor(1)
   term.clear()
-  titleBar.draw("HbombOS Security Suite", "Crash handling", colors.cyan, colors.red, 128, colors.blue, 1) --Syntax: Text, Subtext, Text Color, SubText Color, Bg Color, DefaultBGcolor, DefaultTextColor
-    printer.centered("HbombOS Security Suite", 4)
+  --titleBar.draw("HbombOS Security Suite", "Crash handling", colors.cyan, colors.red, 128, colors.blue, 1) --Syntax: Text, Subtext, Text Color, SubText Color, Bg Color, DefaultBGcolor, DefaultTextColor
+   if not pocket then
+	printer.centered("HbombOS Security Suite", 4)
     printer.centered("The Suite Has Encountered An Unexpected Error", 5)
     printer.centered("To Protect Against Intruders The Suite",7) 
 	printer.centered("Has Called This Error", 8)
@@ -29,6 +30,18 @@ function err(code, reason, autorestart)
 	  end
 	else
 	  print("No Description Provided")
+	end
+	else
+	  printer.centered('HbombOS Security Suite', 4)
+	  printer.centered('Pocket BSOD', 5)
+	  printer.centered('An Error Occurred', 7)
+	  code = code or 'No Code'
+	  if #code >= termX then
+	    term.setCursorPos(1,10)
+	    print(code)
+	  else
+	    printer.centered(code, 10)
+	  end
 	end
 	if not autorestart then
       printer.centered("Press Any Key To Continue", 19)

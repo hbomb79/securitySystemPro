@@ -1,107 +1,23 @@
-os.pullEvent = os.pullEventRaw --First Line Of Security Defence, I know its basic
-
-Events = {} --Start the table to store the events inside of
+--os.pullEvent = os.pullEventRaw Termination Defence Layer 1!
+isRunning = true
 
 termX, termY = term.getSize()
 
-------------
---Text Var--
-------------
 rsText = 'Side: '
-rsTime = 'Time: '
-rsInput = 'Input Side: '
+rsTimeText = 'Time: '
 
-DefaultSettings = {
-	Whitelist = {},
-	RedstoneSide = 'back',
-	Distance = 10
+current = {
+  Settings = {
+    Whitelist = {}
+  },
 }
 
-function mainTitleBar()
-  titleBar.draw('HbombOS Security Suite', 'RangeLock', colors.cyan, 256, 128, 256, 1) --Clears screen and draw a title bar at the top of the screen (Uses A Security Suite API)
-end
+security = {}
 
-settings = {
-  textColor = colors.black,
-  background = 256,
-  cursorBlink = false,
-}
 
-current = {}
-
-running = true
-
-Peripheral = { --Manages Peripheral Functions
-  GetPeripheral = function(typeToGet)
-    for i, peripheral in ipairs(Peripheral.GetAllPeripheral())
-  end, 
-  
-  Call = function(_type, ...)
-    local functionArgs = {...}
-	local p = GetPeripheral(_type)
-	peripheral.call(p.Side)
-  end, 
-
-  GetPeripheral = function(_type)
-    for i, p in ipairs(Peripheral.GetPeripherals()) do
-	  if p.Type == _type then
-	    return p
-	  end
-	end
-  end,
-	
-  GetPeripherals = function(filterType) --Credit to oeed HERE!
-	local peripherals = {}
-	  for i, side in ipairs(peripheral.getNames()) do --Gets all peripherals
-		local name = peripheral.getType(side):gsub("^%l", string.upper)
-		local code = string.upper(side:sub(1,1))
-		  if side:find('_') then
-			code = side:sub(side:find('_')+1)
-		  end
-		local dupe = false
-		  for i, v in ipairs(peripherals) do
-		    if v[1] == name .. ' ' .. code then
-			  dupe = true
-		    end
-		  end
-        if not dupe then
-		  local _type = peripheral.getType(side)
-		  local isWireless = false
-			if _type == 'modem' then
-			  if not pcall(function()isWireless = peripheral.call(sSide, 'isWireless') end) then
-				isWireless = true
-			  end     
-			  if isWireless then
-			    _type = 'wireless_modem'
-				name = 'W '..name
-			  end
-			end
-			if not filterType or _type == filterType then
-			  table.insert(peripherals, {Name = name:sub(1,8) .. ' '..code, Fullname = name .. ' ('..Capitalise(side)..')', Side = side, Type = _type, Wireless = isWireless})
-			end
-		end
-	end
-   return peripherals
-  end,
-  
-  PresentNamed = function(_name)
-    return peripheral.isPresent(_name)
-  end,
-
-  CallType = function(_type, ...)
-    local FunctionArgs = {...}
-	local p = Peripheral.GetPeripheral(_type)
-	return peripheral.call(p.Side, unpack(FunctionArgs))
-  end,
-
-  CallNamed = function(_name, ...)
-	local funcArgs = {...}
-	return peripheral.call(_name, unpack(funcArgs))
-  end
-  
-}
-
-function readN(len, replaceChar) --Only allows numbers to be entered...
+_int = 1
+_string = 'a'
+function readN(len, replaceChar)
   Num = false
   term.setTextColor(1)
   len = len or 10
@@ -109,7 +25,6 @@ function readN(len, replaceChar) --Only allows numbers to be entered...
   local key = 0
   term.setCursorBlink(true)
   repeat
-   checkKey()
         e,p1 = os.pullEvent()
 		  if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
 		    p1 = tonumber(p1)
@@ -138,202 +53,632 @@ function readN(len, replaceChar) --Only allows numbers to be entered...
   return input
 end
 
---Manages Wireless Function
-Wireless = { 
-  --Wireless Modem Channels
-  Channels = { 
-    ping = '3012', 
-	request = '3020',
-	requestReply = '3028', 
+
+Peripheral = {
+	GetPeripheral = function(_type)
+		for i, p in ipairs(Peripheral.GetPeripherals()) do
+			if p.Type == _type then
+				return p
+			end
+		end
+	end,
+
+	Call = function(type, ...)
+		local tArgs = {...}
+		local p = GetPeripheral(type)
+		peripheral.call(p.Side, unpack(tArgs))
+	end,
+
+	GetPeripherals = function(filterType)
+		local peripherals = {}
+		for i, side in ipairs(peripheral.getNames()) do
+			local name = peripheral.getType(side):gsub("^%l", string.upper)
+			local code = string.upper(side:sub(1,1))
+			if side:find('_') then
+				code = side:sub(side:find('_')+1)
+			end
+
+			local dupe = false
+			for i, v in ipairs(peripherals) do
+				if v[1] == name .. ' ' .. code then
+					dupe = true
+				end
+			end
+
+			if not dupe then
+				local _type = peripheral.getType(side)
+				local isWireless = false
+				if _type == 'modem' then
+					if not pcall(function()isWireless = peripheral.call(sSide, 'isWireless') end) then
+						isWireless = true
+					end     
+					if isWireless then
+						_type = 'wireless_modem'
+						name = 'W '..name
+					end
+				end
+				if not filterType or _type == filterType then
+					table.insert(peripherals, {Name = name:sub(1,8) .. ' '..code, Fullname = name .. ' ('..Capitalise(side)..')', Side = side, Type = _type, Wireless = isWireless})
+				end
+			end
+		end
+		return peripherals
+	end,
+
+	GetPeripheral = function(_type)
+		for i, p in ipairs(Peripheral.GetPeripherals()) do
+			if p.Type == _type then
+				return p
+			end
+		end
+	end,
+
+	PresentNamed = function(name)
+		return peripheral.isPresent(name)
+	end,
+
+	CallType = function(type, ...)
+		local tArgs = {...}
+		local p = Peripheral.GetPeripheral(type)
+		return peripheral.call(p.Side, unpack(tArgs))
+	end,
+
+	CallNamed = function(name, ...)
+		local tArgs = {...}
+		return peripheral.call(name, unpack(tArgs))
+	end
+}
+
+Capitalise = function(str)
+	return str:sub(1, 1):upper() .. str:sub(2, -1)
+end
+
+function downloadFail(errCode)
+  term.clear()
+  term.setTextColor(colors.black)
+  term.setBackgroundColor(1)
+  term.setCursorPos(1,1)
+  print('An error occured while downloading APIs to the pocket PC')
+  print()
+  print(errCode)
+  print()
+  print('Rebooting!')
+  sleep(3)
+  os.reboot()
+end
+
+
+function downloadFiles(getUrl, toPath) --Used to download stuff!!
+  for i = 1, 3 do
+    local response = http.get(getUrl)
+	if response then
+	  data = response.readAll()
+	      if fs.exists(toPath) then
+		  fs.delete(toPath)
+		end
+		if toPath then
+		  local file = io.open(toPath, "w")
+		  file:write(data)
+		  file:close()
+		  return true
+		else
+		  downloadFail('An Error Occurred While Saving To Path: '..toPath)
+		end
+	else
+	  downloadFail('The Url: '..getUrl..' Does Not Appear To Exist! Please Try Again')
+	end
+  end
+  downloadFail('The Request Timed Out')
+end
+
+
+function pocketAPI() --Downloads And Installs The APIs Required To Run The Program
+  if not fs.exists('api') then
+    term.setTextColor(1)
+	term.setBackgroundColor(256)
+	term.clear()
+	print('Please Wait While We Download All The APIs Needed To Use The Program!')
+    downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/download", "/api/download")
+    downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/systemCheck", "/api/systemCheck")
+    downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/update", "/api/update")
+    downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/printer", "/api/printer")
+    downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/titleBar", "/api/titleBar")
+    downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/errora", "/api/errora")
+    downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
+  end
+  return true
+end
+
+function hostSetup() --Creates The Setup GUI If The Config File Is Not Found
+  local function setupTitleBar()
+	titleBar.draw('HbombOS Secuity Suite', 'Range Detector Setup', colors.cyan, 256, 128, 256, 1)
+  end
+  
+  local function welcome()
+    setupTitleBar()
+    printer.centered('It appears you have not yet used this', 6)
+    printer.centered('program before', 7)
+    printer.centered('Click Anywhere On Screen To Get Started!', 10)
+	os.pullEvent('mouse_click')
+  end
+  
+  local function redstoneOutSide()
+   while true do
+    setupTitleBar()
+	printer.centered("Redstone Output Side", 6)
+	term.setCursorPos(termX/2-(#rsText),10)
+	  write (rsText)
+	  local vside = false
+		current.Settings.redstoneOutsideSetup = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == current.Settings.redstoneOutsideSetup then
+				vside = true
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 11)
+		  sleep(0.5)
+		  term.clear()
+		end
+	 return
+  end
+  
+  local function redstoneInputOption()
+  while true do
+    setupTitleBar()
+	printer.centered('Would You Like The Computer To Emit A Redstone', 6)
+	printer.centered('Signal If It Receives A Redstone Signal', 7)
+	printer.centered('You Pick Which Side The Input Has To Be Applied To', 9)
+	printer.centered('On The Next Screen', 10)
+	printer.centered('Press Y To Enable, N To Disable', 12)
+	event, key = os.pullEvent('key')
+	  if key == keys.y then
+	    current.Settings.inputOption = true
+		return true
+	  elseif key == keys.n then
+	    current.Settings.inputOption = false
+	    return false
+	  end
+	end
+  end
+  
+  local function redstoneInputSide()
+  sleep(0)
+    while true do
+    setupTitleBar()
+	printer.centered("Redstone Input Side", 6)
+	term.setCursorPos(termX/2-(#rsText),10)
+	  write (rsText)
+	  local vside = false
+		current.Settings.redstoneInsideSetup = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == current.Settings.redstoneInsideSetup then
+				vside = true
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 11)
+		  sleep(0.5)
+		  term.clear()
+		end
+	 return
+  end
+  
+  local function distance()
+  while true do
+      setupTitleBar()
+	  printer.centered('At What Proximity To The Computer Do', 6)
+	  printer.centered('You Want To Be When It Emits A Redstone Signal', 7)
+	  distanceText = 'Distance(In Blocks): '
+	  term.setCursorPos(termX/2-#distanceText, 10)
+	  write (distanceText)
+	 distanceInput = readN(2)
+	 if distanceInput ~= "" then
+	    distanceInput = tonumber(distanceInput)
+	      if distanceInput <=64 then current.Settings.distance = distanceInput break end
+	  end
+    end
+  end
+  
+  local function saveSetup()
+    setupTitleBar()
+    printer.centered('Thank You For Setting Up Your RangeLock', 6)
+	printer.centered('Secuity System! Please Report Any Bugs', 8)
+    printer.centered('Saving Settings', 19)
+	sleep(0)
+    SaveSettings()
+	printer.centered('Click Anywhere To Reboot', 19)
+	os.pullEvent('mouse_click')
+	os.reboot()
+  end
+  
+--Call all the functions in order to setup the system!
+welcome()
+redstoneOutSide()
+distance()
+if redstoneInputOption() then redstoneInputSide() end
+saveSetup()
+end
+
+-- Modem Functions Called For Info On Modems, Or To Change Modem Status
+modem = {
+  channels = {
+    ping = 6019,
+    request = 6021,
+	reply = 6023,
   },
-  isOpen = function(checkChannel) --Checks If Channel(checkChannel) Is Open
-    return Peripheral.CallType("wireless_modem", "isOpen", checkChannel)
+  isOpen = function(channel) --Returns if the channel is open or not
+    Peripheral.CallType('wireless_modem', 'isOpen', channel)
   end,
   
-  openChannel = function (openChannel) --Opens the wireless channel(openChannel) if not already open
-    if not Wireless.isOpen(openChannel) then --Checks if already open
-	  Peripheral.CallType("wireless_modem", "open", openChannel) --Opens channel
+  Open = function(channel) --Open a channel if not already open
+    if not modem.isOpen(channel) then
+	  Peripheral.CallType('wireless_modem', 'open', channel)
 	end
   end, 
   
-  closeChannel = function(channelToClose) --Closes wireless Channel(channelToClose)
-    Peripheral.CallType("wireless_modem", "close", channelToClose)
+  Close = function(channel) --Close channel specified
+    Peripheral.CallType('wireless_modem', 'close', channel)
+  end,
+  
+  CloseAll = function() --Close all channels
+    Peripheral.CallType('wireless_modem', 'closeAll')
   end, 
   
-  closeAllChannels = function() --Closes All Open Channels
-    Peripheral.CallType("wireless_modem", "closeAll")
-  end, 
-  
-  transmitMessage = function(sendChannel, replyChannel, message)
-    Peripheral.CallType("wireless_modem", "transmit", sendChannel, replyChannel, textutils.serialize(message))
-  end,   
-  
-  isPresent = function() --Checks if a wireless modem is present
-    if not peripheral.GetPeripheral("wireless_modem") then
+  Transmit = function(channel, replyChannel, message) --Transmit a message over the modem... The message is serialized first so it can hold data.... Use FormatMessage()
+    Peripheral.CallType('wireless_modem', 'transmit', channel, replyChannel, textutils.serialize(message))
+  end,
+  	
+  isPresent = function()
+    if Peripheral.GetPeripheral('wireless_modem') == nil then
 	  return false
 	else
 	  return true
 	end
   end,
- 
-  timeOut = function(func, time) --Stops Waiting After 3 Seconds or Specified Time
-    time = time or 3
-	  parallel.waitForAny(func, function()
-	    sleep(time)
-	end)
-  end, 
-  
-  
-  ping = function() --Pings Devices
-  	local message = SendMessage(Channels.Ping, 'Pinging', Channels.PingReply) --Send the message requesting ping
-	RecieveMessage(Channels.PingReply, message.messageID) --waits for reply from nearby PDAs
+
+  RecieveMessage = function(_channel, messageID, timeout)
+		open(_channel)
+		local done = false
+		local event, side, channel, replyChannel, message = nil
+		Timeout(function()
+			while not done do
+				event, side, channel, replyChannel, message = os.pullEvent('modem_message')
+				if channel ~= _channel then
+					event, side, channel, replyChannel, message = nil
+				else
+					message = textutils.unserialize(message)
+					message.content = textutils.unserialize(message.content)
+					if messageID and messageID ~= message.messageID or (message.destinationID ~= nil and message.destinationID ~= os.getComputerID()) then
+						event, side, channel, replyChannel, message = nil
+					else
+						done = true
+					end
+				end
+			end
+		end,
+		timeout)
+		return event, side, channel, replyChannel, message
+	end,
+
+  SendMessage = function(channel, message, reply, messageID, destinationID)
+    reply = reply or modem.channels.reply
+	modem.Open(channel)
+	modem.Open(reply)
+	local _message = modem.FormatMessage(message, messageID, destinationID)
+	modem.Transmit(channel, reply, _message)
+	return _message
+  end,
+
+  HandleMessage = function(event, side, channel, replyChannel, message, distance)
+    message = textutils.unserialize(message)
+	message.content = textutils.unserialize(message.content)
+	  if channel == modem.channels.ping and message.content == 'Ping!' and not pocket then
+		modem.SendMessage(replyChannel, 'Pong!', nil, message.messageID)
+	  elseif channel == modem.channels.ping and message.content == 'Ping!' and pocket then
+	    modem.SendMessage(replyChannel, current.Fingerprint, nil, message.messageID)
+	  elseif message.destinationID ~= nil and message.destinationID ~= os.getComputerID() then
+	  elseif modem.Responder then
+	    modem.Responder(event, side, channel, replyChannel, message, distance)
+	  end
+  end,
+
+  FormatMessage = function(message, messageID, destinationID)
+    return {
+	  content = textutils.serialize(message),
+  	  senderID = os.getComputerID(),
+	  senderName = os.getComputerLabel(),
+	  channel = channel,
+	  replyChannel = reply,
+	  messageID = messageID or math.random(10000),
+	  destinationID = destinationID
+    }
   end,
   
-  messageHandler = function(event, side, channel, replyChannel, message, distance)
-		message = textutils.unserialize(message) --Prepares Message
-		message.content = textutils.unserialize(message.content) --Gets Content
-		if channel == Wireless.Channels.Ping then --Checks if the channel it was sent on is the Ping channel
-			if message.content == 'Pinging' then --If it is then whats the message?
-				SendMessage(replyChannel, 'Pinged', nil, message.messageID) --If its requesting a ping then reply with ping confirmation
+	Initialise = function()
+		if modem.isPresent() then
+			for i, c in pairs(modem.channels) do
+				modem.Open(c)
 			end
-		elseif message.destinationID ~= nil and message.destinationID ~= os.getComputerID() then --If the destination ID is not our computer ID
-		elseif Wireless.Responder then
-			Wireless.Responder(event, side, channel, replyChannel, message, distance) --Launches Responder
 		end
 	end,
-	
-  FormatMessage = function(message, messageID, destinationID) --Packs the message and all details so it can be sent via rednet!
-    return {
-	  content = textutils.serialize(message), --Packs the actual message
-	  senderID = os.getComputerID(), --Packs our computerID
-	  senderName = os.getComputerLabel(), --Packs our computers label
-	  channel = channel, --Channel and reply are packed as there default values
-	  replyChannel = reply, --^
-	  messageID = messageID or math.random(10000),--Generates a random messageID if one is not defined
-	  destinationID = destinationID  --Destination ID is set to default and packed
-	}
-  end,
 }
 
+Events ={}
 
-function hostSetup()
-  if not Wireless.isPresent() then
-    printer.centered('There Is No Rednet Modem on This Computer', 6)
-    printer.centered('Please Attach One And Try Again!', 7)
-    printer.centered('Click Anywhere To Reboot', 19)
-    os.pullEvent('mouse_click')
+function createFingerprint() --Saves the fingerprint to the PDA
+  if not fs.exists('.fingerprint') then
+    local fingerprint = generateFingerprint() --Generates the finger print and stores it in a variable
+	current.Settings.Whitelist = fingerprint --Stores the fingerprint in the table 'Settings'
+  else
     os.reboot()
   end
-  
 end
 
-function pocketSetup()
-if not Wireless.isPresent() then --Check For A Modem On The PDA
-  printer.centered('There Is No Rednet Modem on This PDA', 6)
-  printer.centered('Please Add One And Try Again!', 7)
-  printer.centered('Click Anywhere To Shutdown', 19)
-  os.pullEvent('mouse_click')
-  os.shutdown()
-end
-
-Wireless.startModems() --Open All Channels On The Modem
-  if fs.exists('/systemFiles/Programs/rangeLock/.fingerprint') then
-    local h = fs.open('/systemFiles/Programs/rangeLock/.fingerprint', 'r')
-	  if h then
-		settings.Fingerprint = h.readAll()
-	  else
-		StoreFingerprint()
-	  end
-		h.close()
-  else
-    StoreFingerprint()
+function generateFingerprint()
+ local fingerprint = ""
+  for i=1, 256 do --Repeats 256 times
+    char = math.random(32, 126) --Creates A Random Digit
+	fingerprint = fingerprint .. string.char(char) --Adds the random digit on the end of the others
   end
-
+  return fingerprint  --Returns the fingerprint completed after the loop has finished
 end
 
-function registerEvent(event, eventFunction) --Registers a function to start when an event is fired
+function pingPDA()
+  modem.SendMessage(modem.channels.ping, 'Ping!', modem.channels.request)
+  pingTimer = os.startTimer(0.5)
+end
+
+local DoorTimer = nil
+function OpenDoor()
+	if current.Settings.redstoneOutsideSetup then
+		redstone.setOutput(current.Settings.redstoneOutsideSetup, true)
+		DoorTimer = os.startTimer(0.5)
+	end
+end
+function CloseDoor()
+	if current.Settings.redstoneOutsideSetup then
+	  redstone.setOutput(current.Settings.redstoneOutsideSetup, false)
+	end
+end
+
+function loadSettings()
+  if fs.exists('systemFiles/Programs/rangeLockSettings') then
+		local f = fs.open('systemFiles/Programs/rangeLockSettings', 'r')
+		if f then
+			current.Settings = textutils.unserialize(f.readAll())
+		end
+		f.close()
+	else
+		hostSetup()
+	end
+end
+
+function SaveSettings()
+	current.Settings = current.Settings or {}
+	local f = fs.open('systemFiles/Programs/rangeLockSettings', 'w')
+	if f then
+		f.write(textutils.serialize(current.Settings))
+	end
+	f.close()	
+end
+
+function eventRegister(event, functionToRun)
 	if not Events[event] then
 		Events[event] = {}
 	end
-	table.insert(Events[event], eventFunction)
+	table.insert(Events[event], functionToRun)
 end
 
-function mainHandler() --waits for an event to happen and runs the appropriate function 
-	while running do
-		local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
-		if Events[event] then
-			for i, e in ipairs(Events[event]) do
-				e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+function RegisterPDA()
+while true do
+ sleep(0)
+  titleBar.draw('HbombOS Secuity Suite', 'RangeLock Registration', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Please Insert Your PDA Into A Disk Drive', 6)
+  printer.centered('Attached To This Computer', 7)
+  event, side = os.pullEvent()
+  if event == 'disk' then
+	if disk.hasData(side) then
+		local path = disk.getMountPath(side)
+		local fingerprint = nil
+		if fs.exists(path..'/.fingerprint') then
+			local h = fs.open(path..'/.fingerprint', 'r')
+			if h then
+				local str = h.readAll()
+				if #str == 256 then
+					fingerprint = str
+				end
+			end
+			h.close()
+		else
+		end
+		if not fingerprint then
+			fingerprint = generateFingerprint()
+			local h = fs.open(path..'/.fingerprint', 'w')
+			h.write(fingerprint)
+			h.close()
+			addStartup = true
+			if addStartup then
+				local h = fs.open('systemFiles/Programs/rangeLockRedo', 'r')
+				local startup = h.readAll()
+				h.close()
+				local h = fs.open(path..'/startup', 'w')
+				h.write(startup)
+				h.close()
+			end
+		end
+		if not FingerprintIsOnWhitelist(fingerprint) then
+			table.insert(current.Settings.Whitelist, fingerprint)
+			SaveSettings()
+		end  
+		  disk.eject(side)
+          printer.centered('PDA Registered', 19)
+          sleep(1)
+	end
+  elseif event == 'key' then
+    if side == keys.leftAlt or side == keys.rightAlt then break end
+  end
+end
+  return
+end
+
+function FingerprintIsOnWhitelist(fingerprint)
+	if current.Settings.Whitelist then
+		for i, f in ipairs(current.Settings.Whitelist) do
+			if f == fingerprint then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function nomodem()
+  titleBar.draw('HbombOS Security Suite', 'RangeLock', colors.cyan, 256, 128, 256, 1)
+  if pocket then
+    print('Please Add A Wireless Modem To This PDA')
+	print()
+	print('Click Anywhere To Reboot')
+  else
+    printer.centered('Please Attach A Wireless Modem To This Computer', 6)
+	printer.centered('Click Anywhere To Reboot', 19)
+  end
+  os.pullEvent('mouse_click')
+  os.reboot()
+end
+
+function startHost() --Register Function ' Wireless.Responder' On Host Computer To Check Fingerprint Sent By PDA
+  if not modem.isPresent() then
+    nomodem()
+  end
+ modem.Initialise()
+ modem.Responder = function(event, side, channel, replyChannel, message, distance)
+  if channel == modem.channels.request and distance < current.Settings.distance then
+    if FingerprintIsOnWhitelist(message.content) then
+	  modem.SendMessage(modem.channels.reply, true)
+	  OpenDoor()
+	else
+	  modem.SendMessage(modem.channels.reply, false)
+	end
+  end
+ end
+pingPDA()
+end
+
+
+function getStatus()
+ local function hostStatus()
+    if current.Allow then
+	  current.status('Access Granted!')
+	else
+	  current.status('Ready! ')
+	end
+  end
+  
+  local function PDAstatus()
+    if current.Denied then
+      current.status = 'Access Denied!'
+	  printer.centered('Access Denied!', 8)
+    elseif current.Allow then
+      current.status = 'Access Granted!'
+	  printer.centered('Access Granted!!', 8)
+    else
+      current.status = 'Ready!'
+    end
+  end
+  if pocket then PDAstatus() else hostStatus() end
+end
+
+function startPDA() --Registers Function 'Wireless.Responder' On PDA To Show Status Of Door
+if not modem.isPresent() then
+  nomodem()
+end
+modem.Initialise()
+if not fs.exists('api') then pocketAPI() end --Checks for apis and downloads them
+os.loadAPI('/api/download') --Download.git Api, Just here for convenience
+os.loadAPI('/api/systemCheck') --System Checker
+os.loadAPI('/api/update') --Update Checker
+os.loadAPI('/api/printer') --printer.centered
+os.loadAPI('/api/titleBar') --Title Bar Drawing Method
+os.loadAPI('/api/errora') --Custom Blue Screen Of Death Syntax: Error Code, Error Message, Autoreboot[Boolean]
+
+updateState = update.Check()
+
+if updateState == 'ERROR' then errora.err('The Update Checker Ran Into An Issue!', 'Error Received', true) elseif updateState == true then pocketAPI() end --Checks For An Update On Github And Downloads
+
+if not modem.isPresent() then
+  term.clear()
+  print('Please Attach A Wireless Modem To Continue')
+end
+  if fs.exists('.fingerprint') then
+    local h = fs.open('.fingerprint', 'r')
+      if h then
+        current.Fingerprint = h.readAll()
+	  else
+  	    MakeFingerprint()
+	  end
+	  h.close()
+  else
+    MakeFingerprint()
+  end
+
+	modem.Responder = function(event, side, channel, replyChannel, message, distance)
+		if channel == modem.channels.ping then
+			modem.SendMessage(modem.channels.request, current.Fingerprint, modem.channels.reply, nil, message.senderID)
+		elseif channel == modem.channels.reply then
+			if message.content == true then
+              os.reboot()
+			else
+				current.Allow = false
+				current.Denied = true
 			end
 		end
 	end
 end
 
+function timerHandler(event, timer) --Handles timer completion events and carries out the appropriate action
+  if timer == pingTimer then
+    pingPDA()
+  elseif timer == DoorTimer then
+    CloseDoor()
+  end
+end
+
+function checkConfig()
+  config = true
+  term.clear()
+  titleBar.draw('HbombOS Security Suite', 'RangeLock', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Please Enter Your Administartor Password', 6)
+  printer.centered('To Access Your Configuration Options', 7)
+  local f = fs.open('systemFiles/Security/adminPass', 'r')
+  adminPassFile = f.readLine()
+  f.close()
+  configText = 'Password: '
+  term.setCursorPos(termX/2-#configText, 10)
+  write(configText)
+  configInput = read('*')
+  if configInput == adminPassFile then config = true configMenu() else printer.centered('Incorrect Password.. Returning', 19) sleep(0.5) return end
+end
+
+function keyPress(event, key)
+  if key == keys.leftAlt or key == keys.rightAlt then checkConfig() end
+end
+
 function configMenu()
+  titleBar.draw('HbombOS Security Suite', 'RangeLock Settings', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Pick An Option Below', 6)
   local continue = false
   local options = {
-  	    {'Register PDAs', function()
-		  local function diskInit()
-            disksReg = 0
-            while true do
-	           titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	           printer.centered("Insert PDAs Into The Disk Drive Now To Sync Them", 6)
-	           printer.centered("Press ALT To Save", 9)
-	           printer.centered("New Registered PDAs: "..disksReg, 11)
-	           event, side = os.pullEvent()
-	             if event == "disk" then
-		           if side == driveSide then
-		             local f = fs.open("disk/"..diskPath, "w")
-			           f.writeLine(diskKey)
-			           f.close()
-			           printer.centered("Files Written To PDA", 19)
-			           disksReg = disksReg + 1
-			           disk.eject(driveSide)
-					   sleep(1)
-					end
-	             elseif event == 'key' then
-				   if side == keys.leftAlt or side == keys.rightAlt then
-				      pressed = false
-					  config = false
-				      --os.reboot()
-					  return
-					  
-				   end
-				 end
-			end
-		end
-    diskInit()
+  	    {'Register Pocket Computers', function()
+          RegisterPDA()
 		end},
-		{'Unregister PDAs', function() 
-		  local function diskUnInit()
-            disksReg = 0
-            while true do
-	           titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	           printer.centered("Insert PDAs Into The Disk Drive Now To Remove Their", 6)
-	           printer.centered("Right To Use This Network", 7)
-	           printer.centered("Press ALT To Save", 9)
-	           event, side = os.pullEvent()
-	             if event == "disk" then
-		           if side == driveSide then
-				       fs.delete("disk/"..diskPath)
-			           printer.centered("Files Deleted From Disk", 19)
-			           disk.eject(driveSide)
-					end
-	             elseif event == 'key' then
-				   if side == keys.leftAlt or side == keys.rightAlt then
-				      pressed = false
-					  config = true
-				      --os.reboot()
-					  return
-					  
-				   end
-				 end
-			end
-		end
-    diskUnInit()
+		{'Unregister Keycards', function() 
+		  unRegisterPDA()
 		end}, 
 		{'Reset Config', function()
-		  fs.delete('systemFiles/Programs/keycardConfig')
+		  fs.delete('systemFiles/Programs/rangeLockSettings')
 		  pressed = false
 		  config = true
 		  printer.centered('Removed!', 19)
@@ -341,8 +686,6 @@ function configMenu()
 		  os.reboot()
 		end},
 		{'Cancel', function()
-		  pressed = false
-		  config = true
           return
 		end}
 	}
@@ -357,7 +700,7 @@ function configMenu()
 			end
 			term.setTextColor(tc)
 			term.setBackgroundColor(bg)
-			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 10)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
 		end
 	end
 	local wait = true
@@ -383,170 +726,60 @@ function configMenu()
 	return continue
 end
 
-
-function configLogin()
-  titleBar.draw('HbombOS Security Suite', 'RangeLock Settings', colors.cyan, 256, 128, 256, 1)
-  printer.centered('Please Enter Your Administrator Password', 6)
-  printer.centered('As Added Security!', 7)
-  configText = 'Password: '
-  term.setCursorPos(termX/2-#configText, 10)
-  write(configText)
-  ConfigInput = read("*")
-  local f = fs.open('systemFiles/Security/adminPass', 'r')
-  adminPasswordFile = f.readLine()
-  f.close()
-  if ConfigInput == adminPasswordFile then configMenu() else pressed = false return end
+function initialise() --Registers All Events To Autorun Functions, e.g If I press a key it will run keyPress
+  if not pocket then eventRegister('key', keyPress) end
+  eventRegister('timer', timerHandler)
+  eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program!' , true) end)
+  eventRegister('modem_message', modem.HandleMessage)
+  --Loading Configuration
+  modem.Initialise()
+  if pocket then
+    startPDA() --Configures The PDA Responder Function
+  else
+    loadSettings()
+    startHost() --Set up the host system
+  end
+  eventLoop() --Starts the program waiting for the events to occur
 end
 
-function keyCheck()
-  local args = {...}
-	local event = args[1]
-	local press = args[2]
-	if event == 'key' and press == keys.leftCtrl or press == keys.rightCtrl then
-      setup = true
-	  pressed = true
-	  configLogin()
-	  return
-	end
+
+function eventLoop() --This runs the functions that was assigned to the event in initialise()
+  while isRunning do
+    term.clear()
+    titleBar.draw('HbombOS Security Suite', 'Range Lock', colors.cyan, 256, 128, 256, 1)
+    term.setTextColor(1)
+    printer.centered('Range Lock Security', 6)
+    term.setTextColor(colors.blue)
+    printer.centered('System Ready', 7)
+    term.setTextColor(1)
+    if not pocket then printer.centered('Press [alt] To Enter Setup', 19) end
+	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+	  if Events[event] then
+		for i, e in ipairs(Events[event]) do
+		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+		end
+      end
+   end
 end
 
-function Initialise(arg) --Uses registerEvent to register these events and functions
-	registerEvent('key', keyCheck)
-	registerEvent('char', keyCheck)
-	registerEvent('timer', Timer)
-	registerEvent('terminate', function() os.reboot() end) --Second line of termination defence, Reboots Computer Rather Than Opening System...
-	registerEvent('modem_message', Wireless.messageHandler)
-	--registerEvent('disk', RegisterPDA)
-	if pocket then
-	  pocketSetup()
-	else
-	  hostSetup()
-	end
-	mainHandler()
+
+function loadAPIS()
+  os.loadAPI('api/errora')
+  os.loadAPI('api/update')
+  os.loadAPI('api/titleBar')
+  os.loadAPI('api/systemCheck')
+  os.loadAPI('api/download')
+  os.loadAPI('api/printer')
 end
 
-function CloseProgram()
+if not term.isColor() then
+  printer.centered('The Software Requires An Advanced Machine Run', 19)
+  sleep(3)
   os.shutdown()
 end
-
-function GenerateFingerprint() --Makes the fingerprint
-    local str = ""
-	printer.centered('Please Wait While We Generate A Custom Fingerprint', 19)
-    for _ = 1, 128 do --Creates a 128+ digit long fingerprint
-        local digit = math.random(32, 126) --Randomises each digit between 32 and 126
-        fingerprintCode = fingerprintCode .. string.char(digit) --Adds each digit
-    end
-	printer.centered('Creation Complete')
-    return fingerprintCode --Returns the complete fingerprint
-end
-
-function StoreFingerprint() --Stores the fingerprint
-	local h = fs.open('/systemFiles/Programs/rangeLock/.fingerprint', 'w') --Stores the fingerprint in the Programs Directory
-	if h then
-		h.write(GenerateFingerprint()) --Generates The Fingerprint
-	end
-	h.close()
-	Current.Fingerprint = fingerprintCode
-	printer.centered('Custom Fingerprint Stored', 19)
-end
-
-function checkFile(path) --Checks the path you provide
- if fs.exists(path) then return true else return false end
-end
-
-function createSetup() --Creates The Setup GUI If The Config File Is Not Found
-  local function setupTitleBar()
-    titleBar.draw('HbombOS Secuity Suite', 'Range Detector Setup', colors.cyan, 256, 128, 256, 1)
+  local _, err = pcall(initialise) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    term.setCursorBlink(false)
+    loadAPIS()
+	errora.err(err, 'Range Lock Has Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end
-  
-  local function welcome()
-    setupTitleBar()
-    printer.centered('It appears you have not yet used this', 6)
-    printer.centered('program before', 7)
-    printer.centered('Click Anywhere On Screen To Get Started!', 10)
-	os.pullEvent('mouse_click')
-  end
-  
-  local function redstoneOutSide()
-   while true do
-    setupTitleBar()
-	printer.centered("On What Side Is The Disk Drive On?", 6)
-	term.setCursorPos(termX/2-(#rsText),10)
-	  write (rsText)
-	  local vside = false
-		redstoneOutsideSetup = read()
-		for k,v in pairs(rs.getSides()) do
-			if v == diskDriveSide then
-				vside = true
-				break
-			end
-		end
-		if vside then break end
-		  printer.centered("Invalid side!", 11)
-		  sleep(0.5)
-		  term.clear()
-		end
-	
-  end
-  
-  local function redstoneOutputTime()
-    while true do
-      setupTitleBar()
-	  printer.centered('How long would you like the Redstone', 6)
-	  printer.centered('Ouput to last (In Seconds)', 7)
-	  redstoneOuttimeSetup = readN(3)
-	  if redstoneOuttimeSetup ~= "" then 
-	    redstoneOuttimeSetup = tonumber(redstoneOuttimeSetup)
-	    break 
-	  end
-    end
-  end
-  
-  local function redstoneInputOption()
-  
-  end
-  
-  local function redstoneInputSide()
-  
-  end
-  
-  local function saveSetup()
-  
-  end
-  
---Call all the functions in order to setup the system!
-welcome()
-redstoneOutSide()
-redstoneOutputTime()
-if redstoneInputOption() then redstoneInputSide() end
-saveSetup()
-end
-
-function loadConfig() --Loads Config If Config File Exists
-  if checkFile('systemFiles/Programs/rangeLockConfig') then
-    
-  else
-    createSetup()
-  end
-end
-
-function rsStop(side) --Stops the redstone output on the side given
-
-end
-
-function rsStart(side, openTime, display, yPos) --Starts the redstone output on the side provided... If 3rd arg is true it will display on the 4th arg which is the y axis
-  rs.setOutput(side, true)
-  for i = tonumber(openTime), 1, -1 do
-    if display then
-	  yPos = yPos or 1
-	  printer.centered('Depowering Redstone In: '..i, yPos)
-	end
-	sleep(1)
-	if i <= 1 then break end
-  end
-end
-
-local _, err = pcall(Initialise) --Error Catching, Also starts the first function in the chain
-if err then --The Program Has Crashed, Call A Blue Screen Error For Security
- errora.err('Range Lock Crash', 'The RangeLock Program Crashed.. Error: '..err, true) --BSoD Api Included In Security Suite
-end
