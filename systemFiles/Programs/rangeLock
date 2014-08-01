@@ -275,13 +275,13 @@ function hostSetup() --Creates The Setup GUI If The Config File Is Not Found
 	  term.setCursorPos(termX/2-#distanceText, 10)
 	  write (distanceText)
 	  distanceInput = readN(2)
-	 if not distanceInput then
-	 if distanceInput ~= "" then
-	    distanceInput = tonumber(distanceInput)
-	      if distanceInput <=64 then current.Settings.distance = distanceInput break end
-	  end
-    end
-	end
+	 if distanceInput ~= 'Word' then
+	   if distanceInput ~= "" then
+	      distanceInput = tonumber(distanceInput)
+	        if distanceInput <= 64 then current.Settings.distance = distanceInput break end
+	   end
+     end
+  end
   end
   
   local function saveSetup()
