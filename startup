@@ -437,11 +437,8 @@ function programMenu()
 				selected = #options
 			end
 		elseif key == keys.enter then
-			--if options[selected][1] == 'Uninstall Security Suite' then
-			--else
-				options[selected][2]()
-				wait = false
-			--end
+		  options[selected][2]()
+		  wait = false
 		end
 		draw()
 	end
@@ -485,7 +482,7 @@ function main() --The main function, calls all child functions
   sleep(0)
   bootLogo(7, bootX, bootY, 256)
   PrintCentered("Checking If Supports HTTP", 18)
-  sleep(0.5)
+  sleep(0)
   bootLogo(8, bootX, bootY, 256)
   if systemCheck.checkhttp() then PrintCentered("System Check Complete!", 19) end
   sleep(0)
@@ -498,7 +495,7 @@ function main() --The main function, calls all child functions
 	sleep(0)
     PrintCentered("Obtaining Latest Update From GitHub", 18)
 	PrintCentered("Seeking URL", 19)
-	sleep(1)
+	sleep(0)
 	PrintCentered("Parsed", 19)
 	sleep(0)
 	PrintCentered("Downloading New Updater", 19)
@@ -513,7 +510,6 @@ function main() --The main function, calls all child functions
 	errora.err(nil, "The Updater Experienced An Unknown Exception, Or It Ended With No Protocol, If the issue persists, report it")
   elseif updateState == false then
     PrintCentered("You Are Running The Latest STABLE Version!", 19)
-	--beta() --Remove when no longer a BETA build!
 	printer.centered("Reading Config File..", 19)
 	sleep(0.1)
 	return true
@@ -549,7 +545,7 @@ while true do
     return true
   else
     printer.centered("Incorrect!", 8)
-	sleep(1)
+	sleep(0.5)
   end
 end
 
@@ -585,6 +581,9 @@ function bootMenuOptions(continue)
 		PrintCentered("Removing DualKey Configuration", 18)
 		sleep(0)
 		if fs.exists('/systemFiles/Programs/dualKeyConfig') then fs.delete ('systemFiles/Programs/dualKeyConfig') end
+		PrintCentered("Removing RangeLock Configuration", 18)
+		sleep(0)
+		if fs.exists('/systemFiles/Programs/rangeLockSettings') then fs.delete ('systemFiles/Programs/rangeLockSettings') end
 		PrintCentered("Removing Updater Configuration", 18)
 		sleep(0)
 	    if fs.exists('/systemFiles/Install/updateConfig') then fs.delete ('systemFiles/Install/updateConfig') end
@@ -618,7 +617,7 @@ function bootMenuOptions(continue)
 						if fs.delete(path..'/'..v) then
 						  term.setTextColor(1)
 						  PrintCentered('Removed: '..path..'/'..v, 18)
-						  sleep(1)
+						  sleep(0.5)
 						end
 					end
 				end
@@ -627,7 +626,6 @@ function bootMenuOptions(continue)
 				end
 			end
 			rmFold('')
-			sleep(1)
 			
 		end},
 		{'Use Shell/CraftOS', function() term.setBackgroundColor(colors.black) term.clear() term.setCursorPos(1,1) shell.run ("shell") end},
@@ -765,7 +763,7 @@ function readFiles()
   f.close()
   	if fileStartup then
 	  printer.centered("Running: "..fileStartup, 19)
-	  shell.run(fileStartup)
+	  shell.run(''..fileStartup..'')
 	  sleep(4)
 	  errora.err("Fatal Runtime Exception", "The Program: "..fileStartup.." Appears To Have Crashed, Or Ended")
 	end
@@ -781,5 +779,5 @@ drawTitleBar()
 if Start() then 
   readFiles() 
 else 
-  errora.err("generic", "Start-up Failed To Initiate Main Function, Returned: nil, Please try rebooting, If the issue persists, Report it on the forums") 
+  errora.err("generic", "Start-up Failed To Initiate Main Function, Please try rebooting, If the issue persists, Report it on the forums") 
 end

@@ -114,7 +114,7 @@ term.setBackgroundColor(256)
 		  local file = io.open(toPath, "w")
 		  file:write(data)
 		  file:close()
-		  PrintCentered ("Download: "..toPath.."!", 19)
+		  PrintCentered ("Download: "..toPath, 19)
 		  return true
 		else
 		  error "We Believe The Path Specified Is Invalid, Report If Not Your Fault"
@@ -211,7 +211,6 @@ thank()
 end
 
 if open() then 
---parallel.waitForAny(download, wait)
 stop()
 download()
 end
