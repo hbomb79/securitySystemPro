@@ -10,7 +10,7 @@ function git(url, toPath, visible, yAxis) --Download From Git-hub To A PATH Spec
 	  file:write(data)
 	  file:close()
 	    if visible then
-	      printer.centered(path, yAxis)
+	      printer.centered(toPath, yAxis)
 	    end
 	  return true
   else
