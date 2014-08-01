@@ -526,6 +526,64 @@ end
   return
 end
 
+function removeProgram()
+while true do
+ sleep(0)
+  titleBar.draw('HbombOS Secuity Suite', 'RangeLock Remove', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Please Insert Your PDA Into A Disk Drive', 6)
+  printer.centered('Attached To This Computer', 7)
+  printer.centered('Press [ALT] To Reload Settings And Return', 19)
+  event, side = os.pullEvent()
+  if event == 'disk' then
+	if disk.hasData(side) then
+		local path = disk.getMountPath(side)
+		local fingerprint = nil
+		if fs.exists(path..'/.fingerprint') then --Removes Fingerprint
+		  fs.delete(path..'/.fingerprint')
+		end
+		if fs.exists(path..'/startup') then --Removes Startup File
+		  fs.delete(path..'/startup')
+		end
+		if fs.exists(path..'/api/') then --Removes APIs
+		  fs.delete(path..'/api/')
+		end
+		disk.eject(side)
+		printer.centered('All Data On PDA Removed')
+		sleep(1)
+	end
+  elseif event == 'key' then
+    if side == keys.leftAlt or side == keys.rightAlt then initialise() break end
+  end
+end
+  return
+end
+
+function unRegisterPDA()
+while true do
+ sleep(0)
+  titleBar.draw('HbombOS Secuity Suite', 'RangeLock Un-Registration', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Please Insert Your PDA Into A Disk Drive', 6)
+  printer.centered('Attached To This Computer', 7)
+  printer.centered('Press [ALT] To Reload Settings And Return', 19)
+  event, side = os.pullEvent()
+  if event == 'disk' then
+	if disk.hasData(side) then
+		local path = disk.getMountPath(side)
+		local fingerprint = nil
+		if fs.exists(path..'/.fingerprint') then
+		  fs.delete(path..'/.fingerprint')
+		end
+		disk.eject(side)
+        printer.centered('PDA Registered', 19)
+        sleep(1)
+	end
+  elseif event == 'key' then
+    if side == keys.leftAlt or side == keys.rightAlt then initialise() break end
+  end
+end
+  return
+end
+
 function FingerprintIsOnWhitelist(fingerprint)
 	if current.Settings.Whitelist then
 		for i, f in ipairs(current.Settings.Whitelist) do
@@ -702,6 +760,9 @@ function configMenu()
 		end},
 		{'Unregister Pocket Computers', function() 
 		  unRegisterPDA()
+		end}, 
+		{'Remove Files From PDA', function()
+		  removeProgram()
 		end}, 
 		{'Reset Config', function()
 		  fs.delete('systemFiles/Programs/rangeLockSettings')
