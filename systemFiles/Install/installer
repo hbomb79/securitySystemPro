@@ -139,44 +139,6 @@ term.setBackgroundColor(256)
   error ("Failed To Download The File From URL: "..getUrl.." Please try again later, If this is the 2nd time you've seen this, then report it on the fourms")
 end
 
-function downloadQuery()
-  term.setCursorPos(1,19)
-  term.setTextColor(1)
-  term.setBackgroundColor(256)
-  PrintCentered("Attempting Download Of Files!", "5")
-  for _, fileForDownload in ipairs(files) do
-    sleep(0)
-	 for _, fileDownloadName in ipairs(fileNames) do
-	  downloadFiles(fileForDownload, fileDownloadName)
-	 end
-  end
-  return true
-end
-
---[[
-function wait()
-  runningStart = true
-  while runningStart == true do
-   if y == 1 then
-     PrintCentered("Downloading Files.", 19)
-     sleep(1)
-     y = y+1
-   elseif y == 2 then
-     PrintCentered("Downloading Files..", 19)
-     sleep(1)
-     y = y+1
-   elseif y == 3 then
-     PrintCentered("Downloading Files...", 19)
-     sleep(1)
-     y = 1
-  -- elseif y == "stop" then
-   else
-     return false
-   end
-  end
-end
-]]--
-
 function wait()
   while true do
   sleep(0)
@@ -253,6 +215,7 @@ downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/maste
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycardDual", "/systemFiles/Programs/keycardDual")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/pin", "/systemFiles/Programs/pin")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/rangeLock", "/systemFiles/Programs/rangeLock")
 PrintCentered("Complete", 19)
 sleep(1)
 term.clear()
