@@ -101,7 +101,7 @@ if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/mas
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot4.nfp", "systemFiles/BootLogos/boot4.nfp", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot5.nfp", "systemFiles/BootLogos/boot5.nfp", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot6.nfp", "systemFiles/BootLogos/boot6.nfp", true, 19) == 'ERROR' then errorEnd() end
-if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot7.nfp", "systemFiles/BootLogos/boot7.nfp", true 19) == 'ERROR' then errorEnd() end
+if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot7.nfp", "systemFiles/BootLogos/boot7.nfp", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot8.nfp", "systemFiles/BootLogos/boot8.nfp", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/bootFail.nfp", "systemFiles/bootFail.nfp", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/download", "api/download", true, 19) == 'ERROR' then errorEnd() end
