@@ -24,19 +24,6 @@ function PrintCentered(text, y)
 	term.clearLine()
     write(text)
 end
---[[
-files = {
- [1] = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/installer",
- [2] = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version",
- [3] = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/checker"
-}
-
-fileNames = {
- [1] = "installer",
- [2] = "version",
- [3] = "checker"
-}
-]]--
 
 function initBackground(color) --Draw The Background In The Specified Color
   term.setBackgroundColor(color)
@@ -121,13 +108,13 @@ term.setBackgroundColor(256)
 	  data = response.readAll()
 	      if fs.exists(toPath) then
 		  fs.delete(toPath)
-		  PrintCentered ("Delete: "..toPath, 18)
+		  PrintCentered ("Delete: "..toPath, 19)
 		end
 		if toPath then
 		  local file = io.open(toPath, "w")
 		  file:write(data)
 		  file:close()
-		  PrintCentered ("Download: "..toPath.."!", 18)
+		  PrintCentered ("Download: "..toPath.."!", 19)
 		  return true
 		else
 		  error "We Believe The Path Specified Is Invalid, Report If Not Your Fault"
