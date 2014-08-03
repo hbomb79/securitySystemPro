@@ -634,7 +634,22 @@ while true do
 		local path = disk.getMountPath(side)
 		local fingerprint = nil
 		if fs.exists(path..'/.fingerprint') then
-		  fs.delete(path..'/.fingerprint')
+		  local f = fs.open(path..'/.fingerprint', 'r')
+		  PDAfingerprint = f.readLine()
+		  f.close()
+		  
+		  for _, entry in ipairs(current.Settings.Whitelist) do
+		    if entry == PDAfingerprint then
+			 if current.Settings.Whitelist then
+			  table.remove(current.Settings.Whitelist, _)
+			  SaveSettings()
+			  printer.centered('Fingerprint Removed From Whitelist', 19)
+			  sleep(1)
+			 else
+			   error'Table Appears To Be Missing!'
+			 end
+			end
+		  end
 		end
 		disk.eject(side)
         printer.centered('PDA Un-registered', 19)
@@ -916,6 +931,8 @@ function drawScreen()
   titleBar.draw('HbombOS Security Suite', 'Range Lock', colors.cyan, 256, 128, 256, 1)
   term.setTextColor(1)
   printer.centered('Range Lock Security', 6)
+  term.setTextColor(1)
+  if not pocket then term.setTextColor(1) printer.centered('Press [alt] To Enter Setup', 19) end
 end
 
 function eventLoop() --This runs the functions that was assigned to the event in initialise()
@@ -924,7 +941,6 @@ function eventLoop() --This runs the functions that was assigned to the event in
 	if current.Allow or current.Denied then getStatus() elseif current.status == 'Booting System' then printer.centered(current.status, 8) sleep(1) current.status = 'System Ready!' end
     if current.status == 'Access Denied!' then term.setTextColor(colors.red) elseif current.status == 'Access Granted!' then term.setTextColor(colors.lime) else term.setTextColor(colors.blue) end
     printer.centered(current.status, 8)
-    if not pocket then term.setTextColor(1) printer.centered('Press [alt] To Enter Setup', 19) end
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
 	  if Events[event] then
 		for i, e in ipairs(Events[event]) do
