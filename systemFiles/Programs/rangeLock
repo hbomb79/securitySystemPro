@@ -556,20 +556,20 @@ while true do
 			h.close()
 		else
 		end
+		addStartup = true
 		if not fingerprint then
-			fingerprint = generateFingerprint()
-			local h = fs.open(path..'/.fingerprint', 'w')
-			h.write(fingerprint)
-			h.close()
-			addStartup = true
-			if addStartup then
-				local h = fs.open('systemFiles/Programs/rangeLock', 'r')
-				local startup = h.readAll()
-				h.close()
-				local h = fs.open(path..'/startup', 'w')
-				h.write(startup)
-				h.close()
-			end
+		  fingerprint = generateFingerprint()
+		  local h = fs.open(path..'/.fingerprint', 'w')
+		  h.write(fingerprint)
+		  h.close()
+		end
+		if addStartup then
+		  local h = fs.open('systemFiles/Programs/rangeLock', 'r')
+		  local startup = h.readAll()
+	  	  h.close()
+		  local h = fs.open(path..'/startup', 'w')
+		  h.write(startup)
+		  h.close()
 		end
 		if not FingerprintIsOnWhitelist(fingerprint) then
 			table.insert(current.Settings.Whitelist, fingerprint)
@@ -652,8 +652,6 @@ while true do
 		  end
 		end
 		disk.eject(side)
-        printer.centered('PDA Un-registered', 19)
-        sleep(1)
 	end
   elseif event == 'key' then
     if side == keys.leftAlt or side == keys.rightAlt then initialise() break end
