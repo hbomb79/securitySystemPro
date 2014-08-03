@@ -12,7 +12,7 @@ current = {
     Whitelist = {}
   },
 }
-current.status = 'Booting! '
+current.status = 'Booting System'
 security = {}
 _int = 1
 _string = 'a'
@@ -702,9 +702,6 @@ function startHost() --Register Function ' Wireless.Responder' On Host Computer 
 	getStatus()
   end  
  end
---[[if current.Status == 'Access Denied!' then term.setTextColor(colors.red) elseif current.Status == 'Access Granted!' then term.setTextColor(colors.lime) end
-printer.centered(current.status, 8)
-term.setTextColor(1)]]--
 pingPDA()
 end
 
@@ -771,23 +768,39 @@ end
 			modem.SendMessage(modem.channels.request, current.Fingerprint, modem.channels.reply, nil, message.senderID)
 		elseif channel == modem.channels.reply then
 			if message.content == true then
+			 if not current.Allow then
+			  outofrange = false
               current.Allow = true
 			  current.Denied = false
+			  i = 0
+			 end
 			elseif message.content == false then
+			 if not current.Denied then
+			  outofrange = false
 			  current.Allow = false
 			  current.Denied = true
+			  i = 0
+			 end
 			elseif message.content == 'OutOfRange' then
-			  if current.Allow == true or current.Denied == true then
-			    sleep(1)
-                current.Allow = false
-			    current.Denied = false
-			    current.status = 'System Ready!'
-			    printer.centered(current.status, 8)
+			outofrange = true
+			  if current.Allow or current.Denied then
+			   if outofrange then
+			     i = i+1
+				 sleep(0)
+			   end
+			  end
+			  if i == 10 then
+			  i=0
+			   if outofrange then
+			    current.Allow = false
+				current.Denied = false
+				current.status = 'System Ready!'
+				outofrange = false
+			   end
 			  end
 			end
 		end
 	end
-	
 end
 
 function timerHandler(event, timer) --Handles timer completion events and carries out the appropriate action
@@ -796,7 +809,7 @@ function timerHandler(event, timer) --Handles timer completion events and carrie
   elseif timer == DoorTimer then
     CloseDoor()
   elseif timer == refreshTimer then
-	getStatus()
+    getStatus()
   end
 end
 
@@ -813,7 +826,7 @@ function checkConfig()
   term.setCursorPos(termX/2-#configText, 10)
   write(configText)
   configInput = read('*')
-  if configInput == adminPassFile then config = true configMenu() else printer.centered('Incorrect Password.. Returning', 19) sleep(0.5) return end
+  if configInput == adminPassFile then config = true configMenu() else printer.centered('Incorrect Password.. Returning', 19) sleep(0.5) drawScreen() return end
 end
 
 function keyPress(event, key)
@@ -899,18 +912,19 @@ function initialise() --Registers All Events To Autorun Functions, e.g If I pres
   eventLoop() --Starts the program waiting for the events to occur
 end
 
+function drawScreen()
+  titleBar.draw('HbombOS Security Suite', 'Range Lock', colors.cyan, 256, 128, 256, 1)
+  term.setTextColor(1)
+  printer.centered('Range Lock Security', 6)
+end
 
 function eventLoop() --This runs the functions that was assigned to the event in initialise()
-
+  drawScreen()
   while isRunning do
-    titleBar.draw('HbombOS Security Suite', 'Range Lock', colors.cyan, 256, 128, 256, 1)
-    term.setTextColor(1)
-    printer.centered('Range Lock Security', 6)    
-	getStatus()
-    if current.status == 'Access Denied!' then term.setTextColor(colors.red) elseif current.status == 'Access Granted!' then term.setTextColor(colors.lime) elseif current.status == 'System Ready!' then term.setTextColor(colors.blue) end
-	printer.centered(current.status, 8)
-    term.setTextColor(1)
-    if not pocket then printer.centered('Press [alt] To Enter Setup', 19) end
+	if current.Allow or current.Denied then getStatus() elseif current.status == 'Booting System' then printer.centered(current.status, 8) sleep(1) current.status = 'System Ready!' end
+    if current.status == 'Access Denied!' then term.setTextColor(colors.red) elseif current.status == 'Access Granted!' then term.setTextColor(colors.lime) else term.setTextColor(colors.blue) end
+    printer.centered(current.status, 8)
+    if not pocket then term.setTextColor(1) printer.centered('Press [alt] To Enter Setup', 19) end
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
 	  if Events[event] then
 		for i, e in ipairs(Events[event]) do
