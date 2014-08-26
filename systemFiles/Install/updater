@@ -99,7 +99,7 @@ drawTitleBar()
 PrintCentered("Downloading Scripts From GitHub... Please Wait", 6)
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version", true, 19) == 'ERROR' then errorEnd() end
-if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installerdada", "systemFiles/Install/installer", true, 19) == 'ERROR' then errorEnd() end
+if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot0.nfp", "systemFiles/BootLogos/boot0.nfp", true, 19) == 'ERROR' then errorEnd() end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot1.nfp", "systemFiles/BootLogos/boot1.nfp", true, 19) == 'ERROR' then errorEnd() end
