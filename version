@@ -1,4 +1,4 @@
-1.2.1
+1.2.2
 
 --STABLE BUILD!
 
@@ -11,9 +11,11 @@ computer will update continuously
 --This Version ChangeLog--
 --------------------------
 
--- Added Keycard Lock
--- Added Quiet Updating
-
+-- Added Retry Stage In Updater
+-- Added KeyCardDual Security System
+-- Finished KeyCardDual Security System
+-- Added Error Catching xpcall Into Startup File
+-- Fixed Typos And Incorrect Grammar In KeyCard Program
    ------------------
    --END OF CHANGES--
    ------------------

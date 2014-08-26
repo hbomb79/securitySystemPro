@@ -308,11 +308,11 @@ function programMenu()
     term.setTextColor(1)
     term.setBackgroundColor(256)
     term.clear()
-	PrintCentered("HbombOS Security Suite", 4)
-	PrintCentered("Programs", 5)
-	PrintCentered("The Suite Offers Several Programs For You To Use", 7)
-	PrintCentered("Select One You Would Like To Use", 8)
-	PrintCentered("You Can Change It At Any Time Using The BootMenu", 9)
+	PrintCentered("HbombOS Security Suite", 2)
+	PrintCentered("Programs", 3)
+	PrintCentered("The Suite Offers Several Programs For You To Use", 5)
+	PrintCentered("Select One You Would Like To Use", 6)
+	PrintCentered("You Can Change It At Any Time Using The BootMenu", 7)
 	PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
 	local continue = false
 	local options = {
@@ -437,7 +437,7 @@ function programMenu()
 			end
 			term.setTextColor(tc)
 			term.setBackgroundColor(bg)
-			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 10)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
 		end
 	end
 	local wait = true
@@ -597,16 +597,19 @@ function bootMenuOptions(continue)
 		sleep(0)
 		if fs.exists('/systemFiles/Programs/keycardConfig') then fs.delete ('systemFiles/Programs/keycardConfig') end
 		PrintCentered("Removing DualKey Configuration", 18)
-		sleep(0)
+		sleep(0.5)
 		if fs.exists('/systemFiles/Programs/dualKeyConfig') then fs.delete ('systemFiles/Programs/dualKeyConfig') end
+		PrintCentered("Removing KeyCard Dual Configuration", 18)
+		sleep(0.5)		
+		if fs.exists('/systemFiles/Programs/KeyDualConfig') then fs.delete ('systemFiles/Programs/KeyDualConfig') end
 		PrintCentered("Removing RangeLock Configuration", 18)
-		sleep(0)
+		sleep(0.5)
 		if fs.exists('/systemFiles/Programs/rangeLockSettings') then fs.delete ('systemFiles/Programs/rangeLockSettings') end
 		PrintCentered("Removing Updater Configuration", 18)
-		sleep(0)
+		sleep(1)
 	    if fs.exists('/systemFiles/Install/updateConfig') then fs.delete ('systemFiles/Install/updateConfig') end
 		PrintCentered("Removing System Configuration", 18)
-		sleep(0)
+		sleep(2)
 		if fs.exists('/systemFiles/Programs/configuration') then fs.delete ('systemFiles/Programs/configuration') end
 		PrintCentered("Settings Reset, Rebooting!", 18)
 		sleep(2)
