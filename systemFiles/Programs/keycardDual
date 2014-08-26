@@ -21,11 +21,30 @@ function loadSettings()
 end
 
 function eventHandler()
+  while isRunning do
+	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+	  if Events[event] then
+		for i, e in ipairs(Events[event]) do
+		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+		end
+      end
+   end
+end
 
+function redstoneInputDetect(event)
+  while true do
+    if rs.getInput(current.Settings.redstoneInputSide) then
+      openSide()
+    end
+  end
 end
 
 function initialise()
-
+  eventRegister(disk, diskInsert)
+  eventRegister(disk_eject, diskRemove)
+  eventRegister(terminate, function(event) errora.err('Uh Oh!', 'Termination Detected, Thats Naughty', true) end)
+  eventRegister(redstone, redstoneInputDetect)
+  loadSettings()
 end
 
 function eventRegister(event, functionToRun)
@@ -49,6 +68,75 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 	printer.centered('It Appears You Have Not Used This Program Before', 6)
 	printer.centered('This Wizzard Will Guide You Through Setup', 7)
 	printer.centered('Simply Click Anywhere On Screen To Start!', 10)
+  end
+  
+  
+  local function diskSide1()
+  while true do
+    setupTitleBar()
+	printer.centered("On What Side Is The First Disk Drive On?", 6)
+	term.setCursorPos(termX/2-(#diskText),10)
+	  write (diskText)
+	  local vside = false
+		diskDriveSide1 = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == diskDriveSide then
+				vside = true
+				current.Settings.diskSide1 = diskDriveSide1
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 10)
+		  sleep(0.5)
+		  term.clear()
+		end
+  end
+  
+  local function diskSide2()
+  while true do
+    setupTitleBar()
+	printer.centered("On What Side Is The Second Disk Drive On?", 6)
+	term.setCursorPos(termX/2-(#diskText),10)
+	  write (diskText)
+	  local vside = false
+		diskDriveSide2 = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == diskDriveSide then
+				vside = true
+				current.Settings.diskSide2 = diskDriveSide2
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 10)
+		  sleep(0.5)
+		  term.clear()
+		end
+  end
+  
+  local function nameDrive()
+    while true do
+      setupTitleBar()
+	  printer.centered("For Added Security, Pick The FileName", 6)
+	  printer.centered("This Is Where The Security Key Will Be Stored", 7)
+      term.setCursorPos(termX/2-#nameDriveText, 10)
+	  write(nameDriveText)
+	  nameDriveInput = read()
+	    if nameDriveInput ~= "" then current.Settings.nameDriveInput = tostring(nameDriveInput) break end
+	end
+  end
+  
+  local function nameDriveData()
+    while true do
+      setupTitleBar()
+	  printer.centered("For Added Security, Pick The Security Key", 6)
+	  printer.centered("That Will Be Put On The Path You Specified", 7)
+      term.setCursorPos(termX/2-#nameDriveDataText, 10)
+	  write(nameDriveDataText)
+	  nameDriveDataInput = read()
+	    if nameDriveDataInput ~= "" then current.Settings.nameDriveDataInput = tostring(nameDriveDataInput) break end
+	end
   end
   
   local function redstoneOutput()
@@ -88,6 +176,44 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 		  end
    end
   end
+  
+  local function diskInit()
+   disksReg = 0
+    while true do
+	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
+	  printer.centered("Insert Disks Into The Disk Drives Now To Sync Them", 6)
+	  printer.centered("With The Data You Have Specified", 7)
+	  printer.centered("Press ALT To Continue To Next Step", 9)
+	  printer.centered("Disks Inserted: "..disksReg, 11)
+	  event, side = os.pullEvent()
+	    if event == "disk" then
+		  if side == current.Settings.diskDriveSide1 or current.Settings.diskDriveSide2 then
+		    local f = fs.open("disk/"..nameDriveInput, "w")
+			if f then
+			  f.writeLine(nameDriveDataInput)
+			  f.close()
+			else
+			  printer.centered('Files Already Detected!', 18)
+			  printer.centered('Press Y To Delete Or N To Pick Another Path', 19)
+			  event, press = os.pullEvent()
+			  if event ==  "key" then
+			    if press == keys.y then
+				  fs.delete('disk/'..current.Settings.nameDriveInput)
+				  f.writeLine(current.Settings.nameDriveDataInput)
+			      f.close()
+				elseif press == keys.n then
+			      nameDrive()
+			      nameDriveData()
+				end
+			  end
+			end
+			printer.centered("Files Written To Disk Drive", 19)
+			disksReg = disksReg + 1
+			disk.eject(side)
+		  end
+		end
+	end
+  end  
   
   local function saveSetup()
     setupTitleBar()
@@ -152,3 +278,27 @@ function diskRemove(event, side)
   if current.Disks ~= 0 then current.Disks = current.Disks - 1 end
   if current.Disks ~= 2 then closeSide() end
 end
+
+
+
+
+function loadAPIS()
+  os.loadAPI('api/errora')
+  os.loadAPI('api/update')
+  os.loadAPI('api/titleBar')
+  os.loadAPI('api/systemCheck')
+  os.loadAPI('api/download')
+  os.loadAPI('api/printer')
+end
+
+if not term.isColor() then
+  printer.centered('The Software Requires An Advanced Machine Run', 19)
+  sleep(3)
+  os.shutdown()
+end
+  local _, err = pcall(initialise) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    term.setCursorBlink(false)
+    loadAPIS()
+	errora.err(err, 'KeycardDual Has Unexpectedly Crashed!', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+  end
