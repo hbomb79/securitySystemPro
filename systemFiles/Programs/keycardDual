@@ -1,0 +1,154 @@
+
+function SaveSettings()
+	current.Settings = current.Settings or {}
+	local f = fs.open('systemFiles/Programs/KeyDualConfig', 'w')
+	if f then
+		f.write(textutils.serialize(current.Settings))
+	end
+	f.close()	
+end
+
+function loadSettings()
+  if fs.exists('systemFiles/Programs/KeyDualConfig') then
+		local f = fs.open('systemFiles/Programs/KeyDualConfig', 'r')
+		if f then
+			current.Settings = textutils.unserialize(f.readAll())
+		end
+		f.close()
+	else
+		Setup()
+	end
+end
+
+function eventHandler()
+
+end
+
+function initialise()
+
+end
+
+function eventRegister(event, functionToRun)
+	if not Events[event] then
+		Events[event] = {}
+	end
+	table.insert(Events[event], functionToRun)
+end
+
+function drawTitle()
+  titleBar.draw('HbombOS Secuity Suite', 'Keycard Dual', colors.cyan, 256, 128, 256, 1)
+end
+
+function Setup() --Creates The Setup GUI If The Config File Is Not Found
+  local function setupTitleBar()
+	titleBar.draw('HbombOS Secuity Suite', 'Keycard Dual Setup', colors.cyan, 256, 128, 256, 1)
+  end
+  
+  function welcome()
+    setupTitleBar()
+	printer.centered('It Appears You Have Not Used This Program Before', 6)
+	printer.centered('This Wizzard Will Guide You Through Setup', 7)
+	printer.centered('Simply Click Anywhere On Screen To Start!', 10)
+  end
+  
+  local function redstoneOutput()
+   while true do
+	setupTitleBar()
+	printer.centered("What Side Should The Redstone Output Be?", 6)
+	term.setCursorPos(termX/2-(#RedstoneOutText),10)
+	  write (RedstoneOutText)
+	  local vside = false
+		RedstoneOutSide = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == RedstoneOutSide then
+				vside = true
+				current.Settings.redstoneOutSide = RedstoneOutSide
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 10)
+		  sleep(0.5)
+		  term.clear()
+		end
+   end
+   
+   local function redstoneTime()
+     while true do
+	  setupTitleBar()
+	  printer.centered("What Side Should The Redstone Output Be?", 6)
+	  term.setCursorPos(termX/2-(#RedstoneTimeText),10)
+	  write (RedstoneTimeText)
+	  RedstoneTimeInput = readN(3)
+	  if RedstoneTimeInput == "Word" then term.setCursorBlink(false) printer.centered("Numbers Only!", 19) sleep(0.5) term.setCursorBlink(true)
+	    elseif not RedstoneTimeInput then printer.centered("Cannot Be Nil", 19) sleep(0.5)
+		  elseif RedstoneTimeInput ~= "" then
+		    current.Settings.redstoneOutTime = RedstoneTimeInput
+		    break 
+		  end
+   end
+  end
+  
+  local function saveSetup()
+    setupTitleBar()
+    printer.centered('Thank You For Setting Up Your DualKeyCard', 6)
+	printer.centered('Secuity System! Please Report Any Bugs', 8)
+    printer.centered('Saving Settings', 19)
+	sleep(1)
+    SaveSettings()
+	printer.centered('Click Anywhere To Reboot', 19)
+	os.pullEvent('mouse_click')
+	os.reboot()
+  end
+  
+--Call all the functions in order to setup the system!
+welcome()
+redstoneOutput()
+distance()
+firstRegistartion()
+saveSetup()
+end
+
+function waitForRedstone()
+  while true do
+    sleep(0)
+	rsReceive = redstone.getInput(inputSide)
+	  if rsReceive then break end
+  end
+  return true
+end
+
+function openSide()
+  rs.setOutput(current.Settings.redstoneOutSide, true)
+  diskEject()
+end
+
+function closeSide()
+  rs.setOutput(current.Settings.redstoneOutSide, false)
+  diskEject()
+end
+
+function diskEject(side) --Leave Side Blank To Eject All Sides
+  if side then
+    disk.eject(side) --Ejects Set Side
+  else
+    for k,v in pairs(redstone.getSides()) do --Ejects All Sides
+      disk.eject(v)
+    end
+  end
+end
+
+function timerHandler(event, timer)
+  if timer == doorTimer then
+    closeSide()
+  end
+end
+
+function diskInsert(event, side)
+  if current.Disks == 0 then current.Disks = current.Disks + 1 elseif current.Disks == 1 then current.Disks = current.Disks + 1 openSide() end
+end
+
+function diskRemove(event, side)
+  if current.Disks ~= 0 then current.Disks = current.Disks - 1 end
+  if current.Disks ~= 2 then closeSide() end
+end
