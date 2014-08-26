@@ -3,10 +3,13 @@ current = {
   Settings = {}
 }
 
+termX, termY = term.getSize()
+
 current.Disks = 0
 current.ValidDisks = 0
 current.InvalidDisks = 0
 current.Status = 'System Ready'
+current.SetupText = '[alt] Setup'
 
 isRunning = true
 _int = '1'
@@ -89,6 +92,22 @@ function redstoneInputDetect(event)
   end
 end
 
+function keyHandler(event, key)
+  if key == keys.leftAlt or key == keys.rightAlt then
+    if current.SetupText == '[alt] Setup' then
+      current.enterSetup = true
+      diskEject()
+      current.SetupText = 'Insert Valid Cards To Setup'  
+	else
+	  current.enterSetup = false
+	  current.SetupText = '[alt] Setup'
+	  diskEject()
+  	end
+  elseif key == keys.s then
+    os.reboot()
+  end
+end
+
 function initialise()
   drawTitle()
   printer.centered('Registering Events', 6)
@@ -97,10 +116,12 @@ function initialise()
   eventRegister('terminate', function(event) errora.err('Uh Oh!', 'Termination Detected, Thats Naughty', true) end)
   eventRegister('redstone', redstoneInputDetect)  
   eventRegister('timer', timerHandler)  
+  eventRegister('key', keyHandler)
   printer.centered('Loading Configuration File...', 6)
   loadSettings()
   printer.centered('Load Complete', 6)
   sleep(0)
+  diskEject()
   eventHandler()
 end
 
@@ -241,7 +262,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
   local function diskInit()
    disksReg = 0
     while true do
-	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
+	  setupTitleBar()
 	  printer.centered("Insert Disks Into A Disk Drive Now To Sync Them", 6)
 	  printer.centered("With The Data You Have Specified", 7)
 	  printer.centered("Press ALT To Continue To Next Step", 9)
@@ -349,21 +370,90 @@ function timerHandler(event, timer)
   end
 end
 
+function configMenu()
+  
+end
+
+function configInput() --Waits For Config Login Password, Returns Input
+  loginText = 'Admin Pass: '
+  term.setCursorPos(termX/2-#loginText, 10)
+  write(loginText)
+  input = read('*')
+  if input then
+    return input
+  end
+end
+
+function configExit() --Waits For Key Press To Leave Config Login, Returns 'arg'
+current.ConfigExit = false
+  while true do
+  event, arg = os.pullEvent()
+  if event == 'configInputComplete' then
+    return
+  elseif event == 'key' then
+    if arg == keys.leftAlt or arg == keys.rightAlt then
+	current.ConfigExit = true
+	  return arg
+    end
+  end
+end
+end
+
+function configLogin() --Login To The Settings Page
+  drawTitle()
+  printer.centered('As Added Security Please Enter Your', 6)
+  printer.centered('Security Suite Admin Password', 7)
+  printer.centered('To Continue To The Settings Page', 8)
+  printer.centered('Press [alt] To Return', 19)
+  parallel.waitForAny(function() inputConfig = configInput() os.queueEvent('configInputComplete') end, function() exitPrompt = configExit() end)
+  local f = fs.open('systemFiles/Security/adminPass', 'r')
+  adminPasswordLoaded = f.readLine()
+  f.close()
+  if inputConfig == adminPasswordLoaded and current.ConfigExit == false then
+    --Correct
+  elseif inputConfig ~= 'adminPasswordLoaded' and current.ConfigExit == false then
+    --Incorrect
+    printer.centered('Incorrect Login', 11)
+	sleep(0.5)
+	configLogin()
+  elseif exitPrompt == keys.leftAlt or exitPrompt == keys.rightAlt and current.ConfigExit then
+    --Return/Cancel
+    term.setCursorBlink(false)
+	diskEject()
+	current.SetupText = '[alt] Setup'
+    return --Return To The Main Screen
+  else
+    errora.err('Uh Oh', 'We Encountered An Unknown Event', true) --A Weird Combination Of Events Occurred
+  end
+end
+
 function diskInsert(event, side)
   current.Disks = current.Disks + 1
-  if current.Disks >= 3 then errora.err('Invalid Amount Of Disks', 'The Program Miscounted The Disk No.') end
-  checkDiskIntegrity()
-  if current.ValidDisks == 2 then openSide() end
+  if current.Disks >= 3 then errora.err('Invalid Disks', 'The Program Miscounted The Disk Amount') end --If The Program Says There Is Three Or More Disks Then Something Has Gone Wrong! Call BSoD To Stop Glitch Hacking
+  checkDiskIntegrity() --Checks Disk Files...
+  if current.ValidDisks == 2 then 
+    if current.enterSetup then --Checks If User Pressed [alt]
+	  current.enterSetup = false --And Set The Enter Setup Prompt To False
+	  configLogin() --If They Did Enter Setup
+	else
+      openSide() --Open Door / Activate Redstone
+	end
+  end
 end
 
 function diskRemove(event, side)
-  --if current.Disks > 0 then current.Disks = current.Disks - 1 end
-  diskEject()
+  diskEject() --Ejects Other Disks To Prevent Glitch Hacking
 end
 
 function drawScreen()
   if current.Disks > 0 then current.InvalidDisks = current.Disks - current.ValidDisks end
   drawTitle()
+  term.setCursorPos(termX-#current.SetupText, 1)
+  term.setTextColor(256)
+  term.setBackgroundColor(128)
+  write(current.SetupText)
+  term.setTextColor(1)
+  term.setBackgroundColor(256)
   if current.Status == 'System Ready' then term.setTextColor(colors.blue) elseif current.Status == 'Emiting Redstone' then term.setTextColor(colors.lime) else term.setTextColor(colors.white) end
   printer.centered(current.Status, 7)
   term.setTextColor(colors.white)

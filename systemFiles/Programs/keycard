@@ -273,7 +273,7 @@ function configEdit()
   if ConfigInput == adminPasswordFile then configMenu() else pressed = false return end
 end
 
-function main() --Where the magic happens
+function main() --Waits For Disk Event!
   while true do
     term.clear()
     titleBar.draw('HbombOS Security Suite', 'Keycard Lock', colors.cyan, 256, 128, 256, 1)
@@ -296,7 +296,7 @@ function main() --Where the magic happens
   end
 end
 
-function Start()
+function Start() --Starts The Program
   while true do
     local key = nil
     local success = false
@@ -482,7 +482,7 @@ function setup() --If the config file does not exists, this function will be run
   local function redstoneTime()
    while true do
 	titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	printer.centered("How Long Should We Emit Redstone For?", 6)
+	printer.centered("How Long Should We Output Redstone For", 6)
 	term.setCursorPos(termX/2-(#RedstoneTimeText),10)
 	  write (RedstoneTimeText)
 	  RedstoneTimeInput = readN(3)
@@ -519,7 +519,7 @@ function setup() --If the config file does not exists, this function will be run
 	  printer.centered("What Side Does The redstone input need to be on", 6)
   	  printer.centered("for the computer to react?", 7)
 	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	  printer.centered("What Side Should The Redstone Input Be?", 6)
+	  printer.centered("What Side Should The Redstone Output Be?", 6)
 	  term.setCursorPos(termX/2-(#RedstoneInputText),10)
 	    write (RedstoneInputText)
 	    local vside = false
