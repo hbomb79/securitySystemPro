@@ -3,6 +3,50 @@ current = {
   Settings = {}
 }
 
+current.Disks = 0
+current.ValidDisks = 0
+current.InvalidDisks = 0
+current.Status = 'System Ready'
+
+isRunning = true
+_int = '1'
+_string = "a"
+
+function readN(len, replaceChar, HasToBeNum)
+  Num = false
+  term.setTextColor(1)
+  len = len or 10
+  local input=""
+  local key = 0
+  term.setCursorBlink(true)
+  repeat
+        e,p1 = os.pullEvent()
+		  if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
+		    --p1 = tonumber(p1)
+		    Num = true
+		  elseif type(p1) == type(_string) then
+		    term.setTextColor(colors.red)
+		    Num = "Word"
+		    return Num
+		  end
+        if e=="char" then
+          if #input < len then
+		    if type(p1) == type(_int) then
+                input = input .. p1
+                term.write(replaceChar or p1)
+			end
+          end
+        elseif e=="key" and p1==keys.backspace and #input > 0 then
+          input = input:sub(1,#input-1)
+          local x,y = term.getCursorPos()
+          term.setCursorPos(x-1,y)
+          term.write(" ")
+          term.setCursorPos(x-1,y)
+        end
+  until p1==keys.enter
+  term.setCursorBlink(false)
+  return input
+end
 
 function SaveSettings()
 	current.Settings = current.Settings or {}
@@ -27,6 +71,7 @@ end
 
 function eventHandler()
   while isRunning do
+  drawScreen()
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
 	  if Events[event] then
 		for i, e in ipairs(Events[event]) do
@@ -45,11 +90,18 @@ function redstoneInputDetect(event)
 end
 
 function initialise()
+  drawTitle()
+  printer.centered('Registering Events', 6)
   eventRegister('disk', diskInsert)
   eventRegister('disk_eject', diskRemove)
   eventRegister('terminate', function(event) errora.err('Uh Oh!', 'Termination Detected, Thats Naughty', true) end)
-  eventRegister('redstone', redstoneInputDetect)
+  eventRegister('redstone', redstoneInputDetect)  
+  eventRegister('timer', timerHandler)  
+  printer.centered('Loading Configuration File...', 6)
   loadSettings()
+  printer.centered('Load Complete', 6)
+  sleep(0)
+  eventHandler()
 end
 
 function eventRegister(event, functionToRun)
@@ -75,7 +127,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 	printer.centered('Simply Click Anywhere On Screen To Start!', 10)
   end
   
-  
+  diskText = 'Side: '
   local function diskSide1()
   while true do
     setupTitleBar()
@@ -85,7 +137,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 	  local vside = false
 		diskDriveSide1 = read()
 		for k,v in pairs(rs.getSides()) do
-			if v == diskDriveSide then
+			if v == diskDriveSide1 then
 				vside = true
 				current.Settings.diskSide1 = diskDriveSide1
 				break
@@ -107,7 +159,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 	  local vside = false
 		diskDriveSide2 = read()
 		for k,v in pairs(rs.getSides()) do
-			if v == diskDriveSide then
+			if v == diskDriveSide2 then
 				vside = true
 				current.Settings.diskSide2 = diskDriveSide2
 				break
@@ -125,6 +177,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
       setupTitleBar()
 	  printer.centered("For Added Security, Pick The FileName", 6)
 	  printer.centered("This Is Where The Security Key Will Be Stored", 7)
+	  nameDriveText = 'File Name: '
       term.setCursorPos(termX/2-#nameDriveText, 10)
 	  write(nameDriveText)
 	  nameDriveInput = read()
@@ -137,6 +190,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
       setupTitleBar()
 	  printer.centered("For Added Security, Pick The Security Key", 6)
 	  printer.centered("That Will Be Put On The Path You Specified", 7)
+	  nameDriveDataText = 'Security Key: '
       term.setCursorPos(termX/2-#nameDriveDataText, 10)
 	  write(nameDriveDataText)
 	  nameDriveDataInput = read()
@@ -194,10 +248,10 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 	  printer.centered("Disks Inserted: "..disksReg, 11)
 	  event, side = os.pullEvent()
 	    if event == "disk" then
-		  if side == current.Settings.diskDriveSide1 or current.Settings.diskDriveSide2 then
-		    local f = fs.open("disk/"..nameDriveInput, "w")
+		  if side == current.Settings.diskSide1 or current.Settings.diskSide2 then
+		    local f = fs.open("disk/"..current.Settings.nameDriveInput, "w")
 			if f then
-			  f.writeLine(nameDriveDataInput)
+			  f.writeLine(current.Settings.nameDriveDataInput)
 			  f.close()
 			else
 			  printer.centered('Files Already Detected!', 18)
@@ -219,6 +273,10 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 			disk.eject(side)
 			SaveSettings()
 			loadSettings()
+		  end
+		elseif event == 'key' then
+		  if side == keys.leftAlt or side == keys.rightAlt then
+		    return true
 		  end
 		end
 	end
@@ -244,6 +302,7 @@ nameDrive()
 nameDriveData()
 redstoneOutput()
 redstoneTime()
+diskInit()
 saveSetup()
 end
 
@@ -256,8 +315,11 @@ function waitForRedstone()
   return true
 end
 
+doorTimer = nil
 function openSide()
   rs.setOutput(current.Settings.redstoneOutSide, true)
+  doorTimer = os.startTimer(tonumber(current.Settings.redstoneOutTime))
+  current.Status = 'Emiting Redstone'
   diskEject()
 end
 
@@ -273,26 +335,46 @@ function diskEject(side) --Leave Side Blank To Eject All Sides
     for k,v in pairs(redstone.getSides()) do --Ejects All Sides
       disk.eject(v)
     end
+	current.Disks = 0
+	current.InvalidDisks = 0
+	current.ValidDisks = 0
   end
 end
 
 function timerHandler(event, timer)
   if timer == doorTimer then
+    current.Status = 'System Ready'
+    drawScreen()
     closeSide()
   end
 end
 
 function diskInsert(event, side)
-  if current.Disks == 0 then current.Disks = current.Disks + 1 elseif current.Disks == 1 then current.Disks = current.Disks + 1 openSide() end
+  current.Disks = current.Disks + 1
+  if current.Disks >= 3 then errora.err('Invalid Amount Of Disks', 'The Program Miscounted The Disk No.') end
+  checkDiskIntegrity()
+  if current.ValidDisks == 2 then openSide() end
 end
 
 function diskRemove(event, side)
-  if current.Disks ~= 0 then current.Disks = current.Disks - 1 end
-  if current.Disks ~= 2 then closeSide() end
+  --if current.Disks > 0 then current.Disks = current.Disks - 1 end
+  diskEject()
 end
 
-
-
+function drawScreen()
+  if current.Disks > 0 then current.InvalidDisks = current.Disks - current.ValidDisks end
+  drawTitle()
+  if current.Status == 'System Ready' then term.setTextColor(colors.blue) elseif current.Status == 'Emiting Redstone' then term.setTextColor(colors.lime) else term.setTextColor(colors.white) end
+  printer.centered(current.Status, 7)
+  term.setTextColor(colors.white)
+  printer.centered('Waiting For Disk Insert On Side', 9)
+  printer.centered(current.Settings.diskSide1..' Or '..current.Settings.diskSide2, 10)
+  if current.InvalidDisks > 0 then term.setTextColor(colors.red) else term.setTextColor(1) end
+  printer.centered('Invalid Disks Inserted: '..current.InvalidDisks, 18)
+  if current.ValidDisks > 0 then term.setTextColor(colors.blue) else term.setTextColor(1) end
+  printer.centered('Valid Disks Inserted: '..current.ValidDisks, 19)
+  term.setTextColor(1)
+end
 
 function loadAPIS()
   os.loadAPI('api/errora')
@@ -301,6 +383,42 @@ function loadAPIS()
   os.loadAPI('api/systemCheck')
   os.loadAPI('api/download')
   os.loadAPI('api/printer')
+end
+
+function checkDiskIntegrity()
+local function checkDisk1()
+  if fs.exists('disk/'..current.Settings.nameDriveInput) then
+    local f = fs.open('disk/'..current.Settings.nameDriveInput, 'r')
+	checkDiskData = f.readLine()
+	f.close()
+	  if checkDiskData == current.Settings.nameDriveDataInput then
+	  current.ValidDisks = current.ValidDisks + 1
+		return true
+	  else
+        return false
+	  end
+  else
+    return false
+  end
+end
+
+local function checkDisk2()
+  if fs.exists('disk2/'..current.Settings.nameDriveInput) then
+    local f = fs.open('disk2/'..current.Settings.nameDriveInput, 'r')
+	checkDiskData = f.readLine()
+	f.close()
+	  if checkDiskData == current.Settings.nameDriveDataInput then
+	  current.ValidDisks = current.ValidDisks + 1
+	    return true
+	  else
+        return false
+	  end
+  else
+    return false
+  end
+end
+if current.Disks == 1 then checkDisk1() elseif current.Disks == 2 then checkDisk2() elseif current.Disks ~= 0 then errora.err('Uh Oh', 'Something Went Wrong When Checking The Disk', true)
+end
 end
 
 if not term.isColor() then
@@ -312,5 +430,5 @@ end
   if err then
     term.setCursorBlink(false)
     loadAPIS()
-	errora.err(err, 'KeycardDual Has Unexpectedly Crashed!', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+	errora.err(err, 'Uh Oh, Something Went Horribly Wrong Somewhere, Please Report The ERROR Above!', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end
