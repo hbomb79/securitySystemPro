@@ -1,20 +1,14 @@
 -- This is the first time setup so the computer will
 -- Download all the required scripts.
 running = true
-
 -- Checking System Support
 if not http then
   error "You Must Enable HTTP In Computer-craft Con-figs To Use The System!"
 end
 
-if pocket then
-  error "Sorry, The Software Does Not Support Pocket Computer!"
-end
-
 if not term.isColor() then
   error "This Computer Does Not Appear To Be Advanced, If It Is Advanced, Then Please Report This"
 end
-
 
 function PrintCentered(text, y)
     term.setTextColor(1)
@@ -30,7 +24,6 @@ function initBackground(color) --Draw The Background In The Specified Color
   term.clear()
 end
 
-
 function drawTitleBar()
   term.setBackgroundColor(128)
   term.setCursorPos(1,1)
@@ -43,7 +36,6 @@ function drawTitleBar()
   write "Installer"
   term.setTextColor(1)
 end
-
 initBackground(256)
 drawTitleBar()
 
@@ -55,17 +47,36 @@ local function checkSite()
     return false
   end
 end
-   
+
+function start()
+  term.setBackgroundColor(256)
+  PrintCentered('Welcome To The', 7)
+  PrintCentered('Hbomb Security Suite', 8)
+  PrintCentered('Install Wizzard', 9)
+  PrintCentered('Please Press Y To Continue Or N To Cancel!',11)
+  PrintCentered('BEWARE',13)
+  PrintCentered('All Files Already In Destination Will Be',14)
+  PrintCentered('Overwritten',15)
+  while true do
+    event, key = os.pullEvent('key')
+	  if key == keys.y then
+        return true
+	  elseif key == keys.n then
+        return false
+	  end
+  end
+end
+
+function cancel()
+  os.reboot()
+end
+ 
 function open()
+if not start() then cancel() end
+term.clear()
+drawTitleBar()
 term.setBackgroundColor(256)
 term.setTextColor(1)
-  PrintCentered("Hello And Welcome To The", 4)
-  PrintCentered("HbombOS Security Suite", 5)
-  PrintCentered("Installer", 6)
-  PrintCentered("Press Any Key To Begin", 18)
-  os.pullEvent("key")
-  PrintCentered("Setting Up Preferences", 18)
-  sleep(0)
   PrintCentered("Reading GitHub Repository", 18)
   if not checkSite() then
     PrintCentered("The GitHub Version File Does Not", 18)
@@ -77,26 +88,11 @@ term.setTextColor(1)
   PrintCentered("GitHub Repository Located", 18)
   sleep(1)
   PrintCentered("GitHub Repository Connection Established", 18)
-  sleep(1)
-  PrintCentered("BEWARE All Files That Have The Same Path", 8)
-  PrintCentered("Will Be Overwritten!", 9)
-  PrintCentered("Press 'Y' To Continue, Else Cancel", 10)
-  PrintCentered("Waiting For Prompt", 18)
-  event, key = os.pullEvent("key")
-    if key == keys.y then
-	  PrintCentered("Prompt Received, Continuing", 18)
-	  sleep(0)
-	  PrintCentered("Starting Download Sequence", 18)
-	  sleep(0.1)
-	  return true
-	else
-	  PrintCentered("Cancelling Download, Aborting Installer", 18)
-	  sleep(0)
-	  return false
-	end
+  sleep(0)
+  PrintCentered("Starting Download Sequence", 18)
+  sleep(0.1)
+  return true
 end
-
-
 
 function downloadFiles(getUrl, toPath)
 term.setTextColor(1)
@@ -126,54 +122,43 @@ term.setBackgroundColor(256)
   error ("Failed To Download The File From URL: "..getUrl.." Please try again later, If this is the 2nd time you've seen this, then report it on the fourms")
 end
 
-function wait()
-  while true do
+function createDirectory() --Used to create directories for version 1.5 and below
+  fs.makeDir('/systemFiles/')
+  sleep(0.5)
+  fs.makeDir('/systemFiles/BootLogos/')
+  sleep(1)
+  fs.makeDir('/systemFiles/Install/')
   sleep(0)
-  end
+  fs.makeDir('/api/')
+  sleep(1)
+  fs.makeDir('/Documentation/')
+  fs.makeDir('/systemFiles/Programs/')
+  fs.makeDir('/systemFiles/Security/')
+  sleep(0)
 end
 
-function stop()
-runningStart = false
-y = "stop"
-sleep(0)
-y = "stop"
-end
-
-function waitForKey(key)
-  os.pullEvent("key")
-end
-
-function rebootCountdown()
-  for x=10, 0, -1 do
-    PrintCentered("Force Reboot In: "..x, 19)
-    sleep(1)
-  end
-end
-
-function thank()
-  stop()
-  local f = fs.open("version", "r")
-  vCurrent = f.readLine()
-  f.close()
+function thanks()
   term.clear()
   drawTitleBar()
   term.setBackgroundColor(256)
-  PrintCentered("Thank You For Installing The Latest Stable Build", 4)
-  PrintCentered("Your Use Of This Program Is Much Appreciated", 5)
-  PrintCentered("Report Any Bugs You Find", 7)
-  PrintCentered("Avoid Posting If Already Reported", 8)
-  sleep(0)
-  PrintCentered("Thanks Again, Hope You Enjoy", 10)
-  PrintCentered("Your Version: "..vCurrent.."", 12)
-  PrintCentered("Please Press Any Key To Reboot This PC Or Wait", 18)
-  parallel.waitForAny(waitForKey, rebootCountdown)
-  PrintCentered("Rebooting..", 19)
-  sleep(2)
+  term.setTextColor(1)
+  PrintCentered ("Thank You For Downloading And Installing The", 6)
+  PrintCentered ("Latest Version Of My Security Suite", 7)
+  PrintCentered ("Report Any Issues You Come Across", 8)
+  local f = fs.open('version', 'r')
+  currVer = f.readLine()
+  f.close()
+  PrintCentered ("You Are Now Running The Latest Version: "..currVer, 10)
+  PrintCentered ("Hope You Enjoy, Click Anywhere To Get Started", 19)
+  os.pullEvent('mouse_click')
   os.reboot()
 end
 
-function download()
+function download() --Download Files From GitHub And Install Them On The Local Computer
 term.setBackgroundColor(256)
+PrintCentered ("Creating Directories... Please Wait", 19)
+sleep(0)
+createDirectory() --Creates The Directories To Stop The Program From Crashing
 PrintCentered ("Downloading Scripts... Please Wait", 19)
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
@@ -194,23 +179,22 @@ downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/maste
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/update", "/api/update")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/printer", "/api/printer")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/titleBar", "/api/titleBar")
-downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/errora", "/api/errora")
-downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README", "/Documentation/README")
-downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LICENSE", "/Documentation/LICENSE")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/dualKey", "/systemFiles/Programs/dualKey")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycard", "/systemFiles/Programs/keycard")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycardDual", "/systemFiles/Programs/keycardDual")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/pin", "/systemFiles/Programs/pin")
-downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/rangeLock", "/systemFiles/Programs/rangeLock")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/errora", "/api/errora")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README", "/Documentation/README")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LICENSE", "/Documentation/LICENSE")
 PrintCentered("Complete", 19)
-sleep(1)
-term.clear()
-stop()
-thank()
+thanks()
 end
 
 if open() then 
-stop()
-download()
+  download()
+else
+  sleep(3)
+  os.reboot()
 end
