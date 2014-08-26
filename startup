@@ -406,6 +406,24 @@ function programMenu()
 		  sleep(2)
 		  os.reboot()
 		end}
+		{'Dual KeyCard Lock', function()
+		  term.setTextColor(1)
+		  printer.centered("Opening File Handler", 19)
+		  sleep(0)
+		  local f = fs.open('systemFiles/Programs/configuration', "w")
+		  printer.centered("File Handler Open", 19)
+		  sleep(0)
+		  printer.centered("Writing To File", 19)
+		  sleep(0)
+		  f.writeLine('systemFiles/Programs/keycardDual')
+		  printer.centered("File written", 19)
+		  sleep(0)
+		  printer.centered("Closing Handler", 19)
+		  f.close()
+		  printer.centered("Saved, Rebooting!", 19)
+		  sleep(2)
+		  os.reboot()
+		end}
 	}
 
 	local selected = 1
@@ -758,26 +776,34 @@ function Start()
    
 function readFiles()
   printer.centered("Reading Configuration Files", 19)
-  local f = fs.open('systemFiles/Programs/configuration', 'r')
+  local f = fs.open('systemFiles/Programs/configuration', 'r') --Opens Config
   fileStartup = f.readLine()
   f.close()
-  	if fileStartup then
+  	if fileStartup then --Checks If The User Has A File Chosen
 	  printer.centered("Running: "..fileStartup, 19)
-	  shell.run(''..fileStartup..'')
+	  --shell.run(''..fileStartup..'')
+	  shell.run(fileStartup) --Runs User Specified Program
 	  sleep(4)
-	  errora.err("Fatal Runtime Exception", "The Program: "..fileStartup.." Appears To Have Crashed, Or Ended")
+	  errora.err("Uh Oh! Something Went Horribly Wrong", "The Program: "..fileStartup.." Appears To Have Crashed") --Preliminary BSoD Catching Program Closure
 	end
   printer.centered("No Default File Stored", 19)
   sleep(1)
-  os.reboot()
+  os.reboot() --Reboots So User Can Pick There Program
 end
 
-
-term.setBackgroundColor(256)
-term.clear()
-drawTitleBar()
-if Start() then 
-  readFiles() 
-else 
-  errora.err("generic", "Start-up Failed To Initiate Main Function, Please try rebooting, If the issue persists, Report it on the forums") 
+function initialise() --Function Used To Trace Error Catching
+  term.setBackgroundColor(256)
+  term.clear()
+  drawTitleBar()
+  if Start() then 
+    readFiles() 
+  else 
+    errora.err("Uh Oh! Booting Failed", "The start-up process failed when waiting") 
+  end
 end
+
+local _, err = pcall(initialise) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    term.setCursorBlink(false)
+	errora.err(err, 'Startup Has Crashed! Please Report Above Error', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+  end
