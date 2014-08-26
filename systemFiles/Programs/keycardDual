@@ -1,3 +1,8 @@
+Events ={}
+current = {
+  Settings = {}
+}
+
 
 function SaveSettings()
 	current.Settings = current.Settings or {}
@@ -40,10 +45,10 @@ function redstoneInputDetect(event)
 end
 
 function initialise()
-  eventRegister(disk, diskInsert)
-  eventRegister(disk_eject, diskRemove)
-  eventRegister(terminate, function(event) errora.err('Uh Oh!', 'Termination Detected, Thats Naughty', true) end)
-  eventRegister(redstone, redstoneInputDetect)
+  eventRegister('disk', diskInsert)
+  eventRegister('disk_eject', diskRemove)
+  eventRegister('terminate', function(event) errora.err('Uh Oh!', 'Termination Detected, Thats Naughty', true) end)
+  eventRegister('redstone', redstoneInputDetect)
   loadSettings()
 end
 
@@ -143,6 +148,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
    while true do
 	setupTitleBar()
 	printer.centered("What Side Should The Redstone Output Be?", 6)
+	RedstoneOutText = 'Output Side: '
 	term.setCursorPos(termX/2-(#RedstoneOutText),10)
 	  write (RedstoneOutText)
 	  local vside = false
@@ -165,6 +171,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
      while true do
 	  setupTitleBar()
 	  printer.centered("What Side Should The Redstone Output Be?", 6)
+	  RedstoneTimeText = 'Time: '
 	  term.setCursorPos(termX/2-(#RedstoneTimeText),10)
 	  write (RedstoneTimeText)
 	  RedstoneTimeInput = readN(3)
@@ -181,7 +188,7 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
    disksReg = 0
     while true do
 	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	  printer.centered("Insert Disks Into The Disk Drives Now To Sync Them", 6)
+	  printer.centered("Insert Disks Into A Disk Drive Now To Sync Them", 6)
 	  printer.centered("With The Data You Have Specified", 7)
 	  printer.centered("Press ALT To Continue To Next Step", 9)
 	  printer.centered("Disks Inserted: "..disksReg, 11)
@@ -210,6 +217,8 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 			printer.centered("Files Written To Disk Drive", 19)
 			disksReg = disksReg + 1
 			disk.eject(side)
+			SaveSettings()
+			loadSettings()
 		  end
 		end
 	end
@@ -229,9 +238,12 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
   
 --Call all the functions in order to setup the system!
 welcome()
+diskSide1()
+diskSide2()
+nameDrive()
+nameDriveData()
 redstoneOutput()
-distance()
-firstRegistartion()
+redstoneTime()
 saveSetup()
 end
 
