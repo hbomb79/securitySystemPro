@@ -405,7 +405,7 @@ function programMenu()
 		  printer.centered("Saved, Rebooting!", 19)
 		  sleep(2)
 		  os.reboot()
-		end}
+		end},
 		{'Dual KeyCard Lock', function()
 		  term.setTextColor(1)
 		  printer.centered("Opening File Handler", 19)
