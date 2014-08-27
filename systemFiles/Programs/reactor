@@ -247,18 +247,20 @@ function reactorControl()
 while true do
   term.clear()
   titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
-  printer.centered("What Would You Like To Set The Control Rod Levels To?", 4)
+  printer.centered("New Control Rod Level", 4)
   printer.centered("0-100 %", 5)
+  printer.centered("Max-Min", 6)
   levelText = "Percent: "
-  term.setCursorPos(termX/2-#levelText, 7)
-  levelinput = read()
+  term.setCursorPos(termX/2-#levelText, 8)
+  write(levelText)
+  levelinput = readN(3)
   levelinput = tonumber(levelinput)
 if levelinput then
   if levelinput > 100 then printer.centered("Max Is 100%", 19) sleep(0.5)
   elseif levelinput == "" then printer.centered("Cannot Be Nil", 19) sleep(0.5)
   elseif levelinput == nil then printer.centered("Cannot Be NIL", 19) sleep(0.5)
   else
-    printer.centered("Adjusting Contorl Rod Levels", 19)
+    printer.centered("Adjusting Control Rod Levels", 19)
 	sleep(0)
 	reactor.setAllControlRodLevels(levelinput)
 	printer.centered("Adjusted!", 19)
@@ -324,9 +326,13 @@ running = true
 		printer.centered("Energy Currently Stored: "..tostring(energyStore), 6)
 		printer.centered("Energy Per Tick: "..tostring(eProduce), 8)
 		printer.centered("Current Amount Of Fuel Rods: "..tostring(rods), 10)
+		if fuelAmount < 10000 then term.setTextColor(colors.yellow) elseif fuelAmount <5000 then term.setTextColor(colors.red) else term.setTextColor(1) end
 		printer.centered("Fuel Amount: "..tostring(fuelAmount), 11)
+		if wasteAmount > 500 and wasteAmount <1000 then term.setTextColor(colors.yellow) elseif wasteAmount > 1000 then term.setTextColor(colors.red) else term.setTextColor(1) end
 		printer.centered("Waste Amount: "..tostring(wasteAmount), 12)
+		if temp > 1000 and temp <1500 then term.setTextColor(colors.yellow) elseif temp > 1500 then term.setTextColor(colors.red) else term.setTextColor(1) end
 		printer.centered("Casing Temperature "..tostring(temp).."C", 13)
+		term.setTextColor(1)
 		term.setCursorPos(termX-#tostring(state), 1)
 		term.setBackgroundColor(128)
 		if state == false then term.setTextColor(colors.red) elseif state == true then term.setTextColor(colors.lime) end
