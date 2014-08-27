@@ -85,11 +85,13 @@ function eventHandler()
 end
 
 function redstoneInputDetect(event)
+if current.Settings.redstoneInputSetting then
   while true do
     if rs.getInput(current.Settings.redstoneInputSide) then
       openSide()
     end
   end
+end
 end
 
 function keyHandler(event, key)
@@ -302,6 +304,52 @@ function Setup() --Creates The Setup GUI If The Config File Is Not Found
 		end
 	end
   end  
+  
+    local function redstoneInputSetting()
+	while true do
+	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
+	  printer.centered("Do you want the computer to react to redstone", 6)
+	  printer.centered("the same way it would if the keycard was entered?", 7)
+	  printer.centered("You get to choose what side the", 10)
+	  printer.centered("redstone has to be applied to", 11)
+	  printer.centered("Y/N", 13)
+	    event, key = os.pullEvent()
+		if event == "key" then
+		  if key == keys.y then
+		    current.Settings.redstoneInputSetting = true
+			return true
+		  elseif key == keys.n then
+		    current.Settings.redstoneInputSetting = false
+			return false
+		  end
+		end
+	end
+  end
+  
+  local function redstoneInputSettingSide()
+    while true do
+	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
+	  printer.centered("What Side Does The redstone input need to be on", 6)
+  	  printer.centered("for the computer to react?", 7)
+	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
+	  printer.centered("What Side Should The Redstone Output Be?", 6)
+	  term.setCursorPos(termX/2-(#RedstoneInputText),10)
+	    write (RedstoneInputText)
+	    local vside = false
+		 RedstoneInputSide = read()
+		  for k,v in pairs(rs.getSides()) do
+		  	  if v == RedstoneInputSide then
+				  vside = true
+				  current.Settings.redstoneInputSide = RedstoneInputSide
+				  break
+			  end
+		  end
+		  if vside then break end
+		    printer.centered("Invalid side!", 10)
+		    sleep(0.5)
+		    term.clear()
+		  end
+	end
   
   local function saveSetup()
     setupTitleBar()
