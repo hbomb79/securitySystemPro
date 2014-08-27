@@ -1,21 +1,25 @@
-1.2.2
+1.2.3
+--Version Number MAJOR-MINOR-RELEASE
 
---STABLE BUILD!
+--------------------
+-- Program Stages --
+--------------------
+-- Main Suite: Stable***
+-- Pin Lock: Stable***
+-- Digital Lock: Stable***
+-- Reactor Program: BETA**
+-- Range Lock: Stable***
+-- Keycard Lock: Stable***
+-- Keycard Dual Lock: Stable***
 
---[[ This contains the version number of all the files, if this is changed on GitHub then local computers will update to the 
-new version number and download all the files again, please ensure you leave the version number in the first line or else the 
-computer will update continuously
-]]--
 
 --------------------------
 --This Version ChangeLog--
 --------------------------
+-- Added Monitor Support In Reactor Program
+-- Recoded Save Code Block In Reactor, Allows On The Fly Setting Save And Creation
+------------------
+--END OF CHANGES--
+------------------
 
--- Added Retry Stage In Updater
--- Added KeyCardDual Security System
--- Finished KeyCardDual Security System
--- Added Error Catching xpcall Into Startup File
--- Fixed Typos And Incorrect Grammar In KeyCard Program
-   ------------------
-   --END OF CHANGES--
-   ------------------
+--For More information, or for a License agreement please check the 'Documentation' Directory in the main root of this computer.
