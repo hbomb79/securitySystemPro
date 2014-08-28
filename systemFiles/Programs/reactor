@@ -1,29 +1,16 @@
-os.pullEvent = os.pullEventRaw
-
-
 current = {
-Settings = {}
-}
-
-function save()
-  term.clear()
-  titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
-  printer.centered("Thank You For Setting Up Your Reactor", 6)
-  printer.centered("Management System", 7)
-  printer.centered("Report Any Bugs On The Forum", 8)
-  printer.centered("Please Wait While We Save Your Settings...", 18)
-  SaveSettings()
-  sleep(1)
-  printer.centered('Your Settings Have Been Saved', 18)
-  printer.centered('Click Anwhere To Reboot', 19)
-  os.pullEvent('mouse_click')
-  os.reboot()
-end
-
-_int = 1
-_string = ""
-
+  settings = {},
+  reactor = {}
+  }
+Events={}
+current.monitorPresent = false
+current.page = 'Main'
 termX, termY = term.getSize()
+current.reactor.manualMode = false
+
+--Definitions
+_int = 1
+_string = 'a'
 
 function readN(len, replaceChar)
   term.setTextColor(1)
@@ -37,8 +24,11 @@ function readN(len, replaceChar)
 		  p1 = tonumber(p1)
 		elseif type(p1) == type(_string) then
 		  term.setTextColor(colors.red)
+		  term.setCursorBlink(false)
 		  printer.centered("Only Numbers! You Entered: "..p1.." Of Type: "..type(p1), 19)
-		  return nil
+		  sleep(1)		  
+		  term.setCursorBlink(true)
+		  return false
 		end
         if e=="char" then
           if #input < len then
@@ -59,417 +49,261 @@ function readN(len, replaceChar)
   return input
 end
 
-function waitForSetupKey()
-	while true do
-	  local event, arg = os.pullEvent()
-	  if event == 'setupQue' then
-	    return nil
-	  elseif event == "key" then
-	    if arg == keys.leftAlt or arg == keys.rightAlt or arg == keys.s or arg == keys.f or arg == keys.c then
-	  	return arg 
-		end
-	  end
-	end
-end
-
-function welcome()
-  titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
-  printer.centered("Follow The Steps Ahead To Setup Your Reactor", 6)
-  printer.centered("Management System", 7)
-  printer.centered("Click Anywhere To Get Started", 19)
-  os.pullEvent("mouse_click")
-  return
-end
-
-function sideSetup()
-rsWait = true
-  while rsWait do
-    term.clear()
-    titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1) --Text, Subtext, Text Color, SubText Color, BG color, defaultbgcolor, defaultTextColor
-    printer.centered("What Side Is The Reactor On?", 6)
-    sideText = "Side: "
-	term.setCursorPos(termX/2-#sideText, 10)
-	write (sideText)
-	local vside = false
-    reactorSide = read()
-      for k,v in pairs(rs.getSides()) do
-		if v == reactorSide then
-		  vside = true
-		  rsWait = false
-		  current.Settings.side = reactorSide
-		  break
-		end
-	  end
-	  if vside then break end
-		printer.centered("Invalid Side", 11)
-		sleep(0.5)
+function SettingsEdit()
+  local function setupOverlay()
+    titleBar.draw('HbombOS Security Suite', 'Reactor Setup', colors.cyan, 256, 128, 256, 1)
   end
-  return
+  
+  local function setupWelcome()
+    setupOverlay()
+	printer.centered('Welcome To Reactor Management Setup', 6)
+	printer.centered('This Program Is Used To Monitor Passively Cooled', 8)
+	printer.centered('Reactors From The BigReactors Mod', 9)
+	printer.centered('Connect A Reactor Computer Port To This', 10)
+	printer.centered('Computer And The Computer Will Find It For You', 11)
+	printer.centered('Click Anywhere To Begin Setup', 19)
+	os.pullEvent('mouse_click')
+  end
+  
+  local function shutdownSetup()
+    while true do
+      setupOverlay()
+	  printer.centered('For Increased Control, You Get To Pick', 6)
+	  printer.centered('What Amount Of RF Has To Be Stored In The', 7)
+	  printer.centered('Reactor When We Shut It Down, If The Stored', 8)
+	  printer.centered('Power Drops Below This Amount, The Reactor', 9)
+	  printer.centered('Will Re-Activate', 10)
+	  printer.centered('The Max Amount Is 10000000', 19)
+	  term.setCursorPos(termX/2-#'Buffer: ', 12)
+	  write'Buffer: '
+	  local input = readN(8)
+	    if input and input ~= '' then
+		 if tonumber(input) > 10000000 then
+		   term.setTextColor(colors.red)
+		   term.setCursorBlink(false)
+		   printer.centered('The Max Amount Is 10000000', 19)
+		   sleep(1)
+		   term.setTextColor(1)
+		   term.setCursorBlink(true)
+		 else
+	       current.settings.shutdownBuffer = tonumber(input)
+		   break
+		 end
+		else
+		  term.setTextColor(colors.red)
+		  term.setCursorBlink(false)
+	      printer.centered('Cannot Be Nil!', 19)
+		  sleep(1)
+		  term.setCursorBlink(true)
+		  term.setTextColor(1)
+	    end
+    end
+  end
+  
+  local function turndownSetup()
+    while true do
+      setupOverlay()
+	  printer.centered('For Increased Control, You Get To Pick', 6)
+	  printer.centered('What Amount Of RF Has To Be Stored In The', 7)
+	  printer.centered('Reactor When We Turn It Down, If The Stored', 8)
+	  printer.centered('Power Drops Below This Amount, The Reactor', 9)
+	  printer.centered('Will Run At Max Power Until Buffer Reached Again', 10)
+	  printer.centered('The Max Amount Is: '..current.settings.shutdownBuffer-1, 19)
+	  term.setCursorPos(termX/2-#'Buffer: ', 12)
+	  write'Buffer: '
+	  local input = readN(8)
+	    if input and input ~= '' then
+		 if tonumber(input) > current.settings.shutdownBuffer-1 then
+		   term.setTextColor(colors.red)
+		   term.setCursorBlink(false)
+		   printer.centered('The Max Amount Is: '..current.settings.shutdownBuffer-1, 19)
+		   sleep(1)
+		   term.setTextColor(1)
+		   term.setCursorBlink(true)
+		 else
+	       current.settings.turndownBuffer = tonumber(input)
+		   break
+		 end
+		else
+		  term.setTextColor(colors.red)
+		  term.setCursorBlink(false)
+	      printer.centered('Cannot Be Nil!', 19)
+		  sleep(1)
+		  term.setCursorBlink(true)
+		  term.setTextColor(1)
+	    end
+    end
+  end
+  
+  local function setupComplete()
+    setupOverlay()
+    printer.centered('Setup Is Now Complete, Thank You', 6)
+	printer.centered('Please Wait While The System Saves Your Settings', 8)
+	printer.centered('So You Can Be Sure The System Keeps Your', 9)
+	printer.centered('Reactor Safe', 10)
+	printer.centered('Saving Settings To File', 19)
+	sleep(1)
+	SaveSettings()
+	printer.centered('Settings Saved, Click Anwhere To Reboot', 19)
+	os.pullEvent('mouse_click')
+	os.reboot()
+  end
+
+setupWelcome()
+shutdownSetup()
+turndownSetup()
+setupComplete()
 end
 
-function loadSettings()
-  if fs.exists('systemFiles/Programs/reactorConfig') then
-  printer.centered('Config File Located', 19)
-  sleep(0.5)
-		local f = fs.open('systemFiles/Programs/reactorConfig', 'r')
-		if f then
-			current.Settings = textutils.unserialize(f.readAll())
-		end
-		f.close()
-	else
-	    printer.centered('Loading Setup', 19)
-		sleep(0.5)
-	    welcome()
-		sideSetup()
-		bufferShutSetup()
-		bufferDownSetup()
-		monitorOption()
-		--if current.Settings.monitorUse then monitorSetup() end
-		save()
-	end
+function overlay()
+  titleBar.draw('HbombOS Security Suite', 'Reactor Management', colors.cyan, 256, 128, 256, 1)
+end
+
+function monitorOverlay()
+  
 end
 
 function SaveSettings()
-	current.Settings = current.Settings or {}
+	current.settings = current.settings or {}
 	local f = fs.open('systemFiles/Programs/reactorConfig', 'w')
 	if f then
-		f.write(textutils.serialize(current.Settings))
+		f.write(textutils.serialize(current.settings))
 	end
 	f.close()	
 end
 
-function bufferShutSetup()
-  waitingforAnswer = true
-  while waitingforAnswer do
-    sleep(0)
-    term.clear()
-    titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
-      printer.centered("At What Amount Of RF Stored Do You Want", 5)
-      printer.centered("The Reactor To Shutdown", 6)
-    printer.centered("Maximum Amount Is 10,000,000RF", 8)
-    bufferText = "RF AMOUNT: "
-    term.setCursorPos(termX/2-#bufferText, 10)
-	write(bufferText)
-	bufferShutInput = readN(8)
-	if bufferShutInput == nil or bufferShutInput == "" then
-	  printer.centered("Cannot Be A Nil Value Or String!", 19)
-	  sleep(1)
+function loadSettings()
+  if fs.exists('systemFiles/Programs/reactorConfig') then
+		local f = fs.open('systemFiles/Programs/reactorConfig', 'r')
+		if f then
+			current.settings = textutils.unserialize(f.readAll())
+		end
+		f.close()
 	else
-	  bufferShutInput = tonumber(bufferShutInput)
-	  if bufferShutInput > 10000000 then printer.centered("Maximum Amount Is 10,000,000RF!", 19) sleep(1)
-	  elseif bufferShutInput == 0 then printer.centered("Must Not Be NIL", 19) sleep(1) else waitingforAnswer = false current.Settings.shutDownBuffer = bufferShutInput break end
+		SettingsEdit()
 	end
-  end
-  --bufferDownSetup()
-  return
 end
 
-function bufferDownSetup()
-  _2 = true
-    while _2 do
-	  sleep(0)
-	  term.clear()
-	  titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
-      printer.centered("At What Amount Of RF Stored Do You Want", 5)
-      printer.centered("The Reactor To Decrease Power Output", 6)
-	  printer.centered("Maximum Is Shutdown Amount: "..tostring(bufferShutInput), 8)
-	  bufferText = "RF AMOUNT: "
-	  term.setCursorPos(termX/2-#bufferText, 10)
-	  write(bufferText)
-	  bufferDownInput = readN(8)
-	    if bufferDownInput == nil or bufferDownInput == "" then  
-		  printer.centered("Cannot Be A Nil Value!", 19)
-		  sleep(1)
-		else
-		  bufferDownInput = tonumber(bufferDownInput)
-		  if bufferDownInput >= bufferShutInput then printer.centered("Max Amount Is: "..bufferShutInput.."!", 19) sleep(1)
-	      elseif bufferDownInput == 0 then printer.centered("Cannot Be Nil!", 19) sleep(1) else _2 = false current.Settings.turnDownBuffer = bufferDownInput break end
-		end
-	end
-	return
-end
-
---[[function monitorSetup()
-sleep(0)
-while true do
-  titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
-  printer.centered('Please Select The Side That The', 6)
-  printer.centered('Monitor Is Connected Either', 7)
-  printer.centered('Directly Or Via Cable', 8)
-  sideText = "Side: "
-	term.setCursorPos(termX/2-#sideText, 10)
-	write (sideText)
-	local vside = false
-    monSide = read()
-      for k,v in pairs(rs.getSides()) do
-		if v == monSide then
-		  vside = true
-		  rsWait = false
-		  current.Settings.monitorSide = monSide
-		  break
-		end
-	  end
-	  if vside then break end
-		printer.centered("Invalid Side", 11)
-		sleep(0.5)
-  end
-  return
-end]]--
-
-function monitorOption()
-  titleBar.draw("HbombOS Security Suite", "Reactor Management Setup", colors.cyan, 256, 128, 256, 1)
-  printer.centered('Would You Like The Computer To Display', 5)
-  printer.centered('Information On A Monitor As Well', 6)
-  printer.centered('Press Y To Accept, Or N To Decline', 8)
-    while true do
-	  event, key = os.pullEvent('key')
-		  if key == keys.y then
-		    current.Settings.monitorUse = true
-			break
-		  elseif key == keys.n then
-		    current.Settings.monitorUse = false
-			break
-		  end
-	end
-	return
-end
-
-function removeConfig()
-local function removeSet()
-  term.clear()
-  titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
-  printer.centered("Type in your administrator password", 4)
-  printer.centered("To reset the reactor configuration", 5)
-  local f = fs.open("systemFiles/Security/adminPass", "r")
-  adminPassword = f.readLine()
-  f.close()
-  configText = "Admin Password: "
-  term.setCursorPos(termX/2-#configText, 7)
-  write(configText)
-  adminPasswordInput = read("*")
-  if adminPasswordInput == adminPassword then
-    return true
-  else
-    return false
-  end
-end
-
-if removeSet() then
-  printer.centered("Removing Configuration File", 19)
-  sleep(0)
-  fs.delete('systemFiles/Programs/reactorConfig')
-  printer.centered("Removed Config", 19)
-  sleep(1)
-  os.reboot()
-else return end
-end
-
-function checkreactorStatus()
-  
-end
-
-function obtainMonitorDetails()
- 
-end
-
-
-function Start()
- keyrunning = true
-  while keyrunning do
-    local key = nil
-    local success = false
-    parallel.waitForAll(function()success = main() os.queueEvent('setupQue') end, function() key = waitForSetupKey() end)
-	  if success and key == keys.leftAlt or key == keys.rightAlt then
-        success = removeConfig()
-	  elseif success and key == keys.s then
-	    success = reactorSet()
-	  elseif success and key == keys.f then
-	    success = reactorUnset()
-	  elseif success and key == keys.c then
-	    success = reactorControl()
-	  end
-	    return success
-  end  
-end
-
-function reactorControl()
-while true do
-  term.clear()
-  titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
-  printer.centered("New Control Rod Level", 4)
-  printer.centered("0-100 %", 5)
-  printer.centered("Max-Min", 6)
-  levelText = "Percent: "
-  term.setCursorPos(termX/2-#levelText, 8)
-  write(levelText)
-  levelinput = readN(3)
-  levelinput = tonumber(levelinput)
-if levelinput then
-  if levelinput > 100 then printer.centered("Max Is 100%", 19) sleep(0.5)
-  elseif levelinput == "" then printer.centered("Cannot Be Nil", 19) sleep(0.5)
-  elseif levelinput == nil then printer.centered("Cannot Be NIL", 19) sleep(0.5)
-  else
-    printer.centered("Adjusting Control Rod Levels", 19)
-	sleep(0)
-	reactor.setAllControlRodLevels(levelinput)
-	printer.centered("Adjusted!", 19)
-	break
-  end
-end
-end
-return
-end
-
-function checkEnergy()
-if manOverride then
-  printer.centered("Manual Override Engaged, Reactor Is: "..tostring(state), 19)
-else
-if energyStore ~= nil then
+function monitorPrepare()
+  Display.setTextScale(1)
   Display.setBackgroundColor(256)
-  if tonumber(energyStore) >= tonumber(current.Settings.shutDownBuffer) then 
-    term.setTextColor(colors.blue)
-	Display.setTextColor(colors.blue)
-    printer.centered("Reached Shutdown Buffer, Turning Off!", 19)
-	if monPresent then MonWrite('Buffer Reached', monY) end
-	term.setTextColor(1)
-	--Display.setTextColor(1)
-    reactor.setActive(false)
-  elseif energyStore >= tonumber(current.Settings.turnDownBuffer) and tonumber(energyStore) < tonumber(current.Settings.shutDownBuffer) then 
-    reactor.setAllControlRodLevels(50)
-	term.setTextColor(colors.yellow)
-	Display.setTextColor(colors.yellow)
-	printer.centered("Fuel Rods At 50% Run!", 19)
-	if monPresent then MonWrite('50% Active', monY) end
-	term.setTextColor(1)
-	--Display.setTextColor(1)
-    reactor.setActive(true)
-  else 
-    reactor.setActive(true) 
-    reactor.setAllControlRodLevels(0)
-	term.setTextColor(colors.red)
-	Display.setTextColor(colors.red)
-	printer.centered("Running Reactor At Max Power!", 19)
-	if monPresent then MonWrite('Max Power', monY) end
-	term.setTextColor(1)
-	--Display.setTextColor(1)
-  end
-  Display.setTextColor(1)
-else
-  printer.centered("Energy stored is Nil", 19)
-end
-end
-end
-
-function main()
-term.clear()
-titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
-term.setTextColor(128)
-printer.centered("Reactor Information", 4)
-term.setTextColor(1)
-keyrunning = true
-running = true
- -- while running do
-	  reactor = peripheral.wrap(current.Settings.side)
-	  if not checkReactorError() then
-	  --if not reactor.getConnected() then
-	    errora.err("Reactor", "No Reactor Can Be Found On Side: "..current.Settings.side)
-	  else
-	    state = reactor.getActive()
-	    fuelAmount = reactor.getFuelAmount()
-		wasteAmount = reactor.getWasteAmount()
-		energy = reactor.getEnergyProducedLastTick()
-		temp = reactor.getFuelTemperature()
-		energyStore = reactor.getEnergyStored()
-		rods = reactor.getNumberOfControlRods()
-		eProduce = reactor.getEnergyProducedLastTick()
-		checkEnergy()
-		printer.centered("Energy Currently Stored: "..tostring(energyStore), 6)
-		printer.centered("Energy Per Tick: "..tostring(eProduce), 8)
-		printer.centered("Current Amount Of Fuel Rods: "..tostring(rods), 10)
-		if fuelAmount < 10000 then term.setTextColor(colors.yellow) elseif fuelAmount <5000 then term.setTextColor(colors.red) else term.setTextColor(1) end
-		printer.centered("Fuel Amount: "..tostring(fuelAmount), 11)
-		if wasteAmount > 500 and wasteAmount <1000 then term.setTextColor(colors.yellow) elseif wasteAmount > 1000 then term.setTextColor(colors.red) else term.setTextColor(1) end
-		printer.centered("Waste Amount: "..tostring(wasteAmount), 12)
-		if temp > 1000 and temp <1500 then term.setTextColor(colors.yellow) elseif temp > 1500 then term.setTextColor(colors.red) else term.setTextColor(1) end
-		printer.centered("Core Temperature "..tostring(temp).."C", 13)
-		term.setTextColor(1)
-		term.setCursorPos(termX-#tostring(state), 1)
-		term.setBackgroundColor(128)
-		if state == false then term.setTextColor(colors.red) elseif state == true then term.setTextColor(colors.lime) end
-		write(tostring(state))
-		term.setTextColor(1)
-		term.setBackgroundColor(256)
-		printer.centered("Hold S To Change Modes, F To Return To Auto", 16)
-		printer.centered("C To Change Reactor Control Rod Levels", 17)
-		if monPresent then monInfo() end
-		return true
-	  end
-end
-
-function checkReactorStatement()
-  reactor = peripheral.wrap(current.Settings.side)
-  reactor.getConnected()
-end
-
-function checkReactorError()
-  ok, err = pcall(checkReactorStatement)
-  if not ok then
-	errora.err(err, "There Might Not Be A Rector On Side: "..current.Settings.side)
-  else
-    return true
-  end
-end
-
-
-function reactorSet()
-  manOverride = true
-  if reactor.getActive() then reactor.setActive(false) else reactor.setActive(true) end
-  sleep(0.5)
-end
-
-function reactorUnset()
-  manOverride = false
-  sleep(0.5)
-end
-
-function monInfo()
-  Display.setTextColor(1)
-  Display.setBackgroundColor(256)
-  MonWrite("Energy Stored: "..tostring(energyStore), 3)
-  MonWrite("RF Per Tick: "..tostring(eProduce), 4)
-  if fuelAmount <= 10000 then Display.setTextColor(colors.yellow) elseif fuelAmount <=5000 then Display.setTextColor(colors.red) else Display.setTextColor(colors.white) end
-  MonWrite("Fuel: "..tostring(fuelAmount), 6)
-  if wasteAmount >= 500 and wasteAmount <=1000 then Display.setTextColor(colors.yellow) elseif wasteAmount > 1000 then Display.setTextColor(colors.red) else Display.setTextColor(colors.white) end
-  MonWrite("Waste Amount: "..tostring(wasteAmount), 7)
-  if temp >= 1000 and temp <=1500 then Display.setTextColor(colors.yellow) elseif temp > 1500 then Display.setTextColor(colors.red) else Display.setTextColor(colors.white) end
-  MonWrite("Core Temp "..tostring(temp).."C", 8)
-  
-end
-
-function monTitleBar()
+  Display.clear()
   Display.setCursorPos(1,1)
   Display.setBackgroundColor(128)
   Display.clearLine()
   Display.setTextColor(colors.cyan)
-  Display.write('HbombOS Suite')  
-  Display.setCursorPos(monX-#tostring(state), 1)  
-  if state == true then Display.setTextColor(colors.lime) else Display.setTextColor(colors.red) end
-  Display.write(tostring(state))
-  term.setBackgroundColor(256)
-  term.setTextColor(1)
+  Display.write('HbombOS Suite')
+  Display.setBackgroundColor(256)
+  Display.setTextColor(1)
 end
 
-function monInit()
-  monX, monY = Display.getSize()
-  if monX >= 29 and monY >= 12 then
-    Display.clear()
-	Display.setBackgroundColor(256)
+function monitorTitle()
+  Display.setCursorPos(1,1)
+  Display.setBackgroundColor(128)
+  Display.clearLine()
+  Display.setTextColor(colors.cyan)
+  Display.write('HbombOS Suite')
+  Display.setBackgroundColor(256)
+  Display.setTextColor(1)
+end
+
+function findMonitor()
+  localPeripherals = peripheral.getNames()
+    for i = 1, #localPeripherals do
+	  if peripheral.getType(localPeripherals[i]) == 'monitor' then
+		Display = peripheral.find('monitor')
+		monX, monY = Display.getSize()
+		if monX >= 29 and monY>= 12 then
+		  current.monitorPresent = true
+		  monitorPrepare()
+		else
+		  current.monitorPresent = false
+		  Display.setTextScale(0.5)		  
+		  Display.write('Too Small')
+		end
+		return true
+	  end
+	end
+	return false
+end
+
+--Big reactor peripheral name: BigReactors-Reactor
+
+function checkReactor()
+  if react.getConnected() then
+    state = react.getActive()
+	rfStored = react.getEnergyStored()
+	rfPerTick = react.getEnergyProducedLastTick()
+	coreTemp = react.getFuelTemperature()
+	fuelAmount = react.getFuelAmount()
+	wasteAmount = react.getWasteAmount()
+	controlRodAmount = react.getNumberOfControlRods()
   else
-    Display.setTextScale(0.5)
-    Display.setBackgroundColor(colors.red)  
-    Display.clear()
-    Display.setCursorPos(1,1)
-    Display.write('Monitor Too SMALL!')
+    scanReactor()
+  end
+end
+
+
+function statusPrint()
+  overlay()
+  current.page = 'Main'
+  checkReactor()
+  printer.centered('[S] To Toggle Reactor', 13)
+  printer.centered('[F] To Toggle Auto Mode', 14)
+  printer.centered('[C] To Adjust Control Rods', 15)
+  printer.centered('[ALT] To Change Settings', 16)
+  term.setCursorPos(termX-#tostring(state), 1)
+  term.setBackgroundColor(128)
+  if state then term.setTextColor(colors.lime) elseif not state then term.setTextColor(colors.red) else term.setTextColor(1) end
+  write(tostring(state))
+  term.setTextColor(1)
+  term.setBackgroundColor(256)
+  printer.centered('Energy Stored: '..rfStored, 4)
+  printer.centered('Energy Last Tick: '..rfPerTick, 6)
+  if tonumber(coreTemp) > 1000 and tonumber(coreTemp) < 1500 then term.setTextColor(colors.yellow) elseif tonumber(coreTemp) >1500 then term.setTextColor(colors.red) else term.setTextColor(1) end
+  printer.centered('Core Temp: '..coreTemp, 8)
+  if tonumber(fuelAmount) < 5000 and tonumber(fuelAmount) > 2500 then term.setTextColor(colors.yellow) elseif tonumber(fuelAmount) < 2500 then term.setTextColor(colors.red) else term.setTextColor(1) end
+  printer.centered('Fuel Amount: '..fuelAmount, 9)
+  if tonumber(wasteAmount) >= 500 and tonumber(wasteAmount) < 1000 then term.setTextColor(colors.yellow) elseif tonumber(wasteAmount) >= 1000 then term.setTextColor(colors.red) else term.setTextColor(1) end
+  printer.centered('Waste Amount: '..wasteAmount, 10)
+  term.setTextColor(1)
+  printer.centered('Active Control Rods: '..controlRodAmount, 11)
+  if current.monitorPresent == true then monStatusPrint() end
+  if current.reactor.manualMode == false then autoControl() end
+  if current.reactor.manualMode == true then term.setTextColor(colors.orange) printer.centered('Manual Mode Engaged', 19) end
+  if current.reactor.manualMode == true and current.monitorPresent then Display.setTextColor(colors.orange) MonWrite('Manual Mode Engaged', monY) Display.setTextColor(1) end
+  term.setTextColor(1)
+  statusRefresh = os.startTimer(0.1)
+end
+
+function monStatusPrint()
+  monitorTitle()
+  if current.page == 'Main' then
+  Display.setCursorPos(monX-#tostring(state), 1)
+  Display.setBackgroundColor(128)
+  if state then Display.setTextColor(colors.lime) elseif not state then Display.setTextColor(colors.red) else Display.setTextColor(1) end
+  Display.write(tostring(state))
+  Display.setTextColor(1)
+  Display.setBackgroundColor(256)
+  MonWrite('Energy Stored: '..rfStored, monY/2-3)
+  MonWrite('Energy Last Tick: '..rfPerTick, monY/2-1)
+  if tonumber(coreTemp) > 1000 and tonumber(coreTemp) < 1500 then Display.setTextColor(colors.yellow) elseif tonumber(coreTemp) >1500 then Display.setTextColor(colors.red) else Display.setTextColor(1) end
+  MonWrite('Core Temp: '..coreTemp, monY/2+1)
+  if tonumber(fuelAmount) < 5000 and tonumber(fuelAmount) > 2500 then Display.setTextColor(colors.yellow) elseif tonumber(fuelAmount) < 2500 then Display.setTextColor(colors.red) else Display.setTextColor(1) end
+  MonWrite('Fuel Amount: '..fuelAmount, monY/2+2)
+  if tonumber(wasteAmount) >= 500 and tonumber(wasteAmount) < 1000 then Display.setTextColor(colors.yellow) elseif tonumber(wasteAmount) >= 1000 then Display.setTextColor(colors.red) else Display.setTextColor(1) end
+  MonWrite('Waste Amount: '..wasteAmount, monY/2+3)
+  Display.setTextColor(colors.cyan)
+  MonWrite('Auto Toggle', monY-1)
+  Display.setTextColor(1)
+  elseif current.page == 'Control Rod' then
+    monitorPrepare()
+	MonWrite('Terminal In', 4)
+	MonWrite('Control Rod Settings', 5)
+  elseif current.page == 'Reactor Error' then
+    monitorPrepare()
+	MonWrite('Terminal Error', 4)
+	MonWrite('No Reactor Connected', 5)
   end
 end
 
@@ -481,58 +315,248 @@ function MonWrite(text, y)
     Display.write(text)
 end
 
-function init()
+function setControlRods()
+sleep(0)
+while true do
+  current.page = 'Control Rod'
+  if current.monitorPresent == true then monStatusPrint() end
+  overlay()
+  printer.centered('Please Type Your Custom Control Rod Setting', 6)
+  printer.centered('If The Reactor Is In Auto Mode', 7)
+  printer.centered('This Settings Will Be Changed Back', 8)
+  printer.centered('Straight Away, Change The Reactor To Manual', 9)
+  printer.centered('To Prevent This', 10)  
+  printer.centered('0% - 100%', 19)
+  term.setCursorPos(termX/2-#'Percent: ', 12)  
+  write'Percent: '
+  local input = readN(3)
+  if input ~= "" and input then
+    if tonumber(input) >100 or tonumber(input) < 0 then term.setTextColor(colors.red) printer.centered('0% - 100%', 19) sleep(0.5) term.setTextColor(1)
+	elseif tonumber(input) then react.setAllControlRodLevels(tonumber(input)) return else error'Unknown Exception Occured While Changing Values' end
+  end
+end
+end
+
+function autoToggle()
+  if current.reactor.manualMode == false then
+    current.reactor.manualMode = true
+  elseif current.reactor.manualMode == true then
+    current.reactor.manualMode = false
+  end
+end
+
+function keyHandler(event, key)
+  if key == keys.s then
+    current.reactor.manualMode = true
+    if react.getActive() == true then react.setActive(false) current.reactor.active = false elseif react.getActive() == false then react.setActive(true) current.reactor.active = true else error'Unknown Reactor State' end
+  elseif key == keys.f then
+    autoToggle()
+  elseif key == keys.c then
+    setControlRods()
+  elseif key == keys.leftAlt or key == keys.rightAlt then
+    ConfigLogin()
+  end
   term.clear()
-  titleBar.draw("HbombOS Security Suite", "Reactor Management", colors.cyan, 256, 128, 256, 1)
-  printer.centered("Looking For Config File", 19)
-  sleep(0)
-  loadSettings()
-  printer.centered('Config Loaded', 19)
-  if current.Settings.monitorUse then printer.centered('Connecting To Monitor', 19) sleep(0.1)
-    printer.centered('Searching For Wired Modem Or Monitor', 19)
-	sleep(0.1)
-	peripheralList = peripheral.getNames()
-	for i = 1, #peripheralList do
-	  if peripheral.getType(peripheralList[i]) == 'monitor' then
-	    printer.centered('Monitor Detected On: '..peripheralList[i], 19)
-		monPresent = true
-		Display = peripheral.find('monitor')
-		monX, monY = Display.getSize()
-		Display.clear()
-		Display.setCursorPos(1, 1)
-		MonWrite('Monitor Found!', 1)
-		sleep(0)
-		MonWrite('Scanning Monitor', 2)
-		sleep(0)
-		MonWrite('Monitor Size Follows...', 3)
-		MonWrite('X: '..monX..'Y: '..monY, 3)
-		sleep(0)
-		MonWrite('Adjusting Screen...', 4)
-		sleep(0)
-		MonWrite('Please Wait', 4)
-		monInit()
-		return
+  overlay()
+  if current.monitorPresent == true then monitorPrepare() end
+  statusPrint()
+end
+
+function autoControl()
+  if not current.reactor.manualMode then
+    if rfStored < current.settings.turndownBuffer then
+	  if not react.getActive then react.setActive(true) end
+	  react.setAllControlRodLevels(0)
+	  react.setActive(true)
+	  term.setTextColor(colors.red)
+	  printer.centered('Running At Maximum Power', 19)
+	  if current.monitorPresent == true then Display.setTextColor(colors.red) MonWrite('Full Power', monY) end
+	elseif rfStored > current.settings.turndownBuffer and rfStored < current.settings.shutdownBuffer then
+      if not react.getActive then react.setActive(true) end
+	  react.setAllControlRodLevels(50)
+	  react.setActive(true)
+	  term.setTextColor(colors.yellow)
+	  printer.centered('Running At Half Power', 19)
+	  if current.monitorPresent == true then Display.setTextColor(colors.yellow) MonWrite('Half Power', monY) end
+	elseif rfStored > current.settings.shutdownBuffer then
+	  react.setAllControlRodLevels(100)
+	  react.setActive(false)
+	  term.setTextColor(colors.blue)
+	  printer.centered('Buffer Reached, Shutdown', 19)
+	  if current.monitorPresent == true then Display.setTextColor(colors.blue) MonWrite('Shutdown', monY) end
+	end
+	term.setTextColor(1)
+	if current.monitorPresent == true then Display.setTextColor(1) end
+  end
+end
+
+function reactorError()
+  current.page = 'Reactor Error'
+  if current.monitorPresent == true then monStatusPrint() end
+  if current.reactor.present == false then
+    overlay()
+	printer.centered('There Is No Reactor Connected To This Computer', 6)
+	printer.centered('Please Attach Reactor Port To This Computer', 8)
+	printer.centered('If The Computer Doesnt Automatically Re-Scan', 9)
+	printer.centered('Then Reboot The Computer By Holding CTRL+R', 10)
+	printer.centered('Add Computer Port... Then Wait While Searching', 19)
+  elseif current.reactor.present== true then
+    if current.reactor.built == false then
+      overlay()
+	  printer.centered('It Appears The Reactor Connected To This Computer', 6)
+	  printer.centered('Is Not Completly Built, Please Finish The Mulit Block', 7)
+	  printer.centered('If The Computer Doesnt Automatically Scan', 8)
+	  printer.centered('Then Reboot The PC By Holding CTRL+R', 19)
+	end
+  else
+    error('Unknown Reactor Error Thrown')
+  end
+  os.pullEventRaw('peripheral')
+  printer.centered('Searching For Reactor Computer Port...', 19)
+  sleep(1)
+  scanReactor()
+  overlay()
+  if current.monitorPresent == true then monStatusPrint() end
+  statusPrint()
+end
+
+function scanReactor()
+  localPeri = peripheral.getNames()
+  for i = 1, #localPeri do
+    if peripheral.getType(localPeri[i]) == 'BigReactors-Reactor' then
+	  current.reactor.present = true
+	  react = peripheral.find('BigReactors-Reactor')
+	  if react.getConnected() then
+	    current.reactor.built = true
+		return true
+	  else
+	    current.reactor.built = false
+		reactorError()
 	  end
 	end
-	monPresent = false
-	printer.centered('No Monitor Detected!', 19)
-	sleep(0)
-	return
+  end
+  current.reactor.present = false
+  reactorError()
+end
+
+function scanDevices()
+findMonitor()
+scanReactor()
+end
+
+function monTouch(event,side, x, y)
+--error(event..' x: '..x..' y: '..y)
+  if x >= monX-5 and y == 1 then
+     current.reactor.manualMode = true
+     if react.getActive() == true then react.setActive(false) current.reactor.active = false elseif react.getActive() == false then react.setActive(true) current.reactor.active = true else error'Unknown Reactor State' end
+  elseif y == monY-1 then
+    autoToggle()
   end
 end
 
-function loop()
-Display.clear()
+function Initialise()
+  overlay()
+  loadSettings()
+  eventRegister('key', keyHandler)
+  eventRegister('timer', timerHandler)
+  eventRegister('terminate', function(event) errora.err('Malicious Activity Detected', 'You Attempted To Terminate The Software!', true) end)
+  eventRegister('monitor_resize', findMonitor)
+  eventRegister('peripheral', scanDevices)
+  eventRegister('peripheral_detach', scanDevices)
+  eventRegister('monitor_touch', monTouch)
+  scanReactor()
+  findMonitor()
+  programEventLoop()
+end
+
+function timerHandler(event, timerName)
+  if timerName == statusRefresh then statusPrint() end
+end
+
+function ConfigLogin()
+  
+end
+
+function configMenu()
+  titleBar.draw('HbombOS Security Suite', 'Reactor Settings', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Pick An Option Below', 6)
+  local continue = false
+  local options = {
+		{'Edit Settings', function() 
+		  SettingsEdit()
+		end}, 
+		{'Reset Configuration', function()
+		  fs.delete('systemFiles/Programs/reactorConfig')
+		  pressed = false
+		  config = true
+		  printer.centered('Removed!', 19)
+		  sleep(1)
+		  os.reboot()
+		end},
+		{'Cancel And Return', function()
+          return
+		end}
+	}
+	local selected = 1
+	local function draw()
+		for i, v in ipairs(options) do
+			local bg = 256
+			local tc = colours.white
+			if i == selected then
+				bg = 256
+				tc = colours.blue
+			end
+			term.setTextColor(tc)
+			term.setBackgroundColor(bg)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
+		end
+	end
+	local wait = true
+	draw()
+	while wait do
+		local event, key = os.pullEvent('key')
+		if key == keys.up then
+			selected = selected - 1
+			if selected < 1 then
+				selected = 1
+			end
+		elseif key == keys.down then
+			selected = selected + 1
+			if selected > #options then
+				selected = #options
+			end
+		elseif key == keys.enter then
+		  options[selected][2]()
+		  wait = false
+		  break
+		end
+		draw()
+	end
+	return continue
+end
+
+function eventRegister(event, functionToRun)
+	if not Events[event] then
+		Events[event] = {}
+	end
+	table.insert(Events[event], functionToRun)
+end
+
+function programEventLoop()
+statusPrint()
   while true do
-    sleep(0)
-	monTitleBar()
-    Start()
-  end
+	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+	  if Events[event] then
+		for i, e in ipairs(Events[event]) do
+		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+		end
+      end
+   end
 end
 
-init()
-local _, err = pcall(loop) --Error Catching, All Functions Are Called From initialise() at some point...
+local _, err = pcall(Initialise)
   if err then
     term.setCursorBlink(false)
-	errora.err(err, 'Uh Oh, Please Report The Error Code Above', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
-  end  
+	errora.err(err, 'The Reactor Program Has Crashed, Error Code Above', true)
+  end
+os.reboot()
