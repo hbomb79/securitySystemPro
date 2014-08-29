@@ -52,6 +52,7 @@ PrintCentered("Welcome to the HbombOS Updater", 4)
 PrintCentered("This Updater Will Guide", 6)
 PrintCentered("You Through Updating Your Security Suite", 7)
 PrintCentered("Press Y Continue Or N To Cancel", 9)
+while true do
 local event, key = os.pullEvent("key")
 if key == keys.y then
 term.clear()
@@ -83,6 +84,7 @@ elseif key == keys.n then
   drawTitleBar()
   PrintCentered("Cancelling...", 6)
   sleep(1)
+end
 end
 end
 
