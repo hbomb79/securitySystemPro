@@ -1,7 +1,5 @@
 local args = { ... }
-
 errMess = 'ERROR'
-
 -- This is the program/script that actually re-installs all of the scripts on the computer
 termX, termY = term.getSize()
 
@@ -12,7 +10,6 @@ function PrintCentered(text, y)
 	term.clearLine()
     write(text)
 end
-
 
 function errorEnd()
   sleep(3)
@@ -32,7 +29,6 @@ function errorEnd()
 	 sleep(1)
    end
 end
-
 
 function drawTitleBar()
   term.setBackgroundColor(128)
