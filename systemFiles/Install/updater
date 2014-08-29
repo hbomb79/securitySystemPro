@@ -84,6 +84,7 @@ elseif key == keys.n then
   drawTitleBar()
   PrintCentered("Cancelling...", 6)
   sleep(1)
+  break
 end
 end
 end
