@@ -128,11 +128,19 @@ if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/mas
 if quietDownload then os.reboot() else return true end
 end
 
+function Start()
 if args[1] == "quiet" then 
   term.setBackgroundColor(256)
   term.clear()
   drawTitleBar() 
-  if downloader(true) == "ERROR" then printer.centered('An Error Occured, Please Wait While We Re-Try', 19) sleep(2) shell.run('systemFiles/Install/updater', "quiet") end
+  if downloader(true) == "ERROR" then printer.centered('An Error Occured, Please Wait While We Re-Try', 19) sleep(2) --[[shell.run('systemFiles/Install/updater', "quiet")--]] os.reboot() end
 else 
   welcome() 
 end
+end
+
+local _, err = pcall(Start) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    term.setCursorBlink(false)
+	errora.err(err, 'Uh Oh, Please Report The Error Code Above', true)
+  end  
