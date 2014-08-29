@@ -526,7 +526,7 @@ function updateAvail()
 	PrintCentered("Parsed", 19)
 	sleep(0)
 	PrintCentered("Downloading New Updater", 19)
-	--if not download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") then printer.centered('Error Occured While Downloading Updater!', 19) sleep(1) os.reboot() end
+	if not download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") then printer.centered('Error Occured While Downloading Updater!', 19) sleep(1) os.reboot() end
 	PrintCentered("Download Complete, Running Updater",18)
 	local f = fs.open('systemFiles/Install/updateConfig', 'r')
 	useSettingQuiet = f.readLine()
