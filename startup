@@ -481,6 +481,7 @@ end
 
 function main() --The main function, calls all child functions
   --First all APIs must be loaded to perform the system checks later on
+  i = 0
   loadAPIs()
   programCheckConfig()
   term.setBackgroundColor(256)
@@ -505,11 +506,19 @@ function main() --The main function, calls all child functions
   if systemCheck.checkhttp() then PrintCentered("System Check Complete!", 19) end
   sleep(0)
   PrintCentered("", 19)
-  PrintCentered("Checking For Updates", 18)
-  sleep(0)
-  updateState = update.Check()
-  if updateState == true then
-    PrintCentered("An Update Has Been Detected", 19)
+  updateChecker()
+  return true
+end
+
+function latestVer()
+    PrintCentered("You Are Running The Latest STABLE Version!", 19)
+	printer.centered("Reading Config File..", 19)
+	sleep(0.1)
+	return true
+end
+
+function updateAvail()
+    PrintCentered("An Update Has Been Detected", 6)
 	sleep(0)
     PrintCentered("Obtaining Latest Update From GitHub", 18)
 	PrintCentered("Seeking URL", 19)
@@ -517,29 +526,105 @@ function main() --The main function, calls all child functions
 	PrintCentered("Parsed", 19)
 	sleep(0)
 	PrintCentered("Downloading New Updater", 19)
-	if not download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") then printer.centered('Error Occured While Downloading Updater!', 19) sleep(1) os.reboot() end
-	sleep(1)
+	--if not download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") then printer.centered('Error Occured While Downloading Updater!', 19) sleep(1) os.reboot() end
 	PrintCentered("Download Complete, Running Updater",18)
-	sleep(0)
 	local f = fs.open('systemFiles/Install/updateConfig', 'r')
 	useSettingQuiet = f.readLine()
 	f.close()
-	if useSettingQuiet == "true" then shell.run("systemFiles/Install/updater", "quiet") elseif useSettingQuiet == "false" then shell.run("systemFiles/Install/updater") else errora.err(nil, "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(useSettingQuiet)) end
-	errora.err(nil, "The Updater Experienced An Unknown Exception, Or It Ended With No Protocol, If the issue persists, report it")
-  elseif updateState == false then
-    PrintCentered("You Are Running The Latest STABLE Version!", 19)
-	printer.centered("Reading Config File..", 19)
-	sleep(0.1)
-	return true
-  elseif updateState == 'ERROR' then
-    term.setTextColor(colors.red)
-    printer.centered('The Update Checker Experienced Problems, Rebooting!', 18)
-    printer.centered('If This Persits Shutdown Computer And Report!', 19)
-	sleep(3)
-	os.reboot()
-  else
-    os.reboot()
+	if useSettingQuiet == "true" then updaterRun = shell.run("systemFiles/Install/updater", "quiet") elseif useSettingQuiet == "false" then updaterRun = shell.run("systemFiles/Install/updater") else errora.err(nil, "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(useSettingQuiet)) end
+	  if request_code == 'Cancelled' then
+	    return 'Cancel'
+	  elseif request_code == 'Error' then
+	    i = i + 1
+		if i < 4 then
+	      term.setBackgroundColor(256)
+	      term.clear()
+          drawTitleBar()
+          printer.centered('The Updater Is Experiencing Issues', 6)
+          printer.centered('Please Ensure You Are Connected To The Internet', 8)
+          printer.centered('If You Have An Active Internet Connection', 10)
+          printer.centered('Then Report On Forum Page', 11)
+          printer.centered('Retry Attempt: '..i, 19)
+          sleep(3)
+		else
+		  term.setBackgroundColor(256)
+	      term.clear()
+          drawTitleBar()
+          printer.centered('The Updater Isnt Able To Connect', 6)
+          printer.centered('Due To Retrying 3 Times, The System Has', 8)
+          printer.centered('Decided To Skip The Update...', 10)
+          printer.centered('Please Connect To Internet', 11)
+          for x = 3, 1, -1 do
+		    if x == 1 then
+		      printer.centered('Skipping In: '..x..' Second', 19)
+			elseif x > 1 then
+			  printer.centered('Skipping In: '..x..'Seconds', 19)
+			else break end
+			sleep(1)
+		  end
+		  return 'Cancel'
+		end
+		return 'Error'
+	  end
+end
+
+function updateChecker()
+  while true do
+	term.setBackgroundColor(256)
+	term.clear()
+    drawTitleBar()
+	printer.centered('Checking For Software Updates', 6)
+	printer.centered('Please Wait...', 19)
+    updateState = update.Check()
+    if updateState == true then
+      if updateAvail() == 'Cancel' then
+	    break
+	  end
+    elseif updateState == false then
+  	  break
+    elseif updateState == 'ERROR' then
+	  i = i + 1
+		if i < 4 then
+	      term.setBackgroundColor(256)
+	      term.clear()
+          drawTitleBar()
+          printer.centered('The Updater Is Experiencing Issues', 6)
+          printer.centered('Please Ensure You Are Connected To The Internet', 8)
+          printer.centered('If You Have An Active Internet Connection', 10)
+          printer.centered('Then Report On Forum Page', 11)
+          printer.centered('Retry Attempt: '..i, 19)
+          for x = 3, 1, -1 do
+		    if x == 1 then
+		      printer.centered('Retrying In: '..x..' Second', 19)
+			elseif x > 1 then
+			  printer.centered('Retrying In: '..x..' Seconds', 19)
+			else break end
+			sleep(1)
+		  end
+		else
+		  term.setBackgroundColor(256)
+	      term.clear()
+          drawTitleBar()
+          printer.centered('The Updater Isnt Able To Connect', 6)
+          printer.centered('Due To Retrying 3 Times, The System Has', 8)
+          printer.centered('Decided To Skip The Update...', 10)
+          printer.centered('Please Connect To Internet', 11)
+          printer.centered('When Possible', 12)
+          for x = 5, 1, -1 do
+		    if x == 1 then
+		      printer.centered('Skipping In: '..x..' Second', 19)
+			elseif x > 1 then
+			  printer.centered('Skipping In: '..x..' Seconds', 19)
+			else break end
+			sleep(1)
+		  end
+		  return 'Cancel'
+		 end
+    else
+      error 'Error Occured When Updating'
+    end
   end
+  return true
 end
 
 function bootMenu()
