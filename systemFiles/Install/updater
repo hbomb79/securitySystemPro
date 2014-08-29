@@ -82,15 +82,11 @@ term.clear()
 term.setCursorPos(1,1)
 term.clearLine()
 os.reboot()
-
-else
+elseif key == keys.n then
   term.clear()
   drawTitleBar()
   PrintCentered("Cancelling...", 6)
   sleep(1)
-  PrintCentered ("Cancelled, Come Back Soon", 6)
-  sleep(2)
-  os.shutdown()
 end
 end
 
