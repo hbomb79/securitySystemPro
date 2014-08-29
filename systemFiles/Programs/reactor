@@ -50,6 +50,9 @@ function readN(len, replaceChar)
 end
 
 function SettingsEdit()
+current.page = 'Setup'
+findMonitor()
+if current.monitorPresent then monStatusPrint() end
   local function setupOverlay()
     titleBar.draw('HbombOS Security Suite', 'Reactor Setup', colors.cyan, 256, 128, 256, 1)
   end
@@ -294,7 +297,7 @@ function monStatusPrint()
   if tonumber(wasteAmount) >= 500 and tonumber(wasteAmount) < 1000 then Display.setTextColor(colors.yellow) elseif tonumber(wasteAmount) >= 1000 then Display.setTextColor(colors.red) else Display.setTextColor(1) end
   MonWrite('Waste Amount: '..wasteAmount, monY/2+3)
   Display.setTextColor(colors.cyan)
-  MonWrite('Auto Toggle', monY-1)
+  MonWrite('[Auto Toggle]', monY-1)
   Display.setTextColor(1)
   elseif current.page == 'Control Rod' then
     monitorPrepare()
@@ -304,6 +307,14 @@ function monStatusPrint()
     monitorPrepare()
 	MonWrite('Terminal Error', 4)
 	MonWrite('No Reactor Connected', 5)
+  elseif current.page == 'Config' then
+    monitorPrepare()
+	MonWrite('Teminal In', 4)
+	MonWrite('Configuration Adjustment', 5)
+  elseif current.page == 'Setup' then
+    monitorPrepare()
+	MonWrite('Terminal In', 4)
+	MonWrite('System Setup', 5)
   end
 end
 
@@ -321,7 +332,7 @@ while true do
   current.page = 'Control Rod'
   if current.monitorPresent == true then monStatusPrint() end
   overlay()
-  printer.centered('Please Type Your Custom Control Rod Setting', 6)
+  printer.centered('Please Type Your Custom Control Rod Setting', 5)
   printer.centered('If The Reactor Is In Auto Mode', 7)
   printer.centered('This Settings Will Be Changed Back', 8)
   printer.centered('Straight Away, Change The Reactor To Manual', 9)
@@ -440,6 +451,7 @@ function scanReactor()
 end
 
 function scanDevices()
+current.monitorPresent = false
 findMonitor()
 scanReactor()
 end
@@ -464,8 +476,8 @@ function Initialise()
   eventRegister('peripheral', scanDevices)
   eventRegister('peripheral_detach', scanDevices)
   eventRegister('monitor_touch', monTouch)
-  scanReactor()
   findMonitor()
+  scanReactor()
   programEventLoop()
 end
 
@@ -474,8 +486,42 @@ function timerHandler(event, timerName)
 end
 
 function ConfigLogin()
+  current.page = 'Config'
+  if current.monitorPresent then monStatusPrint() end
+  local f = fs.open('systemFiles/Security/adminPass', 'r')
+  adminPassLoaded = f.readLine()
+  f.close()
+  overlay()
+  printer.centered('Please Enter Your Admin Password', 4)
+  printer.centered('Linked To Your Security Suite To Access', 5)
+  printer.centered('The Settings Menu', 6)
+  printer.centered('Press [ALT] To Return', 19)
   
-end
+  local function LoginInput()
+    while true do
+      term.setCursorPos(termX/2-#'Password: ', 10)
+	  write('Password: ')
+	  local input = read('*')
+	    if input == adminPassLoaded then
+	      configMenu()
+	    end
+    end
+  end
+  
+  local function keyExit()
+    while true do
+	  local event, key = os.pullEvent()
+	  if event == 'key' then
+        if key == keys.leftAlt or keys == keys.rightAlt then
+		  term.setCursorBlink(false)
+		  return
+		end
+	  end
+	end
+  end
+  
+  parallel.waitForAny(LoginInput, keyExit)
+  end
 
 function configMenu()
   titleBar.draw('HbombOS Security Suite', 'Reactor Settings', colors.cyan, 256, 128, 256, 1)
@@ -494,7 +540,7 @@ function configMenu()
 		  os.reboot()
 		end},
 		{'Cancel And Return', function()
-          return
+          programEventLoop()
 		end}
 	}
 	local selected = 1
