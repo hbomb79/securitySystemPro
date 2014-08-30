@@ -795,7 +795,7 @@ end
 			  OORwait = false
 			 end
 			end
-			refreshTimer = os.startTimer(0.6)
+			refreshTimer = os.startTimer(0)
 		end
 	end
 end
