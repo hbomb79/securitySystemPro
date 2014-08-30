@@ -45,7 +45,7 @@ current = {
   }
 }
 Events ={}
-
+current.config = false
 termX, termY = term.getSize()
 
 function drawTitle()
@@ -303,7 +303,12 @@ function drawScreen()
   elseif current.status == 'Access Granted' then term.setTextColor(colors.lime)
   elseif current.status == 'Access Denied' then term.setTextColor(colors.red) end
   printer.centered(current.status, 8)
-  term.setTextColor(1)
+  term.setTextColor(256)
+  term.setBackgroundColor(128)
+  term.setCursorPos(termX-#'[alt] Setup', 1)
+  write('[alt] Setup')
+  term.setTextColor(1)  
+  term.setBackgroundColor(256)
   printer.centered('System Monitoring Nearby Entities', 19)
   printer.centered('Detector System', 6)
 end 
@@ -312,6 +317,7 @@ function eventLoop()
 drawTitle()
 current.status = 'System Ready'			
 allowPlayer = false
+checkScanner()
   while true do
   drawScreen()
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
@@ -348,8 +354,104 @@ function timerHandle(event, timer)
   end
 end
 
-function keyHandler()
+function configMenu()
+  titleBar.draw('HbombOS Security Suite', 'OpenP Detector Settings', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Pick An Option Below', 6)
+  local continue = false
+  current.config = true
+  local options = {
+		{'Edit Settings', function() 
+		  setup()
+		end}, 
+		{'Reset Configuration', function()
+		  fs.delete('systemFiles/Programs/detectorConfig')
+		  os.reboot()
+		end},
+		{'Cancel And Return', function()
+		  current.config = false
+		  eventLoop()
+		end}
+	}
+	local selected = 1
+	local function draw()
+		for i, v in ipairs(options) do
+			local bg = 256
+			local tc = colours.white
+			if i == selected then
+				bg = 256
+				tc = colours.blue
+			end
+			term.setTextColor(tc)
+			term.setBackgroundColor(bg)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
+		end
+	end
+	local wait = true
+	draw()
+	while true do
+		local event, key = os.pullEvent('key')
+		if key == keys.up then
+			selected = selected - 1
+			if selected < 1 then
+				selected = 1
+			end
+		elseif key == keys.down then
+			selected = selected + 1
+			if selected > #options then
+				selected = #options
+			end
+		elseif key == keys.enter then
+		  options[selected][2]()
+		  wait = false
+		  break
+		end
+		draw()
+	end
+end
 
+function ConfigLogin()
+  closeAllSides()
+  current.config = true
+  local f = fs.open('systemFiles/Security/adminPass', 'r')
+  adminPassLoaded = f.readLine()
+  f.close()
+  titleBar.draw('HbombOS Security Suite', 'OpenP Detector Settings', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Please Enter Your Admin Password', 4)
+  printer.centered('Linked To Your Security Suite To Access', 5)
+  printer.centered('The Settings Menu', 6)
+  printer.centered('Press [alt] To Return', 19)
+  
+  local function LoginInput()
+    while true do
+      term.setCursorPos(termX/2-#'Password: ', 10)
+	  term.clearLine()
+	  write('Password: ')
+	  local input = read('*')
+	    if input == adminPassLoaded then
+		  current.config = true
+		  break
+	    end
+    end
+  end
+  
+  local function keyExit()
+    while true do
+	  local event, key = os.pullEvent('key')
+        if key == keys.leftAlt or keys == keys.rightAlt then
+		  term.setCursorBlink(false)
+		  current.config = false
+          break
+	  end
+	end
+  end
+    parallel.waitForAny(LoginInput, keyExit)
+    if current.config then configMenu() else eventLoop() end
+  end
+
+function keyHandler(event, key)
+  if event == 'key' and key == keys.leftAlt or key == keys.rightAlt then
+    if current.config == false then ConfigLogin() end
+  end
 end
 
 function init()
