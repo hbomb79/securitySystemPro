@@ -280,7 +280,7 @@ function statusPrint()
 end
 
 function monStatusPrint()
-  monitorTitle()
+  if current.monitorTitleUpdate then current.monitorTitleUpdate = false monitorTitle() end
   if current.page == 'Main' then
   Display.setCursorPos(monX-#tostring(state), 1)
   Display.setBackgroundColor(128)
@@ -327,16 +327,17 @@ function MonWrite(text, y)
 end
 
 function setControlRods()
+current.reactor.manualMode = true
 sleep(0)
 while true do
   current.page = 'Control Rod'
   if current.monitorPresent == true then monStatusPrint() end
   overlay()
   printer.centered('Please Type Your Custom Control Rod Setting', 5)
-  printer.centered('If The Reactor Is In Auto Mode', 7)
+  --[[printer.centered('If The Reactor Is In Auto Mode', 7)
   printer.centered('This Settings Will Be Changed Back', 8)
   printer.centered('Straight Away, Change The Reactor To Manual', 9)
-  printer.centered('To Prevent This', 10)  
+  printer.centered('To Prevent This', 10)  ]]--
   printer.centered('0% - 100%', 19)
   term.setCursorPos(termX/2-#'Percent: ', 12)  
   write'Percent: '
@@ -359,6 +360,7 @@ end
 function keyHandler(event, key)
   if key == keys.s then
     current.reactor.manualMode = true
+	if current.monitorPresent then current.monitorTitleUpdate = true end
     if react.getActive() == true then react.setActive(false) current.reactor.active = false elseif react.getActive() == false then react.setActive(true) current.reactor.active = true else error'Unknown Reactor State' end
   elseif key == keys.f then
     autoToggle()
@@ -460,6 +462,7 @@ function monTouch(event,side, x, y)
 --error(event..' x: '..x..' y: '..y)
   if x >= monX-5 and y == 1 then
      current.reactor.manualMode = true
+	 if current.monitorPresent then current.monitorTitleUpdate = true end
      if react.getActive() == true then react.setActive(false) current.reactor.active = false elseif react.getActive() == false then react.setActive(true) current.reactor.active = true else error'Unknown Reactor State' end
   elseif y == monY-1 then
     autoToggle()
