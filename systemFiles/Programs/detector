@@ -216,6 +216,7 @@ if alarmOption() == true then alarmOutput() end
 setupSave()
 term.clear()
 drawTitle()
+eventLoop()
 end
 
 function loadSettings()
