@@ -205,6 +205,8 @@ function setup()
     printer.centered('Saving Settings', 19)
 	SaveSettings()
 	printer.centered('Settings Saved, Click To Continue', 19)
+	os.pullEvent('mouse_click')
+	current.config = false
   end
   
 whitelistAdd()
@@ -213,6 +215,7 @@ if ouputOption() == true then outputSide() end
 if alarmOption() == true then alarmOutput() end
 setupSave()
 term.clear()
+drawTitle()
 end
 
 function loadSettings()
