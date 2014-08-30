@@ -212,6 +212,7 @@ if ouputOption() == true then outputSide() end
 
 if alarmOption() == true then alarmOutput() end
 setupSave()
+term.clear()
 end
 
 function loadSettings()
