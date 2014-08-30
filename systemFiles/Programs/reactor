@@ -378,16 +378,20 @@ end
 function autoControl()
   if not current.reactor.manualMode then
     if rfStored < current.settings.turndownBuffer then
-	  if not react.getActive then react.setActive(true) end
+	  if not react.getActive() then
+        if current.monitorPresent then current.monitorTitleUpdate = true end
+	    react.setActive(true) 
+	  end
 	  react.setAllControlRodLevels(0)
-	  react.setActive(true)
 	  term.setTextColor(colors.red)
 	  printer.centered('Running At Maximum Power', 19)
 	  if current.monitorPresent == true then Display.setTextColor(colors.red) MonWrite('Full Power', monY) end
 	elseif rfStored > current.settings.turndownBuffer and rfStored < current.settings.shutdownBuffer then
-      if not react.getActive then react.setActive(true) end
+      if not react.getActive() then
+        if current.monitorPresent then current.monitorTitleUpdate = true end
+	    react.setActive(true) 
+	  end
 	  react.setAllControlRodLevels(50)
-	  react.setActive(true)
 	  term.setTextColor(colors.yellow)
 	  printer.centered('Running At Half Power', 19)
 	  if current.monitorPresent == true then Display.setTextColor(colors.yellow) MonWrite('Half Power', monY) end
