@@ -1,0 +1,362 @@
+--[[scanner = peripheral.wrap("top")
+count = 0
+list = {"hbomb_79"}
+
+while true do
+  open = false
+  alarm = false
+  x = scanner.getPlayerNames()
+  
+  print("FOUND " ..#x.. " PLAYERS! Scan:"..count)
+  for i=1, #x do
+    print(x[i])
+    for z=1, #list do
+      if x[i] == list[z] then
+        open = true
+      else
+        alarm = true
+      end
+    end
+  end
+  
+  if open == true then
+    rs.setOutput("bottom", true)
+  else
+    rs.setOutput("bottom", false)
+  end
+  
+  if alarm == true then
+    rs.setOutput("left", true)
+  else
+    rs.setOutput("left", false)
+  end
+  
+  print()
+  sleep(0.3)
+  term.clear()
+  term.setCursorPos(1,1)
+  count = count + 1
+end
+]]--
+current = {
+  sensor = {},
+  settings = {
+    whiteList = {}
+  }
+}
+Events ={}
+
+termX, termY = term.getSize()
+
+function drawTitle()
+  titleBar.draw('HbombOS Security Suite', 'OpenP Detector Lock', colors.cyan, 256, 128, 256, 1)
+end
+
+function setup()
+  local function setupWelcome()
+    titleBar.draw('HbombOS Security Suite', 'OpenP Detector Lock Setup', colors.cyan, 256, 128, 256, 1)
+  end
+  
+  local function setupStart()
+    setupWelcome()
+	printer.centered('Welcome To The Detector Setup')
+	printer.centered('Click Anywhere To Begin Setup')
+	os.pullEvent('mouse_click')
+  end
+  
+  local function whitelistAdd()
+  
+    local function addNames()
+    while true do
+	  inList = false
+      setupWelcome()
+	  printer.centered('Enter The Names You Would Like To', 6)
+	  printer.centered('The Detector WhiteList', 7)
+	  printer.centered('These Are The Players Who Will Have Access', 9)
+	  printer.centered('Enter The Username, And Hit Enter To Add', 10)
+	  printer.centered('Then Press [alt] To Continue To The Next Step',19)
+	  term.setCursorPos(termX/2-#'Username: ', 13)
+	  write('Username: ')
+	  local input = read()
+	    if input and input ~= "" then
+		  for _, entry in ipairs(current.settings.whiteList) do
+		    if entry == input then
+			  inList = true
+			  printer.centered('Username Already In Whitelist', 19)
+			  sleep(1)
+			end
+		  end
+		  if inList == false then
+		    printer.centered('Adding Username To whitelist', 19)
+			  if current.settings.whiteList then
+		        table.insert(current.settings.whiteList, input)
+				printer.centered('Username Inserted Into Whitelist', 19)
+				sleep(0.5)
+			  else
+			    error'Table Appears To Be Missing'
+			  end
+		  end
+		end
+    end
+	end
+	
+	local function nextStep()
+	  while true do
+	    local event, key = os.pullEvent('key')
+		  if key == keys.leftAlt or key == keys.rightAlt then
+		    return key
+		  end
+	  end
+	end
+	
+	parallel.waitForAny(nextStep, addNames)
+  end
+  
+  local function ouputOption()
+    term.setCursorBlink(false)
+    setupWelcome()
+	printer.centered('Do You Want The Computer To Ouput', 6)
+	printer.centered('A Redstone Signal When The Players Is', 7)
+	printer.centered('On The Whitelist', 8)
+	printer.centered('You Pick What Side It Outputs From Next Step', 19)
+	  while true do
+	    local event, key = os.pullEvent('key')
+		  if key == keys.y then
+		    current.settings.outputOption = true
+			return true
+		  elseif key == keys.n then
+		    current.settings.outputOption = false
+			return false
+		  end
+	  end
+  end
+  
+  local function outputSide()
+    while true do
+	sleep(0)
+    setupWelcome()
+	printer.centered("Redstone Output Side", 6)
+	term.setCursorPos(termX/2-#'Output Side: ',10)
+	  write ('Output Side: ')
+	  local vside = false
+		current.settings.redstoneSide = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == current.settings.redstoneSide then
+				vside = true
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 11)
+		  sleep(0.5)
+		  term.clear()
+		end
+	 return
+  end
+  
+  local function alarmOption()
+    term.setCursorBlink(false)
+    setupWelcome()
+	printer.centered('Do You Want The Computer To Ouput', 6)
+	printer.centered('A Redstone Signal When The Players Is', 7)
+	printer.centered('NOT On The Whitelist', 8)
+	printer.centered('You Pick What Side It Outputs From Next Step', 19)
+	  while true do
+	    local event, key = os.pullEvent('key')
+		  if key == keys.y then
+		    current.settings.alarmOption = true
+			return true
+		  elseif key == keys.n then
+		    current.settings.alarmOption = false
+			return false
+		  end
+	  end
+  end
+  
+  local function alarmOutput()
+    while true do
+	sleep(0)
+    setupWelcome()
+	printer.centered("Alarm Redstone Output Side", 6)
+	term.setCursorPos(termX/2-(#'Alarm Side: '),10)
+	  write ('Alarm Side: ')
+	  local vside = false
+		current.settings.alarmRedstoneSide = read()
+		for k,v in pairs(rs.getSides()) do
+			if v == current.settings.alarmRedstoneSide then
+				vside = true
+				break
+			end
+		end
+		if vside then break end
+		  printer.centered("Invalid side!", 11)
+		  sleep(0.5)
+		  term.clear()
+		end
+	 return
+  end
+  
+  local function setupSave()
+    setupWelcome()
+    printer.centered('Thanks For Completing Setup', 6)
+    printer.centered('Please Wait While Your Preferences', 8)
+    printer.centered('Are Saved To File', 9)
+    printer.centered('Saving Settings', 19)
+	SaveSettings()
+	printer.centered('Settings Saved, Click To Continue', 19)
+  end
+  
+whitelistAdd()
+if ouputOption() == true then outputSide() end
+
+if alarmOption() == true then alarmOutput() end
+setupSave()
+end
+
+function loadSettings()
+  if fs.exists('systemFiles/Programs/detectorConfig') then
+		local f = fs.open('systemFiles/Programs/detectorConfig', 'r')
+		if f then
+			current.settings = textutils.unserialize(f.readAll())
+		end
+		f.close()
+	else
+		setup()
+	end
+end
+
+function SaveSettings()
+	current.settings = current.settings or {}
+	local f = fs.open('systemFiles/Programs/detectorConfig', 'w')
+	if f then
+		f.write(textutils.serialize(current.settings))
+	end
+	f.close()	
+end
+--Sensor Peripheral: openperipheral_sensor
+
+function scanSensor()
+  localPeripherals = peripheral.getNames()
+    for i = 1, #localPeripherals do
+	  if peripheral.getType(localPeripherals[i]) == 'openperipheral_sensor' then
+		Sensor = peripheral.find('openperipheral_sensor')
+		current.sensor.isPresent = true
+		return true
+	  end
+	end
+	current.sensor.isPresent = false
+	noSensor()
+end
+
+function noSensor()
+  drawTitle()
+  printer.centered('It Seems There Is No OpenP Sensor', 6)
+  printer.centered('Attached To This Computer', 7)
+  printer.centered('Please Attach One', 8)
+  printer.centered('Well Look Automatically When You Attach One', 10)
+  printer.centered('Attach A Sensor To Continue', 19)
+    local event = os.pullEventRaw()
+	  if event == 'peripheral' or event == 'peripheral_detach' then
+	    printer.centered('Scanning For Sensor', 19)
+		sleep(2)
+	    scanSensor()
+	  end
+end
+
+function checkScanner()
+    nearbyPlayers = Sensor.getPlayerNames()
+	if nearbyPlayers then
+	  for _, entry in ipairs(nearbyPlayers) do
+	    for _, v in ipairs (current.settings.whiteList) do
+		  if entry == v then
+		    openSide()
+			allowPlayer = true
+		  else
+		    if not allowPlayer then
+		      openAlarmSide()
+			end
+		  end
+		end
+	  end
+	end
+	scanPlayers = os.startTimer(0.1)
+end
+
+function eventRegister(event, functionToRun)
+	if not Events[event] then
+		Events[event] = {}
+	end
+	table.insert(Events[event], functionToRun)
+end
+
+function drawScreen()
+  if current.status == 'System Ready' then term.setTextColor(colors.blue)
+  elseif current.status == 'Access Granted' then term.setTextColor(colors.lime)
+  elseif current.status == 'Access Denied' then term.setTextColor(colors.red) end
+  printer.centered(current.status, 8)
+  term.setTextColor(1)
+  printer.centered('System Monitoring Nearby Entities', 19)
+  printer.centered('Detector System', 6)
+end 
+
+function eventLoop()
+drawTitle()
+current.status = 'System Ready'			
+allowPlayer = false
+  while true do
+  drawScreen()
+	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+	  if Events[event] then
+		for i, e in ipairs(Events[event]) do
+		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+		end
+      end
+   end
+end
+
+function openSide()
+  current.status = 'Access Granted'
+  rs.setOutput(current.settings.redstoneSide, true)
+end
+
+function openAlarmSide()
+  current.status = 'Access Denied'
+  rs.setOutput(current.settings.alarmRedstoneSide, true)
+end
+
+function closeAllSides()
+  current.status = 'System Ready'
+  rs.setOutput(current.settings.redstoneSide, false)
+  rs.setOutput(current.settings.alarmRedstoneSide, false)
+end
+
+function timerHandle(event, timer)
+  if timer == closeSide then
+    closeAllSides()
+  elseif timer == scanPlayers then
+    closeAllSides()
+    checkScanner()
+  end
+end
+
+function keyHandler()
+
+end
+
+function init()
+eventRegister('timer', timerHandle)
+eventRegister('key', keyHandler)
+eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program', true) end)
+loadSettings()
+scanSensor()
+checkScanner()
+eventLoop()
+end
+
+  local _, err = pcall(init) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    term.setCursorBlink(false)
+	errora.err(err, 'Detector Lock Crashed, Report Error Above', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+  end
+errora.err('Uh Oh', 'Something Went Wrong And The Script Escaped The Loop, Please Report', true)
+
