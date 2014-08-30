@@ -398,14 +398,14 @@ end
 function whitelistAdd()
   while true do
     local function addNames()
-    while true do
+    while true do  
+	titleBar.draw('HbombOS Security Suite', 'OpenP Detector Settings', colors.cyan, 256, 128, 256, 1)
 	  inList = false
-      setupWelcome()
 	  printer.centered('Enter The Names You Would Like To', 6)
 	  printer.centered('The Detector WhiteList', 7)
 	  printer.centered('These Are The Players Who Will Have Access', 9)
 	  printer.centered('Enter The Username, And Hit Enter To Add', 10)
-	  printer.centered('Then Press [alt] To Continue To The Next Step',19)
+	  printer.centered('Then Press [alt] To Save And Return',19)
 	  term.setCursorPos(termX/2-#'Username: ', 13)
 	  write('Username: ')
 	  local input = read()
