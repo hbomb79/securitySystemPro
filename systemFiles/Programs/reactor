@@ -392,7 +392,6 @@ function autoControl()
 	  printer.centered('Running At Half Power', 19)
 	  if current.monitorPresent == true then Display.setTextColor(colors.yellow) MonWrite('Half Power', monY) end
 	elseif rfStored >= current.settings.shutdownBuffer then
-	  react.setAllControlRodLevels(100)
 	  react.setActive(false)
 	  term.setTextColor(colors.blue)
 	  printer.centered('Buffer Reached, Shutdown', 19)
