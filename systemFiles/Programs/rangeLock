@@ -1,7 +1,7 @@
 --os.pullEvent = os.pullEventRaw Termination Defence Layer 1!
 isRunning = true
 termX, termY = term.getSize()
-
+i = 0
 rsText = 'Side: '
 rsTimeText = 'Time: '
 
@@ -785,33 +785,17 @@ end
 			  outofrange = false
               current.Allow = true
 			  current.Denied = false
-			  i = 0
+			  OORwait = false
 			 end
 			elseif message.content == false then
 			 if not current.Denied then
 			  outofrange = false
 			  current.Allow = false
 			  current.Denied = true
-			  i = 0
+			  OORwait = false
 			 end
-			elseif message.content == 'OutOfRange' then
-			outofrange = true
-			  if current.Allow or current.Denied then
-			   if outofrange then
-			     i = i+1
-				 sleep(0)
-			   end
-			  end
-			  if i == 10 then
-			  i=0
-			   if outofrange then
-			    current.Allow = false
-				current.Denied = false
-				current.status = 'System Ready!'
-				outofrange = false
-			   end
-			  end
 			end
+			refreshTimer = os.startTimer(0.6)
 		end
 	end
 end
@@ -822,7 +806,11 @@ function timerHandler(event, timer) --Handles timer completion events and carrie
   elseif timer == DoorTimer then
     CloseDoor()
   elseif timer == refreshTimer then
+	if pocket then sleep(1) end 
+    current.Allow = false
+    current.Denied = false
     getStatus()
+	if not pocket then pingPDA() end
   end
 end
 
@@ -930,13 +918,22 @@ function drawScreen()
   term.setTextColor(1)
   printer.centered('Range Lock Security', 6)
   term.setTextColor(1)
+  
+  if pocket then
+    printer.centered('Mobile System', 19)
+  elseif not pocket then
+    term.setBackgroundColor(128)
+    term.setCursorPos(termX-#'Host Server', 1)
+	write('Host Server')
+	term.setBackgroundColor(256)
+  end
   if not pocket then term.setTextColor(1) printer.centered('Press [alt] To Enter Setup', 19) end
 end
 
 function eventLoop() --This runs the functions that was assigned to the event in initialise()
   drawScreen()
   while isRunning do
-	if current.Allow or current.Denied then getStatus() elseif current.status == 'Booting System' then printer.centered(current.status, 8) sleep(1) current.status = 'System Ready!' end
+	if current.Allow or current.Denied then getStatus() elseif current.status == 'Booting System' then pingPDA() current.status = 'System Ready!' end
     if current.status == 'Access Denied!' then term.setTextColor(colors.red) elseif current.status == 'Access Granted!' then term.setTextColor(colors.lime) else term.setTextColor(colors.blue) end
     printer.centered(current.status, 8)
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
