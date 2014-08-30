@@ -58,6 +58,17 @@ function setup()
     titleBar.draw('HbombOS Security Suite', 'OpenP Detector Lock Setup', colors.cyan, 256, 128, 256, 1)
   end
   
+  local function Intro()
+    setupWelcome()
+	printer.centered('Welcome To OpenP Detector Setup', 6)
+	printer.centered('This Program Uses Open Peripherals', 8)
+	printer.centered('Sensor Block', 9)
+	printer.centered('Therefore To Use This Program You Need', 11)
+	printer.centered('Open Peripheral Addons Installed', 12)
+	printer.centered('Click Anywhere On Screen To Start Setup', 19)
+	os.pullEvent('mouse_click')
+  end
+  
   local function setupStart()
     setupWelcome()
 	printer.centered('Welcome To The Detector Setup')
@@ -66,13 +77,13 @@ function setup()
   end
   
   local function whitelistAdd()
-  
+  while true do
     local function addNames()
     while true do
 	  inList = false
       setupWelcome()
 	  printer.centered('Enter The Names You Would Like To', 6)
-	  printer.centered('The Detector WhiteList', 7)
+	  printer.centered('Add To The Detector WhiteList', 7)
 	  printer.centered('These Are The Players Who Will Have Access', 9)
 	  printer.centered('Enter The Username, And Hit Enter To Add', 10)
 	  printer.centered('Then Press [alt] To Continue To The Next Step',19)
@@ -105,12 +116,24 @@ function setup()
 	  while true do
 	    local event, key = os.pullEvent('key')
 		  if key == keys.leftAlt or key == keys.rightAlt then
-		    return key
+		    if #current.settings.whiteList <= 0 then
+			  term.setCursorBlink(false)
+	          printer.centered('Please Register At Least ONE Username', 19)
+	          sleep(0.5)
+			  lessThanOne = true
+			  return
+	        else
+			  lessThanOne = false
+			  return key
+			end
 		  end
 	  end
 	end
 	
 	parallel.waitForAny(nextStep, addNames)
+	if not lessThanOne then break end
+  end
+  return
   end
   
   local function ouputOption()
@@ -119,6 +142,7 @@ function setup()
 	printer.centered('Do You Want The Computer To Ouput', 6)
 	printer.centered('A Redstone Signal When The Players Is', 7)
 	printer.centered('On The Whitelist', 8)
+	printer.centered('Y/N', 10)
 	printer.centered('You Pick What Side It Outputs From Next Step', 19)
 	  while true do
 	    local event, key = os.pullEvent('key')
@@ -161,6 +185,7 @@ function setup()
 	printer.centered('Do You Want The Computer To Ouput', 6)
 	printer.centered('A Redstone Signal When The Players Is', 7)
 	printer.centered('NOT On The Whitelist', 8)
+	printer.centered('Y/N', 10)
 	printer.centered('You Pick What Side It Outputs From Next Step', 19)
 	  while true do
 	    local event, key = os.pullEvent('key')
@@ -210,6 +235,7 @@ function setup()
 	current.config = false
   end
   
+Intro()
 whitelistAdd()
 if ouputOption() == true then outputSide() end
 if alarmOption() == true then alarmOutput() end
@@ -369,7 +395,117 @@ function timerHandle(event, timer)
   end
 end
 
+function whitelistAdd()
+  while true do
+    local function addNames()
+    while true do
+	  inList = false
+      setupWelcome()
+	  printer.centered('Enter The Names You Would Like To', 6)
+	  printer.centered('The Detector WhiteList', 7)
+	  printer.centered('These Are The Players Who Will Have Access', 9)
+	  printer.centered('Enter The Username, And Hit Enter To Add', 10)
+	  printer.centered('Then Press [alt] To Continue To The Next Step',19)
+	  term.setCursorPos(termX/2-#'Username: ', 13)
+	  write('Username: ')
+	  local input = read()
+	    if input and input ~= "" then
+		  for _, entry in ipairs(current.settings.whiteList) do
+		    if entry == input then
+			  inList = true
+			  printer.centered('Username Already In Whitelist', 19)
+			  sleep(1)
+			end
+		  end
+		  if inList == false then
+		    printer.centered('Adding Username To whitelist', 19)
+			  if current.settings.whiteList then
+		        table.insert(current.settings.whiteList, input)
+				printer.centered('Username Inserted Into Whitelist', 19)
+				sleep(0.5)
+			  else
+			    error'Table Appears To Be Missing'
+			  end
+		  end
+		end
+    end
+	end
+	
+	local function nextStep()
+	  while true do
+	    local event, key = os.pullEvent('key')
+		  if key == keys.leftAlt or key == keys.rightAlt then
+		    if #current.settings.whiteList <= 0 then
+			  term.setCursorBlink(false)
+	          printer.centered('Please Register At Least ONE Username', 19)
+	          sleep(0.5)
+			  lessThanOne = true
+			  return
+	        else
+			  lessThanOne = false
+			  return key
+			end
+		  end
+	  end
+	end
+	
+	parallel.waitForAny(nextStep, addNames)
+	if not lessThanOne then break end
+  end
+  SaveSettings()
+  configMenu()
+end
+
+function whitelistRemove()
+  local function removeNames()
+    while true do
+	  inList = false
+	  titleBar.draw('HbombOS Security Suite', 'OpenP Detector Lock Settings', colors.cyan, 256, 128, 256, 1)
+	  printer.centered('Enter The Names You Would Like To', 6)
+	  printer.centered('Remove From The Detector WhiteList', 7)
+	  printer.centered('These Are The Players Who Will Not Have Access', 9)
+	  printer.centered('Enter The Username, And Hit Enter To Remove', 10)
+	  printer.centered('Then Press [alt] To Save And Return',19)
+	  term.setCursorPos(termX/2-#'Username: ', 13)
+	  write('Username: ')
+	  local input = read()
+	    if input and input ~= "" then
+		  for _, entry in ipairs(current.settings.whiteList) do
+		    if entry == input then
+			  if #current.settings.whiteList - 1 >0 then
+			    printer.centered('Removing Username From whitelist', 19)
+			    table.remove(current.settings.whiteList, _)
+			    SaveSettings()
+			    printer.centered('Removed Username From Whitelist', 19)
+			    sleep(0.5)
+			    break
+			  else
+			    printer.centered('There Has To Be Atleast One Username', 18)
+			    printer.centered('In Whitelist', 19)
+				sleep(1)
+			  end
+			end
+		  end
+        end
+    end
+  end
+	
+	local function completeStage()
+	  while true do
+	    local event, key = os.pullEvent('key')
+		  if key == keys.leftAlt or key == keys.rightAlt then
+		    return key
+		  end
+	  end
+	end
+	
+	parallel.waitForAny(completeStage, removeNames)
+	SaveSettings()
+	configMenu()
+end
+
 function configMenu()
+  term.setCursorBlink(false)
   titleBar.draw('HbombOS Security Suite', 'OpenP Detector Settings', colors.cyan, 256, 128, 256, 1)
   printer.centered('Pick An Option Below', 6)
   local continue = false
@@ -378,6 +514,12 @@ function configMenu()
 		{'Edit Settings', function() 
 		  setup()
 		end}, 
+		{'Whitelist Users', function()
+		  whitelistAdd()
+		end},
+		{'Un-Whitelist Users', function()
+		  whitelistRemove()
+		end},
 		{'Reset Configuration', function()
 		  fs.delete('systemFiles/Programs/detectorConfig')
 		  os.reboot()
