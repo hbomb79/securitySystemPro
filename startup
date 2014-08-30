@@ -777,7 +777,7 @@ function bootMenuOptions(continue)
 		  sleep(0)
 		  shell.run("systemFiles/Install/updater") 
 		  sleep(4)
-		  errora.err("Updater Crash", "The Updater Encountered A Problem And Returned")
+		  continue = true
 		end},
 		{'Change Startup File', function() programMenu() end},
 		{'Continue Boot', function() continue = true end}
