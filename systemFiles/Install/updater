@@ -78,6 +78,7 @@ end
 function downloader(quietDownload)
 drawTitleBar()
 PrintCentered("Downloading Scripts From GitHub... Please Wait", 6)
+PrintCentered("", 19)
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/startup", "startup", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer", true, 19) == 'ERROR' then return 'Error' end
@@ -106,6 +107,7 @@ if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/mas
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/pin", "/systemFiles/Programs/pin", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/rangeLock", "/systemFiles/Programs/rangeLock", true, 19) == 'ERROR' then return 'Error' end
+if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/detector", "/systemFiles/Programs/OpenPDetect", true, 19) == 'ERROR' then return 'Error' end
 if quietDownload then os.reboot() else return true end
 end
 
