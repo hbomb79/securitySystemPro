@@ -49,6 +49,7 @@ Events ={}
 termX, termY = term.getSize()
 
 function drawTitle()
+  term.clear()
   titleBar.draw('HbombOS Security Suite', 'OpenP Detector Lock', colors.cyan, 256, 128, 256, 1)
 end
 
@@ -236,6 +237,7 @@ end
 --Sensor Peripheral: openperipheral_sensor
 
 function scanSensor()
+term.clear()
   localPeripherals = peripheral.getNames()
     for i = 1, #localPeripherals do
 	  if peripheral.getType(localPeripherals[i]) == 'openperipheral_sensor' then
@@ -255,12 +257,16 @@ function noSensor()
   printer.centered('Please Attach One', 8)
   printer.centered('Well Look Automatically When You Attach One', 10)
   printer.centered('Attach A Sensor To Continue', 19)
+  while true do
     local event = os.pullEventRaw()
 	  if event == 'peripheral' or event == 'peripheral_detach' then
 	    printer.centered('Scanning For Sensor', 19)
 		sleep(2)
 	    scanSensor()
+		drawTitle()
+		break
 	  end
+  end
 end
 
 function checkScanner()
@@ -347,6 +353,8 @@ function init()
 eventRegister('timer', timerHandle)
 eventRegister('key', keyHandler)
 eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program', true) end)
+eventRegister('peripheral', scanSensor)
+eventRegister('peripheral_detach', scanSensor)
 loadSettings()
 scanSensor()
 checkScanner()
