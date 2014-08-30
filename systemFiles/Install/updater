@@ -47,7 +47,7 @@ sleep(1)
 PrintCentered("Connection Established", 6)
 sleep(0.1)
 PrintCentered("Starting Download", 6)
-if args[1] == 'quiet' then downloadStatus = downloader(true) else downloadStatus = downloader(false) end
+downloadStatus = downloader()
 if downloadStatus == 'Error' then
   request_code = 'Error'
   return 'Error'
@@ -110,7 +110,7 @@ if quietDownload then os.reboot() else return true end
 end
 
 function main()
-  welcome()
+  if args[1] == 'quiet' then downloader(true) else welcome() end
   if cancelRequest then
     return 'Cancelled'
   elseif errorCatch then

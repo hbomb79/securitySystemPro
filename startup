@@ -197,6 +197,7 @@ function PrintCentered(text, y)
 end
 
 if not fs.exists("systemFiles/Security/adminPass") then
+while true do
   PrintCentered("SECURITY VULNERABLITLTY NOTICE", 4)
   PrintCentered("The Administrator Password Has Not Been Set", 6)
   PrintCentered("Please Set It Below, You Can Change It", 7)
@@ -205,16 +206,18 @@ if not fs.exists("systemFiles/Security/adminPass") then
   term.setCursorPos(termX/2-(#adminPassText), 10)
   write(adminPassText)
   adminPassIn = read("*")
-  PrintCentered("Saving Password...", 19)
-  sleep(0.5)
-  PrintCentered("Opening File Handle", 19)
-  sleep(0.5)
-  local f = fs.open("systemFiles/Security/adminPass", "w")
-  PrintCentered("File Handle Open", 19)
-  sleep(0.5)
-  PrintCentered("Writing To File", 19)
-  f.writeLine(adminPassIn)
-  PrintCentered("Complete", 19)
+  if adminPassIn ~= "" then
+    PrintCentered("Saving Password...", 19)
+    sleep(0)
+    PrintCentered("Opening File Handle", 19)
+    local f = fs.open("systemFiles/Security/adminPass", "w")
+    PrintCentered("File Handle Open", 19)
+    PrintCentered("Writing To File", 19)
+    f.writeLine(adminPassIn)
+    PrintCentered("Complete", 19)
+	break
+  end
+end
   if fs.exists('systemFiles/Install/updateConfig') then
     os.reboot()
   end
@@ -531,7 +534,7 @@ function updateAvail()
 	local f = fs.open('systemFiles/Install/updateConfig', 'r')
 	useSettingQuiet = f.readLine()
 	f.close()
-	if useSettingQuiet == "true" then updaterRun = shell.run("systemFiles/Install/updater", "quiet") elseif useSettingQuiet == "false" then updaterRun = shell.run("systemFiles/Install/updater") else errora.err(nil, "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(useSettingQuiet)) end
+	if useSettingQuiet == "true" then shell.run("systemFiles/Install/updater", "quiet") elseif useSettingQuiet == "false" then shell.run("systemFiles/Install/updater") else errora.err(nil, "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(useSettingQuiet)) end
 	  if request_code == 'Cancelled' then
 	    return 'Cancel'
 	  elseif request_code == 'Error' then
