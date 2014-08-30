@@ -492,6 +492,7 @@ function timerHandler(event, timerName)
 end
 
 function ConfigLogin()
+  configContin = false
   current.page = 'Config'
   if current.monitorPresent then monStatusPrint() end
   local f = fs.open('systemFiles/Security/adminPass', 'r')
@@ -506,10 +507,12 @@ function ConfigLogin()
   local function LoginInput()
     while true do
       term.setCursorPos(termX/2-#'Password: ', 10)
+	  term.clearLine()
 	  write('Password: ')
 	  local input = read('*')
 	    if input == adminPassLoaded then
-	      configMenu()
+	      configContin = true
+		  break
 	    end
     end
   end
@@ -520,13 +523,15 @@ function ConfigLogin()
 	  if event == 'key' then
         if key == keys.leftAlt or keys == keys.rightAlt then
 		  term.setCursorBlink(false)
-		  return
+		  configContin = false
+		  break
 		end
 	  end
 	end
   end
   
   parallel.waitForAny(LoginInput, keyExit)
+  if configContin == true then configContin = false configMenu() else return end
   end
 
 function configMenu()
