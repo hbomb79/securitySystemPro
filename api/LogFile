@@ -10,7 +10,8 @@ log = function(msg, Program, state)
 		state = ' '..state
 	end
 	local h = fs.open('/systemFiles/logFile.log', 'a')
-	h.write("  ["..os.clock()..state.."]["..Program..']'..tostring(msg)..'  ')
+	--h.write("  ["..os.clock()..state.."]["..Program..']'..tostring(msg)..'  ')
+	h.write('  ['..os.clock()..']['..Program..'] '..state..' '..tostring(msg..'  '))
 	h.close()
 end
 
