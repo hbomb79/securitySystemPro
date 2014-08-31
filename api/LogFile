@@ -1,0 +1,30 @@
+Initialise = function()
+	local h = fs.open('/systemFiles/logFile.log', 'w')
+	h.write('-@-HbombOS Security Suite System Log-@-')
+	h.close()
+end
+
+log = function(msg, Program, state)
+	state = state or ''
+	if state ~= '' then
+		state = ' '..state
+	end
+	local h = fs.open('/systemFiles/logFile.log', 'a')
+	h.write("  ["..os.clock()..state.."]["..Program..']'..tostring(msg)..'  ')
+	h.close()
+end
+
+e = function(msg, Program)
+    Program = Program or 'Unknown Program'
+	log(msg, Program, 'Error >')
+end
+
+i = function(msg, Program)
+    Program = Program or 'Unknown Program'
+	log(msg, Program, 'Info >')
+end
+
+w = function(msg, Program)
+    Program = Program or 'Unknown Program'
+	log(msg, Program, 'Warning >')
+end
