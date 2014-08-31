@@ -742,10 +742,9 @@ function startHost() --Register Function ' Wireless.Responder' On Host Computer 
 	  CloseDoor()
 	  getStatus()
 	  modem.SendMessage(modem.channels.reply, false)
-	  refreshTimer = os.startTimer(0)
 	end
   end
-  if distance > current.Settings.distance then 
+  if distance > current.Settings.distance then
     modem.SendMessage(modem.channels.reply, 'OutOfRange')
 	current.Denied = false
 	current.Allow = false
@@ -846,7 +845,7 @@ function timerHandler(event, timer) --Handles timer completion events and carrie
   elseif timer == DoorTimer then
     CloseDoor()
   elseif timer == refreshTimer then
-	if pocket then sleep(1) end 
+	if pocket then sleep(1) end
     current.Allow = false
     current.Denied = false
     getStatus()
@@ -1000,7 +999,6 @@ function eventLoop() --This runs the functions that was assigned to the event in
       end
    end
 end
-
 
 function loadAPIS()
   os.loadAPI('api/errora')
