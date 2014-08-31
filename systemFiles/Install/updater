@@ -99,6 +99,7 @@ if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/mas
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/printer", "/api/printer", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/titleBar", "/api/titleBar", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/errora", "/api/errora", true, 19) == 'ERROR' then return 'Error' end
+if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/LogFile", "/api/LogFile", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README", "/Documentation/README", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LICENSE", "/Documentation/LICENSE", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/dualKey", "/systemFiles/Programs/dualKey", true, 19) == 'ERROR' then return 'Error' end
