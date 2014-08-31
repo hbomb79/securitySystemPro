@@ -1,9 +1,13 @@
 -- This script loads the APIs Required as well as checks for missing files and updates via GitHub
 -- The Installer Will Check If The Computer is compatible
+runningProgram = shell.getRunningProgram()
 os.pullEvent = os.pullEventRaw
 termX, termY = term.getSize()
-
+os.loadAPI('api/LogFile')
 -- Fade In!
+LogFile.Initialise()
+LogFile.i('Loading Boot Screen', runningProgram)
+LogFile.i('Fading Screen', runningProgram)
 term.setBackgroundColour(colours.black)	
 term.clear()
 sleep(0.1)
@@ -135,23 +139,8 @@ end
 
 bootX = termX/2-7
 bootY = termY/2-4
-function beta() --Beta notify, Ran at end of script if it is a beta build
-  term.setBackgroundColor(256)
-  term.clear()
-  drawTitleBar()
-  term.setBackgroundColor(256)
-  term.setTextColor(1)
-  printer.centered("Please remember that this is a WIP", 6)
-  printer.centered("This means only one program is available...", 7)
-  printer.centered("The PIN Program", 8)
-  printer.centered("But dont worry, The software auto updates", 10)
-  printer.centered("so you will always enjoy the most up-to-date", 11)
-  printer.centered("version!", 12)
-  printer.centered("Thanks for using the suite!", 14)
-  printer.centered("Press ANY Key To Continue", 19)
-  event, key = os.pullEvent("key")
-end
 -- Loads All Boot Images
+LogFile.i('Loading Boot Images', runningProgram)
 BL0 = paintutils.loadImage("systemFiles/BootLogos/boot0.nfp")
 BL1 = paintutils.loadImage("systemFiles/BootLogos/boot1.nfp")
 BL2 = paintutils.loadImage("systemFiles/BootLogos/boot2.nfp")
@@ -197,6 +186,7 @@ function PrintCentered(text, y)
 end
 
 if not fs.exists("systemFiles/Security/adminPass") then
+LogFile.i('Admin Password Set Open', runningProgram)
 while true do
   PrintCentered("SECURITY VULNERABLITLTY NOTICE", 4)
   PrintCentered("The Administrator Password Has Not Been Set", 6)
@@ -207,6 +197,7 @@ while true do
   write(adminPassText)
   adminPassIn = read("*")
   if adminPassIn ~= "" then
+    LogFile.i('Admin Password Creation Complete', runningProgram)
     PrintCentered("Saving Password...", 19)
     sleep(0)
     PrintCentered("Opening File Handle", 19)
@@ -219,6 +210,7 @@ while true do
   end
 end
   if fs.exists('systemFiles/Install/updateConfig') then
+    LogFile.i('Update Config Already Exists! Rebooting', runningProgram)
     os.reboot()
   end
 else --The Files Exists
@@ -238,6 +230,7 @@ function saveUpdate()
 end
 
 if not fs.exists('systemFiles/Install/updateConfig') then
+  LogFile.i('Updater Selection Set Open', runningProgram)
   term.clear()
   PrintCentered("Updater Mode Selection", 4)
   PrintCentered("Would you like the enable quiet updating", 6)
@@ -271,6 +264,7 @@ function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
 				local image = paintutils.loadImage('systemFiles/BootLogos/boot'..currentImage..'.nfp')
 				paintutils.drawImage(image, bootX, bootY)
 			end		
+			LogFile.i('Loading: '..fileApi, runningProgram)
 			if os.loadAPI('/api/'..fileApi) then
 			sleep(0)
 			term.setBackgroundColor(256)
@@ -280,7 +274,9 @@ function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
 			term.setCursorPos(1,18)
 			term.clearLine()
 			PrintCentered(fileApi.." Loaded!", 18)
+			LogFile.i(fileApi..'Api Loaded', runningProgram)
 		    else
+			  LogFile.e('Failed To Load API: '..fileApi, runningProgram)
 			  error ("Error Occurred Whilst Loading API: "..fileApi)
 			end
 		end
@@ -293,6 +289,7 @@ function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
 end
 
 function drawTitleBar()
+  LogFile.i('Drew Title Bar', runningProgram)
   term.setBackgroundColor(128)
   term.setCursorPos(1,1)
   term.clearLine()
@@ -307,6 +304,7 @@ end
 
 
 function programMenu()
+    LogFile.i('Program Selection Menu Open', runningProgram)
     drawTitleBar()
     term.setTextColor(1)
     term.setBackgroundColor(256)
@@ -331,6 +329,7 @@ function programMenu()
 		  f.writeLine('systemFiles/Programs/pin')
 		  printer.centered("File written", 19)
 		  sleep(0)
+		  LogFile.i('Program: PIN Selected', runningProgram)
 		  printer.centered("Closing Handler", 19)
 		  f.close()
 		  printer.centered("Saved, Rebooting!", 19)
@@ -349,6 +348,7 @@ function programMenu()
 		  f.writeLine('systemFiles/Programs/dualKey')
 		  printer.centered("File written", 19)
 		  sleep(0)
+		  LogFile.i('Program: DualKey Selected', runningProgram)
 		  printer.centered("Closing Handler", 19)
 		  f.close()
 		  printer.centered("Saved, Rebooting!", 19)
@@ -367,6 +367,7 @@ function programMenu()
 		  f.writeLine('systemFiles/Programs/reactor')
 		  printer.centered("File written", 19)
 		  sleep(0)
+		  LogFile.i('Program: reactor Selected', runningProgram)
 		  printer.centered("Closing Handler", 19)
 		  f.close()
 		  printer.centered("Saved, Rebooting!", 19)
@@ -385,6 +386,7 @@ function programMenu()
 		  f.writeLine('systemFiles/Programs/keycard')
 		  printer.centered("File written", 19)
 		  sleep(0)
+		  LogFile.i('Program" keycard Selected', runningProgram)
 		  printer.centered("Closing Handler", 19)
 		  f.close()
 		  printer.centered("Saved, Rebooting!", 19)
@@ -403,6 +405,7 @@ function programMenu()
 		  f.writeLine('systemFiles/Programs/rangeLock')
 		  printer.centered("File written", 19)
 		  sleep(0)
+		  LogFile.i('Program: rangeLock Selected', runningProgram)
 		  printer.centered("Closing Handler", 19)
 		  f.close()
 		  printer.centered("Saved, Rebooting!", 19)
@@ -421,6 +424,7 @@ function programMenu()
 		  f.writeLine('systemFiles/Programs/keycardDual')
 		  printer.centered("File written", 19)
 		  sleep(0)
+		  LogFile.i('Program: keycardDual Selected', runningProgram)
 		  printer.centered("Closing Handler", 19)
 		  f.close()
 		  printer.centered("Saved, Rebooting!", 19)
@@ -439,6 +443,7 @@ function programMenu()
 		  f.writeLine('systemFiles/Programs/OpenPDetect')
 		  printer.centered("File written", 19)
 		  sleep(0)
+		  LogFile.i('Program: OpenPDetect Selected', runningProgram)
 		  printer.centered("Closing Handler", 19)
 		  f.close()
 		  printer.centered("Saved, Rebooting!", 19)
@@ -485,6 +490,7 @@ function programMenu()
 end
 
 function programCheckConfig()
+LogFile.i('Checking Program Config', runningProgram)
   if not fs.exists('systemFiles/Programs/configuration') then programMenu() else
     local f = fs.open('systemFiles/Programs/configuration', "r")
 	programStart = f.readLine()
@@ -502,6 +508,7 @@ end
 
 function main() --The main function, calls all child functions
   --First all APIs must be loaded to perform the system checks later on
+  LogFile.i('Main Initialise Function Started', runningProgram)
   i = 0
   loadAPIs()
   programCheckConfig()
@@ -590,6 +597,7 @@ function updateAvail()
 end
 
 function updateChecker()
+LogFile.i('Checking For Updates', runningProgram)
   while true do
 	term.setBackgroundColor(256)
 	term.clear()
@@ -604,6 +612,7 @@ function updateChecker()
     elseif updateState == false then
   	  break
     elseif updateState == 'ERROR' then
+	LogFile.w('Updater Error Occured', runningProgram)
 	  i = i + 1
 		if i < 4 then
 	      term.setBackgroundColor(256)
@@ -623,6 +632,7 @@ function updateChecker()
 			sleep(1)
 		  end
 		else
+		LogFile.w('Updater Skipping Due To Failed Connection', runningProgram)
 		  term.setBackgroundColor(256)
 	      term.clear()
           drawTitleBar()
@@ -642,6 +652,7 @@ function updateChecker()
 		  return 'Cancel'
 		 end
     else
+	  LogFile.e('Updater Unknown Return', runningProgram)
       error 'Error Occured When Updating'
     end
   end
@@ -649,6 +660,7 @@ function updateChecker()
 end
 
 function bootMenu()
+LogFile.i('Boot Menu Entered', runningProgram)
 while true do
   term.clear()
   titleBar.draw("HbombOS Security Suite", "BIOS Login", colors.cyan, 256, 128, 256, 1)
@@ -668,6 +680,7 @@ while true do
   if adminPasswordE() then 
     return true
   else
+    LogFile.w('Incorrect Admin Password In BootMenu', runningProgram)
     printer.centered("Incorrect!", 8)
 	sleep(0.5)
   end
@@ -676,6 +689,7 @@ end
 end
 
 function bootMenuOptions(continue)
+    LogFile.i('Boot Menu Option Opened', runningProgram)
     if not bootMenu() then bootMenu() end
     term.setTextColor(1)
     term.setBackgroundColor(256)
@@ -687,6 +701,7 @@ function bootMenuOptions(continue)
 	local continue = false
 	local options = {
 	    {'Reset Settings', function() 
+		LogFile.w('Removing System Settings', runningProgram)
 		term.clear()
 		PrintCentered("Removing Settings", 6)
 		sleep(0)
@@ -718,11 +733,13 @@ function bootMenuOptions(continue)
 		sleep(2)
 		if fs.exists('/systemFiles/Programs/configuration') then fs.delete ('systemFiles/Programs/configuration') end
 		PrintCentered("Settings Reset, Rebooting!", 18)
+		LogFile.i('Settings Reset', runningProgram)
 		sleep(2)
 		os.reboot()
 		end},
 		
 		{'Uninstall Security Suite', function()
+		    LogFile.i('Wiping Computer', runningProgram)
 			term.setCursorPos(1,1)
 			term.setBackgroundColor(256)
 			term.setTextColor(colours.white)
@@ -744,6 +761,7 @@ function bootMenuOptions(continue)
 						if fs.delete(path..'/'..v) then
 						  term.setTextColor(1)
 						  PrintCentered('Removed: '..path..'/'..v, 18)
+						  LogFile.i('Removed: '..path, runningProgram)
 						  sleep(0.5)
 						end
 					end
@@ -755,7 +773,7 @@ function bootMenuOptions(continue)
 			rmFold('')
 			
 		end},
-		{'Use Shell/CraftOS', function() term.setBackgroundColor(colors.black) term.clear() term.setCursorPos(1,1) shell.run ("shell") end},
+		{'Use Shell/CraftOS', function() term.setBackgroundColor(colors.black) term.clear() term.setCursorPos(1,1) LogFile.i('Shell Opened', runningProgram) shell.run ("shell") end},
 		{'Change Admin Password', function()  
 		 term.clear()
 		 titleBar.draw("HbombOS Security Suite", "Password Management", colors.cyan, 256, 128, 256, 1)
@@ -764,9 +782,11 @@ function bootMenuOptions(continue)
 		 oldPassWait = true
 		 start()
 		 oldPassword()
-		 errora.err("generic", "Password Changer CRASH Report If Not Your Fault")
+		 LogFile.e('Password Changer Crash', runningProgram)
+		 error("Password Changer CRASH Report If Not Your Fault")
 		end},
 		{'Force Update', function() 
+		  LogFile.i('Force Updating Client', runningProgram)
 		  term.clear()
 		  titleBar.draw("HbombOS Security Suite", "Force Updating", colors.cyan, 256, 128, 256, 1)
 	   	  printer.centered("Downloading New Update Firmware", 19) 
@@ -780,7 +800,7 @@ function bootMenuOptions(continue)
 		  continue = true
 		end},
 		{'Change Startup File', function() programMenu() end},
-		{'Continue Boot', function() continue = true end}
+		{'Continue Boot', function() LogFile.i('Left Boot Menu', runningProgram) continue = true end}
 
 	}
 
@@ -884,16 +904,19 @@ function Start()
   end
    
 function readFiles()
+  LogFile.i('Reading System Config', runningProgram)
   printer.centered("Reading Configuration Files", 19)
   local f = fs.open('systemFiles/Programs/configuration', 'r') --Opens Config
   fileStartup = f.readLine()
   f.close()
   	if fileStartup then --Checks If The User Has A File Chosen
 	  printer.centered("Running: "..fileStartup, 19)
+	  LogFile.i('Running User File: '..fileStartup, runningProgram)
 	  --shell.run(''..fileStartup..'')
 	  shell.run(fileStartup) --Runs User Specified Program
 	  sleep(4)
-	  errora.err("Uh Oh! Something Went Horribly Wrong", "The Program: "..fileStartup.." Appears To Have Crashed") --Preliminary BSoD Catching Program Closure
+	  LogFile.e('Program: '..fileStartup..' Crashed', runningProgram)
+	  error("The Program: "..fileStartup.." Appears To Have Crashed") --Preliminary BSoD Catching Program Closure
 	end
   printer.centered("No Default File Stored", 19)
   sleep(1)
@@ -913,6 +936,7 @@ end
 
 local _, err = pcall(initialise) --Error Catching, All Functions Are Called From initialise() at some point...
   if err then
+    LogFile.e('XPCALL Error Caught: '..err, runningProgram)
     term.setCursorBlink(false)
 	errora.err(err, 'Startup Has Crashed! Please Report Above Error', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end

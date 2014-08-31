@@ -1,11 +1,11 @@
 --os.pullEvent = os.pullEventRaw Termination Defence Layer 1!
+runningProgram = shell.getRunningProgram()
+if not pocket then LogFile.i('rangeLock Program Loaded', runningProgram) end
 isRunning = true
 termX, termY = term.getSize()
 i = 0
 rsText = 'Side: '
 rsTimeText = 'Time: '
-
-
 
 current = {
   Settings = {
@@ -17,6 +17,7 @@ security = {}
 _int = 1
 _string = 'a'
 function readN(len, replaceChar)
+  LogFile.i('Number Input Called', runningProgram)
   Num = false
   term.setTextColor(1)
   len = len or 10
@@ -183,12 +184,28 @@ function pocketAPI() --Downloads And Installs The APIs Required To Run The Progr
     downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/printer", "/api/printer")
     downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/titleBar", "/api/titleBar")
     downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/errora", "/api/errora")
+    downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/LogFile", "/api/LogFile")
     downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
   end
   return true
 end
 
+function loadAPIDownload()
+os.loadAPI('api/LogFile')
+LogFile.i('Loading APIs For Pocket Computer', runningProgram)
+os.loadAPI('api/download')
+os.loadAPI('api/systemCheck')
+os.loadAPI('api/update')
+os.loadAPI('api/printer')
+os.loadAPI('api/titleBar')
+os.loadAPI('api/errora')
+end
+
+
+if pocket then pocketAPI() loadAPIDownload() end
+
 function hostSetup() --Creates The Setup GUI If The Config File Is Not Found
+  LogFile.i('Host Setup Started', runningProgram)
   local function setupTitleBar()
 	titleBar.draw('HbombOS Secuity Suite', 'Range Detector Setup', colors.cyan, 256, 128, 256, 1)
   end
@@ -337,6 +354,7 @@ end
   end
   
   local function saveSetup()
+    LogFile.i('Host Setup Complete', runningProgram)
     setupTitleBar()
     printer.centered('Thank You For Setting Up Your RangeLock', 6)
 	printer.centered('Secuity System! Please Report Any Bugs', 8)
@@ -469,6 +487,7 @@ modem = {
 Events ={}
 
 function createFingerprint() --Saves the fingerprint to the PDA
+  LogFile.i('Fingerpring Created', runningProgram)
   if not fs.exists('.fingerprint') then
     local fingerprint = generateFingerprint() --Generates the finger print and stores it in a variable
 	current.Settings.Whitelist = fingerprint --Stores the fingerprint in the table 'Settings'
@@ -478,6 +497,7 @@ function createFingerprint() --Saves the fingerprint to the PDA
 end
 
 function generateFingerprint()
+ LogFile.i('Fingerprint Generated', runningProgram)
  local fingerprint = ""
   for i=1, 256 do --Repeats 256 times
     char = math.random(32, 126) --Creates A Random Digit
@@ -505,10 +525,12 @@ function CloseDoor()
 end
 
 function loadSettings()
+  LogFile.i('Loading Settings', runningProgram)
   if fs.exists('systemFiles/Programs/rangeLockSettings') then
 		local f = fs.open('systemFiles/Programs/rangeLockSettings', 'r')
 		if f then
 			current.Settings = textutils.unserialize(f.readAll())
+			LogFile.i('Settings Loaded', runningProgram)
 		end
 		f.close()
 	else
@@ -517,10 +539,12 @@ function loadSettings()
 end
 
 function SaveSettings()
+    LogFile.i('Saving Settings', runningProgram)
 	current.Settings = current.Settings or {}
 	local f = fs.open('systemFiles/Programs/rangeLockSettings', 'w')
 	if f then
-		f.write(textutils.serialize(current.Settings))
+		f.write(textutils.serialize(current.Settings))	    
+		LogFile.i('Settings Saved', runningProgram)
 	end
 	f.close()	
 end
@@ -530,6 +554,7 @@ function eventRegister(event, functionToRun)
 		Events[event] = {}
 	end
 	table.insert(Events[event], functionToRun)
+	LogFile.i('Event: '..tostring(event)..' Registered', runningProgram)
 end
 
 function RegisterPDA()
@@ -546,6 +571,7 @@ while true do
 		local path = disk.getMountPath(side)
 		local fingerprint = nil
 		if fs.exists(path..'/.fingerprint') then
+		    LogFile.i('Registering PDA', runningProgram)
 			local h = fs.open(path..'/.fingerprint', 'r')
 			if h then
 				local str = h.readAll()
@@ -573,9 +599,11 @@ while true do
 		end
 		if not FingerprintIsOnWhitelist(fingerprint) then
 			table.insert(current.Settings.Whitelist, fingerprint)
+			LogFile.i('Fingerprint Added To Whitelist', runningProgram)
 			SaveSettings()
 		end  
 		  disk.eject(side)
+		  LogFile.i('PDA Registered', runningProgram)
           printer.centered('PDA Registered', 19)
           sleep(1)
 	end
@@ -587,6 +615,7 @@ end
 end
 
 function removeProgram()
+LogFile.i('Function removeProgram Called', runningProgram)
 while true do
  sleep(0)
   titleBar.draw('HbombOS Secuity Suite', 'RangeLock Remove', colors.cyan, 256, 128, 256, 1)
@@ -611,6 +640,7 @@ while true do
 		  fs.delete(path..'/version')
 		end
 		disk.eject(side)
+		LogFile.i('PDA Information Removed', runningProgram)
 		printer.centered('All Data On PDA Removed', 19)
 		sleep(1)
 	end
@@ -622,6 +652,7 @@ end
 end
 
 function unRegisterPDA()
+LogFile.i('Unregister PDA Function Called', runningProgram)
 while true do
  sleep(0)
   titleBar.draw('HbombOS Secuity Suite', 'RangeLock Un-Registration', colors.cyan, 256, 128, 256, 1)
@@ -631,6 +662,7 @@ while true do
   event, side = os.pullEvent()
   if event == 'disk' then
 	if disk.hasData(side) then
+	    LogFile.i('Un Registering PDA', runningProgram)
 		local path = disk.getMountPath(side)
 		local fingerprint = nil
 		if fs.exists(path..'/.fingerprint') then
@@ -643,9 +675,11 @@ while true do
 			 if current.Settings.Whitelist then
 			  table.remove(current.Settings.Whitelist, _)
 			  SaveSettings()
+			  LogFile.i('Fingerprint Removed, PDA Unregistered', runningProgram)
 			  printer.centered('Fingerprint Removed From Whitelist', 19)
 			  sleep(1)
 			 else
+			   LogFile.i('Table Whitelist Appears To Be Missing', runningProgram)
 			   error'Table Appears To Be Missing!'
 			 end
 			end
@@ -677,15 +711,19 @@ function nomodem()
     print('Please Add A Wireless Modem To This PDA')
 	print()
 	print('Click Anywhere To Reboot')
+	os.pullEvent('mouse_click')
+	os.reboot()
   else
+    LogFile.i('No Modem Attached', runningProgram)
     printer.centered('Please Attach A Wireless Modem To This Computer', 6)
-	printer.centered('Click Anywhere To Reboot', 19)
+	printer.centered('Well Scan For You', 19)
   end
-  os.pullEvent('mouse_click')
-  os.reboot()
+  os.pullEvent('peripheral')
+  scanModem()
 end
 
 function startHost() --Register Function ' Wireless.Responder' On Host Computer To Check Fingerprint Sent By PDA
+  LogFile.i('StartHost called', runningProgram)
   if not modem.isPresent() then
     nomodem()
   end
@@ -755,6 +793,8 @@ os.loadAPI('/api/update') --Update Checker
 os.loadAPI('/api/printer') --printer.centered
 os.loadAPI('/api/titleBar') --Title Bar Drawing Method
 os.loadAPI('/api/errora') --Custom Blue Screen Of Death Syntax: Error Code, Error Message, Autoreboot[Boolean]
+os.loadAPI('/api/LogFile') --Log File Allowing Advanced Debugging
+LogFile.i('PDA APIs Loaded', runningProgram)
 
 updateState = update.Check()
 
@@ -815,6 +855,7 @@ function timerHandler(event, timer) --Handles timer completion events and carrie
 end
 
 function checkConfig()
+LogFile.i('Config Login', runningProgram)
   config = true
   term.clear()
   titleBar.draw('HbombOS Security Suite', 'RangeLock', colors.cyan, 256, 128, 256, 1)
@@ -835,6 +876,7 @@ function keyPress(event, key)
 end
 
 function configMenu()
+LogFile.i('Config Menu', runningProgram)
   titleBar.draw('HbombOS Security Suite', 'RangeLock Settings', colors.cyan, 256, 128, 256, 1)
   printer.centered('Pick An Option Below', 6)
   local continue = false
@@ -849,6 +891,7 @@ function configMenu()
 		  removeProgram()
 		end}, 
 		{'Reset Configuration', function()
+		  LogFile.i('Removing Config', runningProgram)
 		  fs.delete('systemFiles/Programs/rangeLockSettings')
 		  pressed = false
 		  config = true
@@ -897,16 +940,29 @@ function configMenu()
 	return continue
 end
 
+function scanModem() --Peripheral Managements Prevents Most Crashes When Removing Modem
+  LogFile.i('Scanning For Modem')
+  if not modem.isPresent() then
+    LogFile.w('No Modem Connected To PC', runningProgram)
+    nomodem()
+  else
+    initialise()
+  end
+end
+
 function initialise() --Registers All Events To Autorun Functions, e.g If I press a key it will run keyPress
   if not pocket then eventRegister('key', keyPress) end
   eventRegister('timer', timerHandler)
   eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program!' , true) end)
   eventRegister('modem_message', modem.HandleMessage)
+  eventRegister('peripheral', scanModem)
+  eventRegister('peripheral_detach', scanModem)
   --Loading Configuration
   modem.Initialise()
   if pocket then
     startPDA() --Configures The PDA Responder Function
   else
+    LogFile.i('Main Function Started', runningProgram) 
     loadSettings()
     startHost() --Set up the host system
   end
@@ -953,6 +1009,7 @@ function loadAPIS()
   os.loadAPI('api/systemCheck')
   os.loadAPI('api/download')
   os.loadAPI('api/printer')
+  os.loadAPI('api/LogFile')
 end
 
 if not term.isColor() then
@@ -964,5 +1021,6 @@ end
   if err then
     term.setCursorBlink(false)
     loadAPIS()
-	errora.err(err, 'Range Lock Has Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+	LogFile.e('Range Lock Crash: '..err, runningProgram)
+	errora.err(err, 'Range Lock Crash, Report Code Above', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
   end

@@ -1,43 +1,6 @@
---[[scanner = peripheral.wrap("top")
-count = 0
-list = {"hbomb_79"}
+runningProgram = shell.getRunningProgram()
 
-while true do
-  open = false
-  alarm = false
-  x = scanner.getPlayerNames()
-  
-  print("FOUND " ..#x.. " PLAYERS! Scan:"..count)
-  for i=1, #x do
-    print(x[i])
-    for z=1, #list do
-      if x[i] == list[z] then
-        open = true
-      else
-        alarm = true
-      end
-    end
-  end
-  
-  if open == true then
-    rs.setOutput("bottom", true)
-  else
-    rs.setOutput("bottom", false)
-  end
-  
-  if alarm == true then
-    rs.setOutput("left", true)
-  else
-    rs.setOutput("left", false)
-  end
-  
-  print()
-  sleep(0.3)
-  term.clear()
-  term.setCursorPos(1,1)
-  count = count + 1
-end
-]]--
+LogFile.i('OpenPDetect Program Successfully Started', runningProgram)
 current = {
   sensor = {},
   settings = {
@@ -54,11 +17,13 @@ function drawTitle()
 end
 
 function setup()
+LogFile.i('OpenPDetect Setup Started', runningProgram)
   local function setupWelcome()
     titleBar.draw('HbombOS Security Suite', 'OpenP Detector Lock Setup', colors.cyan, 256, 128, 256, 1)
   end
   
   local function Intro()
+    LogFile.i('OpenPDetect Setup Intro', runningProgram)
     setupWelcome()
 	printer.centered('Welcome To OpenP Detector Setup', 6)
 	printer.centered('This Program Uses Open Peripherals', 8)
@@ -77,6 +42,7 @@ function setup()
   end
   
   local function whitelistAdd()
+  LogFile.i('OpenPDetect whitelist Add Start', runningProgram)
   while true do
     local function addNames()
     while true do
@@ -95,16 +61,19 @@ function setup()
 		    if entry == input then
 			  inList = true
 			  printer.centered('Username Already In Whitelist', 19)
+			  LogFile.w('User Tried To Add Username To Whitelist That Already Existed', runningProgram)
 			  sleep(1)
 			end
 		  end
 		  if inList == false then
 		    printer.centered('Adding Username To whitelist', 19)
+			LogFile.i('Adding Username: '..input..' Into Whitelist', runningProgram)
 			  if current.settings.whiteList then
 		        table.insert(current.settings.whiteList, input)
 				printer.centered('Username Inserted Into Whitelist', 19)
 				sleep(0.5)
 			  else
+			    LogFile.e('Whitelist Table Is Missing.. Fatal', runningProgram)
 			    error'Table Appears To Be Missing'
 			  end
 		  end
@@ -119,6 +88,7 @@ function setup()
 		    if #current.settings.whiteList <= 0 then
 			  term.setCursorBlink(false)
 	          printer.centered('Please Register At Least ONE Username', 19)
+			  LogFile.w('User Tried To Skip Whitelist When 0 Usernames Are In Table', runningProgram)
 	          sleep(0.5)
 			  lessThanOne = true
 			  return
@@ -131,7 +101,7 @@ function setup()
 	end
 	
 	parallel.waitForAny(nextStep, addNames)
-	if not lessThanOne then break end
+	if not lessThanOne then LogFile.i('Whitelist Complete', runningProgram) break end
   end
   return
   end
@@ -148,9 +118,11 @@ function setup()
 	    local event, key = os.pullEvent('key')
 		  if key == keys.y then
 		    current.settings.outputOption = true
+			LogFile.i('Output Option: true', runningProgram)
 			return true
 		  elseif key == keys.n then
 		    current.settings.outputOption = false
+			LogFile.i('Output Option: false', runningProgram)
 			return false
 		  end
 	  end
@@ -171,7 +143,7 @@ function setup()
 				break
 			end
 		end
-		if vside then break end
+		if vside then LogFile.i('Redstone Side Set To: '..current.settings.redstoneSide, runningProgram) break end
 		  printer.centered("Invalid side!", 11)
 		  sleep(0.5)
 		  term.clear()
@@ -191,9 +163,11 @@ function setup()
 	    local event, key = os.pullEvent('key')
 		  if key == keys.y then
 		    current.settings.alarmOption = true
+			LogFile.i('Alarm Side Option: true', runningProgram)
 			return true
 		  elseif key == keys.n then
 		    current.settings.alarmOption = false
+			LogFile.i('Alarm Side Option: false', runningProgram)
 			return false
 		  end
 	  end
@@ -214,7 +188,7 @@ function setup()
 				break
 			end
 		end
-		if vside then break end
+		if vside then LogFile.i('Alarm Side: '..current.settings.alarmRedstoneSide, runningProgram) break end
 		  printer.centered("Invalid side!", 11)
 		  sleep(0.5)
 		  term.clear()
@@ -223,6 +197,7 @@ function setup()
   end
   
   local function setupSave()
+    LogFile.i('Setup Complete', runningProgram)
     setupWelcome()
     printer.centered('Thanks For Completing Setup', 6)
     printer.centered('Please Wait While Your Preferences', 8)
@@ -247,6 +222,7 @@ eventLoop()
 end
 
 function loadSettings()
+  LogFile.i('Loading Settings', runningProgram)
   if fs.exists('systemFiles/Programs/detectorConfig') then
 		local f = fs.open('systemFiles/Programs/detectorConfig', 'r')
 		if f then
@@ -259,6 +235,7 @@ function loadSettings()
 end
 
 function SaveSettings()
+    LogFile.i('Saving Settings', runningProgram)
 	current.settings = current.settings or {}
 	local f = fs.open('systemFiles/Programs/detectorConfig', 'w')
 	if f then
@@ -269,19 +246,23 @@ end
 --Sensor Peripheral: openperipheral_sensor
 
 function scanSensor()
+  LogFile.i('Searching For OpenP Scanner', runningProgram)
   localPeripherals = peripheral.getNames()
     for i = 1, #localPeripherals do
 	  if peripheral.getType(localPeripherals[i]) == 'openperipheral_sensor' then
 		Sensor = peripheral.find('openperipheral_sensor')
+		LogFile.i('Sensor Found', runningProgram)
 		current.sensor.isPresent = true
 		return true
 	  end
 	end
+	LogFile.w('Sensor Missing', runningProgram)
 	current.sensor.isPresent = false
 	noSensor()
 end
 
 function noSensor()
+  LogFile.w('There Is No Sensor Present', runningProgram)
   drawTitle()
   if current.settings.redstoneSide then rs.setOutput(current.settings.redstoneSide, false) end
   if current.settings.alarmRedstoneSide then rs.setOutput(current.settings.alarmRedstoneSide, false) end
@@ -366,7 +347,7 @@ checkScanner()
    end
 end
 
-function openSide()
+function openSide() 
   current.status = 'Access Granted'
   if current.settings.redstoneSide then rs.setOutput(current.settings.redstoneSide, true) end
 end
@@ -396,6 +377,7 @@ function timerHandle(event, timer)
 end
 
 function whitelistAdd()
+LogFile.i('Whitelist Add Called', runningProgram)
   while true do
     local function addNames()
     while true do  
@@ -414,16 +396,19 @@ function whitelistAdd()
 		    if entry == input then
 			  inList = true
 			  printer.centered('Username Already In Whitelist', 19)
+			  LogFile.w('Username: '..input..' Already In Whitelist', runningProgram)
 			  sleep(1)
 			end
 		  end
 		  if inList == false then
 		    printer.centered('Adding Username To whitelist', 19)
+			LogFile.i('Adding: '..input.. 'Into Whitelist', runningProgram)
 			  if current.settings.whiteList then
 		        table.insert(current.settings.whiteList, input)
 				printer.centered('Username Inserted Into Whitelist', 19)
 				sleep(0.5)
 			  else
+			    LogFile.i('Whitelist Table Missing!', runningProgram)
 			    error'Table Appears To Be Missing'
 			  end
 		  end
@@ -438,6 +423,7 @@ function whitelistAdd()
 		    if #current.settings.whiteList <= 0 then
 			  term.setCursorBlink(false)
 	          printer.centered('Please Register At Least ONE Username', 19)
+			  LogFile.i('User Tried To Add 0 Usernames', runningProgram)
 	          sleep(0.5)
 			  lessThanOne = true
 			  return
@@ -457,6 +443,7 @@ function whitelistAdd()
 end
 
 function whitelistRemove()
+ LogFile.i('Remove Whitelist Username Open', runningProgram)
   local function removeNames()
     while true do
 	  inList = false
@@ -480,6 +467,7 @@ function whitelistRemove()
 			    sleep(0.5)
 			    break
 			  else
+			    LogFile.i('User Tried To Remove LAST Username From Whitelist', runningProgram)
 			    printer.centered('There Has To Be Atleast One Username', 18)
 			    printer.centered('In Whitelist', 19)
 				sleep(1)
@@ -505,6 +493,7 @@ function whitelistRemove()
 end
 
 function configMenu()
+  LogFile.i('Config Menu Open', runningProgram)
   term.setCursorBlink(false)
   titleBar.draw('HbombOS Security Suite', 'OpenP Detector Settings', colors.cyan, 256, 128, 256, 1)
   printer.centered('Pick An Option Below', 6)
@@ -521,6 +510,7 @@ function configMenu()
 		  whitelistRemove()
 		end},
 		{'Reset Configuration', function()
+		  LogFile.i('Config Reset', runningProgram)
 		  fs.delete('systemFiles/Programs/detectorConfig')
 		  os.reboot()
 		end},
@@ -567,6 +557,7 @@ function configMenu()
 end
 
 function ConfigLogin()
+  LogFile.i('Config Login', runningProgram)
   closeAllSides()
   current.config = true
   local f = fs.open('systemFiles/Security/adminPass', 'r')
@@ -585,6 +576,7 @@ function ConfigLogin()
 	  write('Password: ')
 	  local input = read('*')
 	    if input == adminPassLoaded then
+		  LogFile.i('Admin Password Correct', runningProgram)
 		  current.config = true
 		  break
 	    end
@@ -612,20 +604,19 @@ function keyHandler(event, key)
 end
 
 function init()
+LogFile.i('main Init function started', runningProgram)
 eventRegister('timer', timerHandle)
 eventRegister('key', keyHandler)
 eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program', true) end)
 eventRegister('peripheral', scanSensor)
 eventRegister('peripheral_detach', scanSensor)
 loadSettings()
-scanSensor()
-checkScanner()
 eventLoop()
 end
 
   local _, err = pcall(init) --Error Catching, All Functions Are Called From initialise() at some point...
   if err then
     term.setCursorBlink(false)
+	LogFile.e('Error Detected: '..err, runningProgram)
 	errora.err(err, 'Detector Lock Crashed, Report Error Above', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end
-errora.err('Uh Oh', 'Something Went Wrong And The Script Escaped The Loop, Please Report', true)
