@@ -1,5 +1,6 @@
 os.pullEvent = os.pullEventRaw
-
+runningProgram = shell.getRunningProgram()
+LogFile.i('Keycard Program Running... ', runningProgram)
 termX, termY = term.getSize()
 
 ----------------------
@@ -137,6 +138,7 @@ function checkDisk()
 end
 
 function configMenu()
+	LogFile.i('Config Menu Opened', runningProgram)
   drawTitleBar()
   term.setTextColor(1)
   term.setBackgroundColor(256)
@@ -258,6 +260,7 @@ function configMenu()
 end
 
 function configEdit()
+LogFile.i('Config Edit Funciton', runningProgram)
   config = true
   disk.eject(driveSide)
   titleBar.draw('HbombOS Security Suite', 'Keycard Lock Setup', colors.cyan, 256, 128, 256, 1)
@@ -274,6 +277,7 @@ function configEdit()
 end
 
 function main() --Waits For Disk Event!
+LogFile.i('main Function Called, Waiting for disks', runningProgram)
   while true do
     term.clear()
     titleBar.draw('HbombOS Security Suite', 'Keycard Lock', colors.cyan, 256, 128, 256, 1)
@@ -309,6 +313,7 @@ function Start() --Starts The Program
 end
 
 function LoopMain() --Continuously starts the program...
+LogFile.i('LoopMain Called', runningProgram)
 while true do
   if useInput == "true" then
     term.setCursorBlink(false)
@@ -336,6 +341,7 @@ end
 
 
 function loadConfig()
+LogFile.i('Loading Config', runningProgram)
  term.clear()
  titleBar.draw('HbombOS Security Suite', 'Keycard Lock', colors.cyan, 256, 128, 256, 1)
  printer.centered('Loading Configuration', 19)
@@ -354,7 +360,7 @@ function loadConfig()
 end
 
 function setup() --If the config file does not exists, this function will be run
-
+LogFile.i('setup Started', runningProgram)
   local function waitForConfig()
     while true do
       sleep(0)
@@ -565,7 +571,7 @@ function setup() --If the config file does not exists, this function will be run
 		f.writeLine(RedstoneInputSide)
 		sleep(0)
 	  end
-  
+  LogFile.i('Save Done, Rebooting', runningProgram)
   printer.centered('Save Done, Rebooting System', 19)
   sleep(1)
   os.reboot()
@@ -585,9 +591,19 @@ end
   save()
 end
 
-if not fs.exists('systemFiles/Programs/keycardConfig') then
-  setup()
-else
-  loadConfig()
-  LoopMain()
+function init()
+    LogFile.i('Init Function Started', runningProgram)
+	if not fs.exists('systemFiles/Programs/keycardConfig') then
+	  setup()
+	else
+	  loadConfig()
+	  LoopMain()
+	end
 end
+
+local _, err = pcall(init) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    term.setCursorBlink(false)
+	LogFile.e('XPCALL Error: '..err, runningProgram)
+	errora.err(err, 'Keycard Has Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
+  end

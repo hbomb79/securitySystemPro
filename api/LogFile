@@ -1,6 +1,6 @@
 Initialise = function()
 	local h = fs.open('/systemFiles/logFile.log', 'w')
-	h.write('-@-HbombOS Security Suite System Log-@-')
+	h.write('-@-HbombOS Security Suite System Log-@-'..'\n\n')
 	h.close()
 end
 
@@ -10,8 +10,7 @@ log = function(msg, Program, state)
 		state = ' '..state
 	end
 	local h = fs.open('/systemFiles/logFile.log', 'a')
-	--h.write("  ["..os.clock()..state.."]["..Program..']'..tostring(msg)..'  ')
-	h.write('  ['..os.clock()..']['..Program..'] '..state..' '..tostring(msg..'  '))
+	h.write('  ['..os.clock()..']['..Program..'] '..state..' '..tostring(msg..'\n'))
 	h.close()
 end
 

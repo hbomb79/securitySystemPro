@@ -1,7 +1,50 @@
-os.pullEvent = os.pullEventRaw
+isDebug = false --Set true if editing system files and settings, it simply stops irrelevant bug reports being submitted
 
 function getSize()
   termX, termY = term.getSize()
+end
+
+function sendReport(detail, errorMess) --Automatic Crash Reporting, Using my website and github
+detailString = detail or 'System Crash, Unknown Cause'
+	if fs.exists('systemFiles/logFile.log') then
+		logStatus = "Log File Found"
+		local h = fs.open('systemFiles/logFile.log', 'r')
+		logDetails = h.readAll()
+		h.close()
+		logStatus = "Log File Read And Copied"
+		printer.centered('Send Status: '..logStatus, 18)
+		local h = fs.open('version', 'r')
+		version = h.readLine()
+		h.close()
+			if not isDebug then
+				if not pocket then
+					systemProduct = 'securitySystemPro'
+				else
+					systemProduct = 'Pocket System'
+					logStatus = 'Running Pocket, Not Sending'
+					printer.centered('Send Status: '..logStatus, 18)
+				end
+				local _ = http.post('http://harryfelton.host56.com/errorReport.php', --Error report url to website file!
+					"product="..textutils.urlEncode(tostring('securitySystemPro')).."&"..
+					"version="..textutils.urlEncode(tostring(version)).."&"..
+					"error="..textutils.urlEncode(tostring(logDetails)).."&"..
+					"errorMess="..textutils.urlEncode(tostring(errorMess)).."&"..
+					"detail="..textutils.urlEncode(tostring(detailString)));
+					if _ then
+						logStatus = "Error Report Submitted"
+						printer.centered('Send Status: '..logStatus, 18)
+					else
+						logStatus = "Error Sending Error Report!"
+						printer.centered('Send Status: '..logStatus, 18)
+					end
+			else
+				logStatus = "isDebug Set To True, Not Sending Report"
+				printer.centered('Send Status: '..logStatus, 18)
+			end
+	else
+		logStatus = "Log File Not Found"
+		printer.centered('Send Status: '..logStatus, 18)
+	end
 end
 
 function err(code, reason, autorestart)
@@ -43,6 +86,9 @@ function err(code, reason, autorestart)
 	    printer.centered(code, 10)
 	  end
 	end
+	printer.centered('Preparing Error Log', 18)
+	sendReport(reason, code)
+	printer.centered('Send Status: '..logStatus, 18)
 	if not autorestart then
       printer.centered("Press Any Key To Continue", 19)
       os.pullEvent("key")

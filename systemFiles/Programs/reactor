@@ -1,3 +1,5 @@
+runningProgram = shell.getRunningProgram()
+LogFile.i('reactor Program Running... ', runningProgram)
 current = {
   settings = {},
   reactor = {}
@@ -50,6 +52,7 @@ function readN(len, replaceChar)
 end
 
 function SettingsEdit()
+LogFile.i('Setup function called', runningProgram)
 current.page = 'Setup'
 findMonitor()
 if current.monitorPresent then monStatusPrint() end
@@ -167,22 +170,28 @@ function monitorOverlay()
 end
 
 function SaveSettings()
+	LogFile.i('Saving Settings', runningProgram)
 	current.settings = current.settings or {}
 	local f = fs.open('systemFiles/Programs/reactorConfig', 'w')
 	if f then
 		f.write(textutils.serialize(current.settings))
 	end
 	f.close()	
+	LogFile.i('Settings Saved', runningProgram)
 end
 
 function loadSettings()
+  LogFile.i('Loading Settings', runningProgram)
   if fs.exists('systemFiles/Programs/reactorConfig') then
+		LogFile.i('Found Config', runningProgram)
 		local f = fs.open('systemFiles/Programs/reactorConfig', 'r')
 		if f then
 			current.settings = textutils.unserialize(f.readAll())
+			LogFile.i('Settings Loaded', runningProgram)
 		end
 		f.close()
 	else
+		LogFile.i('No Config File', runningProgram)
 		SettingsEdit()
 	end
 end
@@ -211,22 +220,28 @@ function monitorTitle()
 end
 
 function findMonitor()
+LogFile.i('Searching For Monitor', runningProgram)
   localPeripherals = peripheral.getNames()
     for i = 1, #localPeripherals do
 	  if peripheral.getType(localPeripherals[i]) == 'monitor' then
 		Display = peripheral.find('monitor')
 		monX, monY = Display.getSize()
+		LogFile.i('Found Monitor', runningProgram)
 		if monX >= 29 and monY>= 12 then
 		  current.monitorPresent = true
+		  LogFile.i('Monitor Size Is Correct', runningProgram)
 		  monitorPrepare()
 		else
 		  current.monitorPresent = false
 		  Display.setTextScale(0.5)		  
 		  Display.write('Too Small')
+		  LogFile.i('Monitor Found', runningProgram)
+		  LogFile.w('Monitor too small', runningProgram)
 		end
 		return true
 	  end
 	end
+	LogFile.e('Cannot Find Monitor', runningProgram)
 	return false
 end
 
@@ -407,6 +422,7 @@ function autoControl()
 end
 
 function reactorError()
+  LogFile.e('reactorError', runningProgram)
   current.page = 'Reactor Error'
   if current.monitorPresent == true then monStatusPrint() end
   if current.reactor.present == false then
@@ -416,7 +432,7 @@ function reactorError()
 	printer.centered('If The Computer Doesnt Automatically Re-Scan', 9)
 	printer.centered('Then Reboot The Computer By Holding CTRL+R', 10)
 	printer.centered('Add Computer Port... Then Wait While Searching', 19)
-  elseif current.reactor.present== true then
+  else
     if current.reactor.built == false then
       overlay()
 	  printer.centered('It Appears The Reactor Connected To This Computer', 6)
@@ -424,10 +440,9 @@ function reactorError()
 	  printer.centered('If The Computer Doesnt Automatically Scan', 8)
 	  printer.centered('Then Reboot The PC By Holding CTRL+R', 19)
 	end
-  else
-    error('Unknown Reactor Error Thrown')
   end
   os.pullEventRaw('peripheral')
+  LogFile.i('peripheral Event Pulled', runningProgram)
   printer.centered('Searching For Reactor Computer Port...', 19)
   sleep(1)
   scanReactor()
@@ -437,25 +452,31 @@ function reactorError()
 end
 
 function scanReactor()
+LogFile.i('Searching for reactor', runningProgram)
   localPeri = peripheral.getNames()
   for i = 1, #localPeri do
     if peripheral.getType(localPeri[i]) == 'BigReactors-Reactor' then
 	  current.reactor.present = true
 	  react = peripheral.find('BigReactors-Reactor')
+	  LogFile.i('Reactor Found', runningProgram)
 	  if react.getConnected() then
 	    current.reactor.built = true
+		LogFile.i('Reactor Build State: '..tostring(react.getConnected()), runningProgram)
 		return true
 	  else
 	    current.reactor.built = false
+		LogFile.w('Reactor Build State: '..tostring(react.getConnected()), runningProgram)
 		reactorError()
 	  end
 	end
   end
   current.reactor.present = false
+  LogFile.e('Cannot Find Reactor', runningProgram)
   reactorError()
 end
 
 function scanDevices()
+LogFile.w('Peripherals Adjusted, Scanning Devices', runningProgram)
 current.monitorPresent = false
 findMonitor()
 scanReactor()
@@ -473,6 +494,7 @@ function monTouch(event,side, x, y)
 end
 
 function Initialise()
+LogFile.i('Initialise Function Called', runningProgram)
   overlay()
   loadSettings()
   eventRegister('key', keyHandler)
@@ -492,6 +514,7 @@ function timerHandler(event, timerName)
 end
 
 function ConfigLogin()
+LogFile.i('ConfigLogin', runningProgram)
   configContin = false
   current.page = 'Config'
   if current.monitorPresent then monStatusPrint() end
@@ -535,6 +558,7 @@ function ConfigLogin()
   end
 
 function configMenu()
+LogFile.i('Config Menu Opened', runningProgram)
   titleBar.draw('HbombOS Security Suite', 'Reactor Settings', colors.cyan, 256, 128, 256, 1)
   printer.centered('Pick An Option Below', 6)
   local continue = false
@@ -544,6 +568,7 @@ function configMenu()
 		end}, 
 		{'Reset Configuration', function()
 		  fs.delete('systemFiles/Programs/reactorConfig')
+		  LogFile.i('Config File Deleted', runningProgram)
 		  pressed = false
 		  config = true
 		  printer.centered('Removed!', 19)
@@ -593,6 +618,7 @@ function configMenu()
 end
 
 function eventRegister(event, functionToRun)
+	LogFile.i('Registered Event: '..event, runningProgram)
 	if not Events[event] then
 		Events[event] = {}
 	end
@@ -600,6 +626,7 @@ function eventRegister(event, functionToRun)
 end
 
 function programEventLoop()
+LogFile.i('programLoop Called', runningProgram)
 statusPrint()
   while true do
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
@@ -614,6 +641,6 @@ end
 local _, err = pcall(Initialise)
   if err then
     term.setCursorBlink(false)
+	LogFile.e('XPCALL Error: '..err, runningProgram)
 	errora.err(err, 'The Reactor Program Has Crashed, Error Code Above', true)
   end
-os.reboot()

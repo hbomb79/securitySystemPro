@@ -604,14 +604,14 @@ function keyHandler(event, key)
 end
 
 function init()
-LogFile.i('main Init function started', runningProgram)
-eventRegister('timer', timerHandle)
-eventRegister('key', keyHandler)
-eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program', true) end)
-eventRegister('peripheral', scanSensor)
-eventRegister('peripheral_detach', scanSensor)
-loadSettings()
-eventLoop()
+	LogFile.i('main Init function started', runningProgram)
+	eventRegister('timer', timerHandle)
+	eventRegister('key', keyHandler)
+	eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program', true) end)
+	eventRegister('peripheral', scanSensor)
+	eventRegister('peripheral_detach', scanSensor)
+	loadSettings()
+	eventLoop()
 end
 
   local _, err = pcall(init) --Error Catching, All Functions Are Called From initialise() at some point...

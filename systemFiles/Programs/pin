@@ -1,5 +1,6 @@
-os.pullEvent = os.pullEventRaw --Stop termination outside of loop
-
+--os.pullEvent = os.pullEventRaw --Stop termination outside of loop
+runningProgram = shell.getRunningProgram() --Get running program for logFile writing!
+LogFile.i('Pin Lock Program Running...', runningProgram)
 termX, termY = term.getSize()
 
 --Assign Text Variables
@@ -73,6 +74,7 @@ function thank()
   printer.centered("For More Help.", 9)
   printer.centered("Press ANY Key", 19)
   os.pullEvent("key")
+  LogFile.i('Setup Finished, Rebooting', runningProgram)
   os.reboot()
 end
 
@@ -171,6 +173,7 @@ end
 drawTitleBar()
 
 if not checkConfig() then  
+  LogFile.i('Start Setup', runningProgram)
   setup = true
   waitinput = true
   while waitinput do 
@@ -232,6 +235,7 @@ if not checkConfig() then
   drawTitleBar()
   printer.centered ("Please Wait While We Save Your Settings...", 6)
   sleep(1)
+  LogFile.i('Saving Setup Settings', runningProgram)
   local f = fs.open("/systemFiles/Programs/pinConfig", "w")
   f.writeLine(pinInput)
   sleep(0)
@@ -260,6 +264,7 @@ if not checkConfig() then
   thank()
 else
   printer.centered("Loading Configuration...", 4)
+  LogFile.i('Loading Config', runningProgram)
   sleep(0.5)
   local f = fs.open("systemFiles/Programs/pinConfig", "r")
   pin = f.readLine()
@@ -298,6 +303,7 @@ end
 end
 
 function removeConfig()
+LogFile.i('Remove Config Function Called', runningProgram)
 local function removeSet()
   term.clear()
   drawTitleBar()
@@ -321,6 +327,7 @@ if removeSet() then
   printer.centered("Removing Configuration File", 19)
   sleep(0)
   fs.delete('systemFiles/Programs/pinConfig')
+  LogFile.i('pinConfig Removed!', runningProgram)
   printer.centered("Removed Config", 19)
   sleep(1)
   os.reboot()
@@ -372,20 +379,30 @@ function RedstoneInputReceive()
   return true
 end
 
-while true do
-  if rsInputUse == "true" then
-    parallel.waitForAny(Start, RedstoneInputReceive)
-    term.setCursorBlink(false)
-    RSstart(side)
-    RSstop()
-    term.setCursorBlink(true)
-	rsReceive = false
-    rsReceive = redstone.getInput(rsInputUseSide)
-   -- parallel.waitForAny(Start, RedstoneInputReceive)
-  else
-    Start()
-    RSstart(side)
-    RSstop()
-    Start()
-  end
+function init() --Everything gets called here!
+LogFile.i('Main Function Statred', runningProgram)
+	while true do
+	  if rsInputUse == "true" then
+		parallel.waitForAny(Start, RedstoneInputReceive)
+		term.setCursorBlink(false)
+		RSstart(side)
+		RSstop()
+		term.setCursorBlink(true)
+		rsReceive = false
+		rsReceive = redstone.getInput(rsInputUseSide)
+	   -- parallel.waitForAny(Start, RedstoneInputReceive)
+	  else
+		Start()
+		RSstart(side)
+		RSstop()
+		Start()
+	  end
+	end
 end
+
+  local _, err = pcall(init) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    term.setCursorBlink(false)
+	LogFile.e('XPCALL Error: '..err, runningProgram)
+	errora.err(err, 'Pin Lock Has Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
+  end

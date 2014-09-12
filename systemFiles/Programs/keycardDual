@@ -1,7 +1,13 @@
+runningProgram = shell.getRunningProgram()
+LogFile.i('keycardDual Program Running... ', runningProgram)
+
+
 Events ={}
 current = {
   Settings = {}
 }
+
+
 
 termX, termY = term.getSize()
 
@@ -52,15 +58,18 @@ function readN(len, replaceChar, HasToBeNum)
 end
 
 function SaveSettings()
+	LogFile.i('Saving Settings', runningProgram)
 	current.Settings = current.Settings or {}
 	local f = fs.open('systemFiles/Programs/KeyDualConfig', 'w')
 	if f then
 		f.write(textutils.serialize(current.Settings))
 	end
 	f.close()	
+	LogFile.i('Settings Saved', runningProgram)
 end
 
 function loadSettings()
+LogFile.i('Loading Settings', runningProgram)
   if fs.exists('systemFiles/Programs/KeyDualConfig') then
 		local f = fs.open('systemFiles/Programs/KeyDualConfig', 'r')
 		if f then
@@ -70,9 +79,11 @@ function loadSettings()
 	else
 		Setup()
 	end
+	LogFile.i('Settings Loaded', runningProgram)
 end
 
 function eventHandler()
+LogFile.i('eventHandler Called', runningProgram)
   while isRunning do
   drawScreen()
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
@@ -111,6 +122,7 @@ function keyHandler(event, key)
 end
 
 function initialise()
+	LogFile.i('initialise Function called', runningProgram)
   drawTitle()
   printer.centered('Registering Events', 6)
   eventRegister('disk', diskInsert)
@@ -139,6 +151,7 @@ function drawTitle()
 end
 
 function Setup() --Creates The Setup GUI If The Config File Is Not Found
+LogFile.i('Setup started', runningProgram)
   local function setupTitleBar()
 	titleBar.draw('HbombOS Secuity Suite', 'Keycard Dual Setup', colors.cyan, 256, 128, 256, 1)
   end
@@ -449,6 +462,7 @@ end
 
 function configLogin() --Login To The Settings Page
   drawTitle()
+  LogFile.i('Config Login', runningProgram)
   printer.centered('As Added Security Please Enter Your', 6)
   printer.centered('Security Suite Admin Password', 7)
   printer.centered('To Continue To The Settings Page', 8)
@@ -514,15 +528,6 @@ function drawScreen()
   term.setTextColor(1)
 end
 
-function loadAPIS()
-  os.loadAPI('api/errora')
-  os.loadAPI('api/update')
-  os.loadAPI('api/titleBar')
-  os.loadAPI('api/systemCheck')
-  os.loadAPI('api/download')
-  os.loadAPI('api/printer')
-end
-
 function checkDiskIntegrity()
 local function checkDisk1()
   if fs.exists('disk/'..current.Settings.nameDriveInput) then
@@ -567,6 +572,6 @@ end
   local _, err = pcall(initialise) --Error Catching, All Functions Are Called From initialise() at some point...
   if err then
     term.setCursorBlink(false)
-    loadAPIS()
-	errora.err(err, 'Uh Oh, Something Went Horribly Wrong Somewhere, Please Report The ERROR Above!', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+	LogFile.e('XPCALL Error: '..err, runningProgram)
+	errora.err(err, 'keycardDual Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end

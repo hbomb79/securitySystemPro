@@ -1,4 +1,6 @@
 --os.pullEvent = os.pullEventRaw
+runningProgram = shell.getRunningProgram()
+LogFile.i('dualKey Program Running', runningProgram)
 termX, termY = term.getSize()
 
 text1 = "Username:"
@@ -191,17 +193,21 @@ function open()
 end
 
 function fileCheck()
+LogFile.i('Checking Config file', runningProgram)
   if not fs.exists('systemFiles/Programs/dualKeyConfig') then	
+  LogFile.i('No Config File', runningProgram)
     waitinput = true
       while waitinput do
         term.clear()
 		setup = true
+		LogFile.i('Setup Start', runningProgram)
         printer.centered("It Appears You Have Not Used This Program Before", 6)
         printer.centered("Setting Up Digital Lock", 8)
         printer.centered("Enter Your Username Below", 10)
         setUsername()
 	   end
   else --The File Exists...
+	LogFile.i('Loading Settings', runningProgram)
     setup = false
     term.clear()
 	term.setTextColor(1)
@@ -215,6 +221,7 @@ function fileCheck()
 	  rsSettingSide = f.readLine()
 	end
 	f.close()
+	LogFile.i('Setting Load Complete', runningProgram)
 	return true
   end
 end
@@ -257,6 +264,7 @@ function save()
   printer.centered("", 19)
   printer.centered("Your Data Has Been Saved, Rebooting...", 18)
   sleep(2)
+  LogFile.i('Setup Saved, Rebooting', runningProgram)
   os.reboot()
 end
 
@@ -372,6 +380,7 @@ if removeSet() then
   printer.centered("Removing Configuration File", 19)
   sleep(0)
   fs.delete('systemFiles/Programs/dualKeyConfig')
+  LogFile.i('Config removed, Rebooting', runningProgram)
   printer.centered("Removed Config", 19)
   sleep(1)
   os.reboot()
@@ -438,24 +447,33 @@ function Start()
   end  
 end
 
-fileCheck()
 
-while true do
-  if rsSettingUse == "true" then
-    checkKey()
-    parallel.waitForAny(Start, RedstoneInputReceive)
-    term.setCursorBlink(false)
-	term.setTextColor(1)
-	term.setBackgroundColor(256)
-    open()
-	term.setBackgroundColor(1)
-	term.setTextColor(colors.black)
-    term.setCursorBlink(true)
-	rsReceive = false
-    parallel.waitForAny(Start, RedstoneInputReceive)
-  else
-    Start()
-    open()
-    Start()
-  end
+function init()
+	fileCheck()
+	while true do
+	  if rsSettingUse == "true" then
+		checkKey()
+		parallel.waitForAny(Start, RedstoneInputReceive)
+		term.setCursorBlink(false)
+		term.setTextColor(1)
+		term.setBackgroundColor(256)
+		open()
+		term.setBackgroundColor(1)
+		term.setTextColor(colors.black)
+		term.setCursorBlink(true)
+		rsReceive = false
+		parallel.waitForAny(Start, RedstoneInputReceive)
+	  else
+		Start()
+		open()
+		Start()
+	  end
+	end
 end
+ 
+local _, err = pcall(init) --Error Catching, All Functions Are Called From initialise() at some point...
+  if err then
+    term.setCursorBlink(false)
+	LogFile.e('XPCALL Error: '..err, runningProgram)
+	errora.err(err, 'dualKey Lock Has Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
+  end
