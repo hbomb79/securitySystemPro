@@ -25,7 +25,7 @@ detailString = detail or 'System Crash, Unknown Cause'
 					printer.centered('Send Status: '..logStatus, 18)
 				end
 				local _ = http.post('http://harryfelton.host56.com/errorReport.php', --Error report url to website file!
-					"product="..textutils.urlEncode(tostring('securitySystemPro')).."&"..
+					"product="..textutils.urlEncode(tostring(systemProduct)).."&"..
 					"version="..textutils.urlEncode(tostring(version)).."&"..
 					"error="..textutils.urlEncode(tostring(logDetails)).."&"..
 					"errorMess="..textutils.urlEncode(tostring(errorMess)).."&"..

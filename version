@@ -1,4 +1,4 @@
-1.2.5
+1.3.0
 --Version Number MAJOR-MINOR-RELEASE
 
 --------------------
@@ -7,7 +7,7 @@
 -- Main Suite: Stable***
 -- Pin Lock: Stable***
 -- Digital Lock: Stable***
--- Reactor Program: BETA**
+-- Reactor Program: Stable***
 -- Range Lock: Stable***
 -- Keycard Lock: Stable***
 -- Keycard Dual Lock: Stable***
