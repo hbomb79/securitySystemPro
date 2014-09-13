@@ -1,4 +1,4 @@
-1.3.0
+1.3.0.1
 --Version Number MAJOR-MINOR-RELEASE
 
 --------------------
@@ -12,12 +12,13 @@
 -- Keycard Lock: Stable***
 -- Keycard Dual Lock: Stable***
 
+-- ALL PROGRAMS ARE STABLE --
+
 
 --------------------------
 --This Version ChangeLog--
 --------------------------
--- Added Monitor Support In Reactor Program
--- Recoded Save Code Block In Reactor, Allows On The Fly Setting Save And Creation
+-- Added Auto Error Reporting... Reports to GitHub
 ------------------
 --END OF CHANGES--
 ------------------
