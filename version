@@ -1,4 +1,4 @@
-1.3.0
+1.3.0.1
 --Version Number MAJOR-MINOR-RELEASE
 
 --------------------
@@ -16,8 +16,7 @@
 --------------------------
 --This Version ChangeLog--
 --------------------------
--- Added Monitor Support In Reactor Program
--- Recoded Save Code Block In Reactor, Allows On The Fly Setting Save And Creation
+-- Added Auto Log Reporting
 ------------------
 --END OF CHANGES--
 ------------------
