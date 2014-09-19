@@ -4,6 +4,18 @@ cancelRequest = false
 errorCatch = false
 -- This is the program/script that actually re-installs all of the scripts on the computer
 termX, termY = term.getSize()
+elements ={}
+
+
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to true
+	return btn
+end
+
+yes = btnInit('Update', nil, nil, termX-(#'Update' + 2), 18, 1, colors.green, 1, 256, function() downloadStart() end, false, nil, nil, nil)
+no = btnInit('Dont Update', nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('cancel') request_code = "Cancelled" return 'Cancelled' end, false, nil, nil, nil)
 
 
 function PrintCentered(text, y)
@@ -29,6 +41,45 @@ function drawTitleBar()
   term.setBackgroundColor(256)
 end
 
+function downloadStart()
+	term.clear()
+	drawTitleBar()
+	PrintCentered("Updating...", 4)
+	sleep(1)
+	PrintCentered("Connection Established", 6)
+	sleep(0.1)
+	PrintCentered("Starting Download", 6)
+	downloadStatus = downloader()
+	if downloadStatus == 'Error' then
+	  request_code = 'Error'
+	  return 'Error'
+	end
+	PrintCentered("Finished Downloading Scripts", 6)
+	sleep(1)
+	term.clear()
+	drawTitleBar()
+	PrintCentered ("Thank You For Updating", 6)
+	PrintCentered ("We Hope You Enjoy Your New Security Suite", 8)
+	PrintCentered ("Please Report Any Bugs You Find On The Forums", 10)
+	PrintCentered ("Verifying Update With GitHub..", 19)
+	sleep(2)
+	PrintCentered ("Press Any Key To Finish", 19)
+	os.pullEvent("key")
+	term.setBackgroundColor(colors.black)
+	term.clear()
+	term.setCursorPos(1,1)
+	term.clearLine()
+	os.reboot()
+end
+
+function doClick(event, btn, x, y)
+	functionToRun = element.tryClick(elements, x, y)
+	if functionToRun then --Check click location
+		functionToRun()
+	end
+end
+
+
 function welcome()
 term.setBackgroundColor(256)
 term.clear()
@@ -36,44 +87,20 @@ drawTitleBar()
 PrintCentered("Welcome to the HbombOS Updater", 4)
 PrintCentered("This Updater Will Guide", 6)
 PrintCentered("You Through Updating Your Security Suite", 7)
-PrintCentered("Press Y Continue Or N To Cancel", 9)
+element.opacity(no, true)
+element.opacity(yes, true)
 while true do
-local event, key = os.pullEvent("key")
-if key == keys.y then
-term.clear()
-drawTitleBar()
-PrintCentered("Updating...", 4)
-sleep(1)
-PrintCentered("Connection Established", 6)
-sleep(0.1)
-PrintCentered("Starting Download", 6)
-downloadStatus = downloader()
-if downloadStatus == 'Error' then
-  request_code = 'Error'
-  return 'Error'
+	local event, button, x, y = os.pullEvent()
+		if event == "mouse_click" then
+			doClick(event, button, x, y)
+		elseif event == "cancel" then
+			return 'Cancelled'
+		end
 end
-PrintCentered("Finished Downloading Scripts", 6)
-sleep(1)
-term.clear()
-drawTitleBar()
-PrintCentered ("Thank You For Updating", 6)
-PrintCentered ("We Hope You Enjoy Your New Security Suite", 8)
-PrintCentered ("Please Report Any Bugs You Find On The Forums", 10)
-PrintCentered ("Verifying Update With GitHub..", 19)
-sleep(2)
-PrintCentered ("Press Any Key To Finish", 19)
-os.pullEvent("key")
-term.setBackgroundColor(colors.black)
-term.clear()
-term.setCursorPos(1,1)
-term.clearLine()
-os.reboot()
-elseif key == keys.n then
-  request_code = 'Cancelled'
-  return 'Cancelled'  
+request_code = 'Cancelled'
+return
 end
-end
-end
+
 
 function downloader(quietDownload)
 drawTitleBar()
@@ -100,6 +127,7 @@ if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/mas
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/titleBar", "/api/titleBar", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/errora", "/api/errora", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/LogFile", "/api/LogFile", true, 19) == 'ERROR' then return 'Error' end
+if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/element", "/api/element", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README", "/Documentation/README", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LICENSE", "/Documentation/LICENSE", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/dualKey", "/systemFiles/Programs/dualKey", true, 19) == 'ERROR' then return 'Error' end
@@ -115,8 +143,10 @@ end
 function main()
   if args[1] == 'quiet' then downloader(true) else welcome() end
   if cancelRequest then
+	request_code = "Cancelled"
     return 'Cancelled'
   elseif errorCatch then
+	request_code = "Error"
     return 'Error'
   end
 end
