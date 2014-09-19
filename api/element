@@ -1,0 +1,93 @@
+function create(text, width, height, x, y, tc, bg, otc, obg, func, toggle, secBG, secTC, secText) --Return the new button so it can be called later to be drawn
+	local new = {} --New Table To Store Details
+	setmetatable( new, {__index = self} ) --New Metatable To Set Index To Self
+	new.text = text or 'Nil Text' --Button Text
+	new.width = width or #text + 2	--Button width
+	if secText then new.secWidth = #secText + 2 else new.secWidth = #text + 2 end
+	new.height = height or 1 --Button Height
+	new.pad = pad or 2 --Padding Variable
+	new.x = x or 1 --Button X Positioning
+	new.y = y or 1 --Button Y Positioning
+	new.tc = tc or colors.white --Button Text Color
+	new.bg = bg or 128 --Button Background Color
+	new.otc = otc or colors.white --Original Background Color
+	new.obg = obg or 256 --Orignial Text Color
+	new.func = func or nil --Function on click
+	new.toggle = toggle or false --Whether the button should change state on click
+	new.secondaryBackground = secBG	or bg --Toggle Background Color
+	new.secondaryTextColor = secTC or tc --Toggle Text Color
+	new.toggleState = 1 --Set toggle state to default
+	new.secondaryText = secText or text
+	new.visible = true
+	return new
+end
+
+function tryClick(elementTable, x, y) --On Click Check Co-Ords, If match run the function assigned to the button
+	if elementTable then
+		for i, v in ipairs(elementTable) do
+			if x >= v.x and x < v.x + v.width then
+				if y == v.y then
+					if v.visible then 
+						if v.toggle then element.toggle(v) end
+						if v.func then return(v.func) end
+					end
+				end
+			end
+		end
+	end
+end
+
+function eraseCurrent(elem)
+	if elem then
+		if elem.toggleState == 2 then textSpec = elem.secondaryText widthSpec = elem.secWidth else textSpec = elem.text widthSpec = elem.width end 
+		term.setCursorPos(elem.x, elem.y)
+		term.setBackgroundColor(elem.obg)
+		if elem.width and elem.secWidth then
+			if elem.toggleState == 1 then
+				write(string.rep(' ', elem.secWidth ))
+			elseif elem.toggleState == 2 then
+				write(string.rep(' ', elem.width ))
+			end	
+		end
+	end
+end
+
+function draw(elem) --Visually Draw The Button Provided
+	if elem then eraseCurrent(elem) end
+	if elem.visible then
+		if elem.toggleState == 2 then term.setTextColor(elem.secondaryTextColor) else term.setTextColor(elem.tc) end
+		if elem.toggleState == 2 then term.setBackgroundColor(elem.secondaryBackground) else term.setBackgroundColor(elem.bg) end
+		term.setCursorPos(elem.x, elem.y)
+		write(string.rep(' ', elem.width )) --Create The Background Panel
+		if elem.toggleState == 2 then textSpec = elem.secondaryText widthSpec = elem.secWidth else textSpec = elem.text widthSpec = elem.width end 
+		term.setCursorPos(elem.x + (widthSpec - #textSpec)/2, elem.y) --Set The Cursor Pos In The Correct Padding Pos So The Text Appears In The Correct Location
+		write(textSpec)--Print The Button Text On The Button
+	else
+		term.setTextColor(elem.otc)
+		term.setBackgroundColor(elem.obg)
+		term.setCursorPos(elem.x, elem.y)
+		write(string.rep(' ', elem.width )) --Create The Background Panel
+		term.setCursorPos(elem.x, elem.y) --Set The Cursor Pos In The Correct Padding Pos So The Text Appears In The Correct Location
+	end
+	term.setTextColor(elem.otc)
+	term.setBackgroundColor(elem.obg)
+end
+
+function toggle(elem)
+	if elem.toggle then
+		if elem.toggleState == 1 then elem.toggleState = 2
+		elseif elem.toggleState == 2 then elem.toggleState = 1 end
+		draw(elem)
+	end
+end
+
+function opacity(elem, state) --Set or toggle visibility of a button, if invisible the BG color will be what you assigned when creating the button
+	if elem then
+		if state ~= 't' then --Manual Adjust
+			elem.visible = state
+		else --Toggle Auto
+			if elem.visible == true then elem.visible = false else elem.visible = true end
+		end
+		draw(elem)
+	end
+end

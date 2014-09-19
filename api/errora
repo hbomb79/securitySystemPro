@@ -1,4 +1,20 @@
-isDebug = false --Set true if editing system files and settings, it simply stops irrelevant bug reports being submitted
+--[[
+DEBUG Mode
+
+If you intend to modify system settings or source script that may affect the suite causing a crash then please use the suite boot menus 'Debug Edit' option to enable debug mode to stop the bug reporter sending invalid reports
+
+]]--
+
+if not fs.exists('systemFiles/debugConfig') then
+	local h = fs.open('systemFiles/debugConfig', 'w')
+	h.writeLine('false')
+	h.close()
+end
+
+local h = fs.open('systemFiles/debugConfig', 'r')
+isDebug = h.readLine()
+h.close()
+
 
 function getSize()
   termX, termY = term.getSize()
@@ -7,22 +23,21 @@ end
 function sendReport(detail, errorMess) --Automatic Crash Reporting, Using my website and github
 detailString = detail or 'System Crash, Unknown Cause'
 	if fs.exists('systemFiles/logFile.log') then
-		logStatus = "Log File Found"
+		printer.centered('System LOG Found', 18)
 		local h = fs.open('systemFiles/logFile.log', 'r')
 		logDetails = h.readAll()
 		h.close()
-		logStatus = "Log File Read And Copied"
-		printer.centered('Send Status: '..logStatus, 18)
+		printer.centered('LOGFILE Ready', 18)
 		local h = fs.open('version', 'r')
 		version = h.readLine()
 		h.close()
-			if not isDebug then
+			if isDebug == 'false' then
 				if not pocket then
 					systemProduct = 'securitySystemPro'
+					printer.centered('Advanced PC Detected, Sending Report', 18)
 				else
 					systemProduct = 'Pocket System'
-					logStatus = 'Running Pocket, Not Sending'
-					printer.centered('Send Status: '..logStatus, 18)
+					printer.centered('Pocket PC Deteted, Cancelling Report', 18)
 				end
 				local _ = http.post('http://harryfelton.host56.com/errorReport.php', --Error report url to website file!
 					"product="..textutils.urlEncode(tostring(systemProduct)).."&"..
@@ -30,31 +45,32 @@ detailString = detail or 'System Crash, Unknown Cause'
 					"error="..textutils.urlEncode(tostring(logDetails)).."&"..
 					"errorMess="..textutils.urlEncode(tostring(errorMess)).."&"..
 					"detail="..textutils.urlEncode(tostring(detailString)));
+					printer.centered('Sending Report To Servers', 18)
 					if _ then
-						logStatus = "Error Report Submitted"
-						printer.centered('Send Status: '..logStatus, 18)
+						printer.centered('Error log submitted', 18)
 					else
-						logStatus = "Error Sending Error Report!"
-						printer.centered('Send Status: '..logStatus, 18)
+						printer.centered('Error log submit failed!', 18)
 					end
 			else
-				logStatus = "isDebug Set To True, Not Sending Report"
-				printer.centered('Send Status: '..logStatus, 18)
+				printer.centered('Debug Mode Is: '..isDebug..' Not Sending Report', 18)
 			end
 	else
-		logStatus = "Log File Not Found"
-		printer.centered('Send Status: '..logStatus, 18)
+		printer.centered('No Log File Found, Cannot Send Report!', 18)
 	end
 end
 
-function err(code, reason, autorestart)
-  autorestart = autorestart or false
-  getSize()
+function err(code, reason, autorestart, reportConfirm)
+  pcname = os.getComputerLabel() or 'No Name Set'
+  pcid = os.getComputerID() or 'No ID, IMPOSSIBLE'
+  autorestart = autorestart or false --Set automatic restart to false if not specified
+  getSize() --Get terminal size
   term.setBackgroundColor(colors.blue)
   term.setTextColor(1)
   term.clear()
-  --titleBar.draw("HbombOS Security Suite", "Crash handling", colors.cyan, colors.red, 128, colors.blue, 1) --Syntax: Text, Subtext, Text Color, SubText Color, Bg Color, DefaultBGcolor, DefaultTextColor
    if not pocket then
+	local idState = ("Computer ID: "..pcid)
+	term.setCursorPos(termX-#idState, 1)
+	write(idState)
 	printer.centered("HbombOS Security Suite", 4)
     printer.centered("The Suite Has Encountered An Unexpected Error", 5)
     printer.centered("To Protect Against Intruders The Suite",7) 
@@ -87,16 +103,17 @@ function err(code, reason, autorestart)
 	  end
 	end
 	printer.centered('Preparing Error Log', 18)
-	sendReport(reason, code)
-	printer.centered('Send Status: '..logStatus, 18)
+	if reportConfirm then sendReport(reason, code) else printer.centered('Report Send Cancelled By Script', 18) end
 	if not autorestart then
       printer.centered("Press Any Key To Continue", 19)
       os.pullEvent("key")
       os.reboot()	
 	elseif autorestart then
-	  printer.centered('Rebooting In 5 Seconds...', 19)
-	  sleep(5)
-	  os.reboot()
+		for i=5, 1, -1 do
+			if i > 1 then printer.centered('Rebooting In: '..i..' Seconds', 19) else printer.centered('Rebooting In: '..i..' Second', 19) end
+			sleep(1)
+			if i == 1 then os.reboot() end
+		end
 	else
 	  sleep(1)
 	  os.reboot()

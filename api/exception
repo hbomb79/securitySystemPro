@@ -1,0 +1,24 @@
+--Automatic Redirect For Particular Events
+
+function call(errorType, code, mess) --Syntax: Type Of Error, Error Code(Optional), Error Message(Optional)
+	errorType = errorType or 'unknown'
+	code = code or 'No Error Code'
+	mess = mess or 'No Error Message'
+	if errorType then
+	  if errorType == 'unknown' then
+		unknownType(errorType, code, mess)
+	  elseif errorType == "terminated" then
+		term()		
+	  else
+	    unknownType(errorType, code, mess)
+	  end
+	end
+end
+
+function term() --If the program is terminated!
+	errora.err('System Terminated', 'The suite detected an event to end the system processes', true, false)
+end
+
+function unknownType(errorType, code, mess) --If an unknown error is thrown... Isn't that ironic
+	errora.err('ERROR, Unknown Error... Isnt that great', 'An Unknown Type Thrown: '..errorType..' This type gave code of: '..code..' and a message of: '..mess, true, false)
+end
