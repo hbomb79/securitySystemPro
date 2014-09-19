@@ -298,7 +298,7 @@ function updatePursue()
 	updateSetting = f.readLine()
 	if updateSetting == "true" then shell.run("systemFiles/Install/updater", "quiet") elseif updateSetting == "false" then shell.run("systemFiles/Install/updater") else errora.err('Crash Bang BOOM', "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(updateSetting), true, true) end
 	if request_code == "Cancelled" then return 'Cancel'
-	elseif request_code == "Error"
+	elseif request_code == "Error" then
 		updateError()
 	else errora.err('Crash Bang BOOM', 'Updater Returned Unknown Code: '..tostring(request_code), true, true) end
 end
