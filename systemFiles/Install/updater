@@ -17,6 +17,15 @@ function oldVersion()
 	printer.centered('when the update is released', 12)
 	printer.centered('Skipping Updater', 19)
 	sleep(5)
+	local f = fs.open('systemFiles/Programs/configuration', 'r')
+	local prog = f.readLine()
+	f.close()
+	if prog then
+		shell.run(''..prog..'')
+	else
+		os.shutdown()
+	end
+	
 	request_code = 'Cancelled'
 	return 'Cancelled'
 end
