@@ -1,0 +1,155 @@
+--User Input API
+
+
+function doClick(event, btn, x, y, buttonTable) --Checks if click happened... Used for button inputs
+	functionToRun = element.tryClick(buttonTable, x, y)
+	if functionToRun then --Check click location
+		functionToRun()
+	end
+end
+
+
+function nRead(len, replaceChar) --Number ONLY Input, Returns with: enter key
+  local _int = 1
+  local _string = 'a'
+  submitted = false
+  LogFile.i('Number Input Called', runningProgram) --Log Input Start
+  Num = false
+  term.setTextColor(1)
+  len = len or 10
+  local input=""
+  local key = 0
+  term.setCursorBlink(true)
+  repeat
+       local e,p1 = os.pullEvent()
+		  if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
+		    p1 = tonumber(p1)
+		    Num = true
+		  elseif type(p1) == type(_string) then
+		    term.setTextColor(colors.red)
+		    Num = "Word"
+		    return Num
+		  end
+        if e=="char" then
+          if #input < len then
+		    if type(p1) == type(_int) then
+                input = input .. p1
+                term.write(replaceChar or p1)
+			end
+          end
+        elseif e=="key" and p1==keys.backspace and #input > 0 then
+          input = input:sub(1,#input-1)
+          local x,y = term.getCursorPos()
+          term.setCursorPos(x-1,y)
+          term.write(" ")
+          term.setCursorPos(x-1,y)
+        end
+  until p1==keys.enter
+  term.setCursorBlink(false)
+  return input --Return Typed Value
+end
+
+function eventN(len, replaceChar, buttonTable) --Number Only Event Input, Returns with: submit_Result
+  local _int = 1
+  local _string = 'a'
+  submitted = false
+  LogFile.i('Number Button Input Called', runningProgram)
+  Num = false
+  term.setTextColor(1)
+  len = len or 10
+  local input=""
+  local key = 0
+  term.setCursorBlink(true)
+  repeat
+        local e,p1, p2, p3 = os.pullEvent()
+		  if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
+		    p1 = tonumber(p1)
+		    Num = true
+		  elseif type(p1) == type(_string) then
+		    term.setTextColor(colors.red)
+		    Num = "Word"
+		    return Num
+		  end
+        if e=="char" then
+          if #input < len then
+		    if type(p1) == type(_int) then
+                input = input .. p1
+                term.write(replaceChar or p1)
+			end
+          end
+        elseif e=="key" and p1==keys.backspace and #input > 0 then
+          input = input:sub(1,#input-1)
+          local x,y = term.getCursorPos()
+          term.setCursorPos(x-1,y)
+          term.write(" ")
+          term.setCursorPos(x-1,y)
+        elseif e=="submit_Result" then
+			submitted = true
+			term.setCursorBlink(false)
+			return input
+		elseif e=="mouse_click" then
+			doClick('mouse_click', p1, p2, p3, buttonTable)
+		end
+  until submitted
+  term.setCursorBlink(false)
+  return input
+end
+
+function eventRead(len, replaceChar, buttonTable) --Any Key Read, Returns with: submit_Result
+  submitted = false
+  term.setTextColor(1)
+  len = len or 10
+  local input=""
+  local key = 0
+  term.setCursorBlink(true)
+  repeat
+        event, p1, p2, p3 = os.pullEvent()
+        if event=="char" then
+          if #input < len then
+			input = input .. p1
+			term.write(replaceChar or p1)
+          end
+        elseif event=="key" and p1==keys.backspace and #input > 0 then
+          input = input:sub(1,#input-1)
+          local x,y = term.getCursorPos()
+          term.setCursorPos(x-1,y)
+          term.write(" ")
+          term.setCursorPos(x-1,y)
+        elseif event == "submit_Result" then --Button Event
+			submitted = true
+			term.setCursorBlink(false)
+			return input
+		elseif event == "mouse_click" then
+			doClick('mouse_click', nil, p2, p3, buttonTable)
+		end
+  until submitted
+  term.setCursorBlink(false)
+end
+
+function eventRead(len, replaceChar) --Any Key Read, Returns with: enter key
+  submitted = false
+  LogFile.i('Number Input Called', runningProgram) --Log Input Start
+  Num = false
+  term.setTextColor(1)
+  len = len or 10
+  local input=""
+  local key = 0
+  term.setCursorBlink(true)
+  repeat
+       local e,p1 = os.pullEvent()
+        if e=="char" then
+          if #input < len then
+			input = input .. p1
+			term.write(replaceChar or p1)
+          end
+        elseif e=="key" and p1==keys.backspace and #input > 0 then
+          input = input:sub(1,#input-1)
+          local x,y = term.getCursorPos()
+          term.setCursorPos(x-1,y)
+          term.write(" ")
+          term.setCursorPos(x-1,y)
+        end
+  until p1==keys.enter
+  term.setCursorBlink(false)
+  return input --Return Typed Value
+end
