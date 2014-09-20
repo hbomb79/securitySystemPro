@@ -10,7 +10,7 @@ function oldVersion()
 	local f = fs.open('version')
 	currentVersion = f.readLine()
 	f.close()
-	if currentVersion < 2.0.0 then
+	if tonumber(currentVersion) < 2.0.0 then
 		term.clear()
 		drawTitleBar()
 		printer.centered('Due To System Maintainence', 6)
