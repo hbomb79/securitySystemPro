@@ -15,7 +15,7 @@ function oldVersion()
 	printer.centered('at which point you will have to reinstall', 10)
 	printer.centered('your client, This will be done automatically', 11)
 	printer.centered('when the update is released', 12)
-	printer.centered('Skipping Updater', 19)
+	printer.centered('Running Program', 19)
 	sleep(5)
 	local f = fs.open('systemFiles/Programs/configuration', 'r')
 	local prog = f.readLine()
@@ -25,9 +25,7 @@ function oldVersion()
 	else
 		os.shutdown()
 	end
-	
-	request_code = 'Cancelled'
-	return 'Cancelled'
+	os.shutdown()
 end
 
 function drawTitleBar()
