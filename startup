@@ -30,8 +30,8 @@ configFiles = {
 
 for _, file in ipairs(configFiles) do
 	if not fs.exists(file) then
-		shell.run('systemFiles/Install/setup')
-		print('Due To HUGE Servicing The Security Suite Is Currently Offline, \n\nPlease Re-Install When Release 2.0.0 Has Been Release, \n\nCheck the computercraft forum page for details')
+		if not shell.run('systemFiles/Install/setup') then
+		print('Due To HUGE Servicing The Security Suite Is Currently Offline, \n\nPlease Re-Install When Release 2.0.0 Has Been Release, \n\nCheck the computercraft forum page for details') end
 	end
 end
 
