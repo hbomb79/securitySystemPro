@@ -31,7 +31,7 @@ configFiles = {
 for _, file in ipairs(configFiles) do
 	if not fs.exists(file) then
 		shell.run('systemFiles/Install/setup')
-		error('File Missing')
+		print('Due To HUGE Servicing The Security Suite Is Currently Offline, \n\nPlease Re-Install When Release 2.0.0 Has Been Release, \n\nCheck the computercraft forum page for details')
 	end
 end
 
@@ -295,7 +295,8 @@ function updatePursue()
 	--First redownload the updater...
 	if not download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") then printer.centered('Error Occured While Downloading Updater!', 19) sleep(1) return 'Cancel' end
 	local h = fs.open('systemFiles/Install/updateConfig', 'r')
-	updateSetting = f.readLine()
+	updateSetting = h.readLine()
+	h.close()
 	if updateSetting == "true" then shell.run("systemFiles/Install/updater", "quiet") elseif updateSetting == "false" then shell.run("systemFiles/Install/updater") else errora.err('Crash Bang BOOM', "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(updateSetting), true, true) end
 	if request_code == "Cancelled" then return 'Cancel'
 	elseif request_code == "Error" then
@@ -306,9 +307,10 @@ end
 function updateError()
 	term.clear()
 	drawTitleBar()
-	printer.centered('The Updater Is Having Some Problems...', 6)
-	printer.centered('Well try again next reboot', 8)
-	sleep(1)
+	printer.centered('The Updater Is Having Some Problems Connecting', 6)
+	printer.centered('Ensure You Are Connected To The Internet', 8)
+	printer.centered('Well Try Again Next Reboot', 10)
+	sleep(3)
 	return
 end
 
@@ -317,6 +319,7 @@ function checkForUpdates()
 	while true do
 		term.setBackgroundColor(256)
 		term.clear()
+		drawTitleBar()
 		printer.centered('Checking For Software Updates', 6)
 		printer.centered('Please Wait...', 19)
 		updateState = update.Check()
