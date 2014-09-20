@@ -7,7 +7,7 @@ termX, termY = term.getSize()
 elements ={}
 
 function oldVersion()
-	local f = fs.open('version')
+	local f = fs.open('version', 'r')
 	currentVersion = f.readLine()
 	f.close()
 	if tonumber(currentVersion) < 2 then
