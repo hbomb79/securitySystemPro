@@ -6,26 +6,23 @@ errorCatch = false
 termX, termY = term.getSize()
 elements ={}
 
-
-function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
-	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
-	table.insert(elements, btn) --Inserts into table so it can be scanned later
-	element.opacity(btn, true) --Sets visibility to true
-	return btn
+function oldVersion()
+	local f = fs.open('version')
+	currentVersion = f.readLine()
+	f.close()
+	if currentVersion < 2.0.0 then
+		term.clear()
+		drawTitleBar()
+		printer.centered('Due To System Maintainence', 6)
+		printer.centered('The updater system has been disabled', 8)
+		printer.centered('until version 2.0.0 is fully released', 9)
+		printer.centered('at which point you will have to reinstall your client', 10)
+		printer.centered('Skipping Updater', 19)
+		sleep(5)
+		request_code = 'Cancelled'
+		return 'Cancelled'
+	end
 end
-
-yes = btnInit('Update', nil, nil, termX-(#'Update' + 2), 18, 1, colors.green, 1, 256, function() downloadStart() end, false, nil, nil, nil)
-no = btnInit('Dont Update', nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('cancel') request_code = "Cancelled" return 'Cancelled' end, false, nil, nil, nil)
-
-
-function PrintCentered(text, y)
-	local w, h = term.getSize()
-    x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
-    term.setCursorPos(x, y)
-	term.clearLine()
-    write(text)
-end
-
 
 function drawTitleBar()
   term.setBackgroundColor(128)
@@ -40,6 +37,30 @@ function drawTitleBar()
   term.setTextColor(1)
   term.setBackgroundColor(256)
 end
+
+oldVersion() --Checks the version
+
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to true
+	return btn
+end
+
+
+yes = btnInit('Update', nil, nil, termX-(#'Update' + 2), 18, 1, colors.green, 1, 256, function() downloadStart() end, false, nil, nil, nil)
+no = btnInit('Dont Update', nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('cancel') request_code = "Cancelled" return 'Cancelled' end, false, nil, nil, nil)
+
+
+function PrintCentered(text, y)
+	local w, h = term.getSize()
+    x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
+    term.setCursorPos(x, y)
+	term.clearLine()
+    write(text)
+end
+
+
 
 function downloadStart()
 	term.clear()
