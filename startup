@@ -32,6 +32,9 @@ for _, file in ipairs(configFiles) do
 	if not fs.exists(file) then
 		if fs.exists('systemFiles/Install/setup') then shell.run('systemFiles/Install/setup') else
 		print('Due To HUGE Servicing The Security Suite Is Currently Offline, \n\nPlease Re-Install When Release 2.0.0 Has Been Release, \n\nCheck the computercraft forum page for details') end
+		print('\n\n\nClick Anywhere To Shutdown')
+		os.pullEvent('mouse_click')
+		os.shutdown()
 	end
 end
 
