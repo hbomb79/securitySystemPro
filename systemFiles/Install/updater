@@ -51,8 +51,6 @@ function oldVersion()
 		sleep(1)
 		download.git('https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer', 'systemFiles/Install/installer', false, nil)
 		printer.centered('We Have Downloaded The Installer', 19)
-		printer.centered('Click Anywhere To Get Started', 18)
-		os.pullEvent('mouse_click')
 		shell.run('systemFiles/Install/installer', 'auto')]]--
 		sleep(5)
 		local f = fs.open('systemFiles/Programs/configuration', 'r')
