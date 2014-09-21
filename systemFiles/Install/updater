@@ -6,26 +6,66 @@ errorCatch = false
 termX, termY = term.getSize()
 elements ={}
 
+for i=1, 3 do
+ url = "https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version"
+ if url == nil then errora.err('Updater URL', 'The Update Source URL Is Empty! Please Report If Not Your Fault') end
+  local response = http.get(url)
+  if response then
+    local data = response.readLine()
+  else
+	errora.err("The Update URL Cannot Be Resolved Or Is Missing [404]", 'Cant Reach: '..url, true, false)
+  end
+end
+
+requiredApis = {
+	'api/element',
+	'api/titleBar',
+	'api/LogFile',
+	'api/update',
+	'api/exception',
+}
+
 function oldVersion()
-	term.clear()
-	drawTitleBar()
-	printer.centered('Due To System Maintainence', 6)
-	printer.centered('The updater system has been disabled', 8)
-	printer.centered('until version 2.0.0 is fully released', 9)
-	printer.centered('at which point you will have to reinstall', 10)
-	printer.centered('your client, This will be done automatically', 11)
-	printer.centered('when the update is released', 12)
-	printer.centered('Running Program', 19)
-	sleep(5)
-	local f = fs.open('systemFiles/Programs/configuration', 'r')
-	local prog = f.readLine()
-	f.close()
-	if prog then
-		shell.run(''..prog..'')
-	else
-		os.shutdown()
+	for _, api in ipairs(requiredApis) do
+		if not fs.exists(api) then missingFileApi = true end
 	end
-	os.shutdown()
+	if missingFileApi then
+		term.clear()
+		drawTitleBar()
+		printer.centered('Missing Files', 6)
+		printer.centered('We Have Detected Missing APIs Which Are Required', 8)
+		printer.centered('these Apis come with suite version 2.0.0', 9)
+		printer.centered('which isnt released, therefore the updater is', 10)
+		printer.centered('disabled, when the update is released', 11)
+		printer.centered('your client will reinstall the suite, we wont', 12)
+		printer.centered('need your consent so you wont even know', 12)
+		printer.centered('Update Release In Approx 2 days', 14)
+		printer.centered('Running Program In 5 Seconds', 19)
+		--New Version Release... Un comment below when ready, also comment rest
+		--[[
+		printer.centered('Version 2.0.0 Is Now Available...', 6)
+		printer.centered('This Version Requires The Suite To Be', 8)
+		printer.centered('Re-Installed, Please Wait While We Do This For You!', 9)
+		printer.centered('Please Wait While We Update!', 18)
+		printer.centered('Downloading New Installer', 19)
+		sleep(1)
+		download.git('https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer', 'systemFiles/Install/installer', false, nil)
+		printer.centered('We Have Downloaded The Installer', 19)
+		printer.centered('Click Anywhere To Get Started', 18)
+		os.pullEvent('mouse_click')
+		shell.run('systemFiles/Install/installer', 'auto')]]--
+		sleep(5)
+		local f = fs.open('systemFiles/Programs/configuration', 'r')
+		local prog = f.readLine()
+		f.close()
+		if prog then
+			shell.run(''..prog..'')
+		else
+			os.shutdown()
+		end
+		os.shutdown()
+
+	end
 end
 
 function drawTitleBar()
