@@ -21,8 +21,34 @@ requiredApis = {
 	'api/element',
 	'api/titleBar',
 	'api/LogFile',
+	'api/update'
+}
+
+scanFiles = {
+	'api/element',
+	'api/titleBar',
+	'api/LogFile',
 	'api/update',
-	'api/exception',
+	'api/download',
+	'api/errora',
+	'api/uInput',
+	'api/printer',
+	'api/systemCheck',
+	'startup',
+	'version',
+	'systemFiles/bootFail.nfp',
+	'systemFiles/BootLogos/boot0.nfp',
+	'systemFiles/BootLogos/boot1.nfp',
+	'systemFiles/BootLogos/boot2.nfp',
+	'systemFiles/BootLogos/boot3.nfp',
+	'systemFiles/BootLogos/boot4.nfp',
+	'systemFiles/BootLogos/boot5.nfp',
+	'systemFiles/BootLogos/boot6.nfp',
+	'systemFiles/BootLogos/boot7.nfp',
+	'systemFiles/BootLogos/boot8.nfp',
+	'systemFiles/Install/installer',
+	'systemFiles/Install/updater',
+	'systemFiles/Install/setup'
 }
 
 function oldVersion()
@@ -38,8 +64,8 @@ function oldVersion()
 		printer.centered('which isnt released, therefore the updater is', 10)
 		printer.centered('disabled, when the update is released', 11)
 		printer.centered('your client will reinstall the suite, we wont', 12)
-		printer.centered('need your consent so you wont even know', 12)
-		printer.centered('Update Release In Approx 2 days', 14)
+		printer.centered('need your consent so you wont even know', 13)
+		printer.centered('Update Release In Approx 2 days', 15)
 		printer.centered('Running Program In 5 Seconds', 19)
 		--New Version Release... Un comment below when ready, also comment rest
 		--[[
@@ -51,7 +77,58 @@ function oldVersion()
 		sleep(1)
 		download.git('https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer', 'systemFiles/Install/installer', false, nil)
 		printer.centered('We Have Downloaded The Installer', 19)
-		shell.run('systemFiles/Install/installer', 'auto')]]--
+		shell.run('systemFiles/Install/installer', 'auto')
+		term.clear()
+		local f = fs.open('systemFiles/Install/updateConfig', 'r')
+		updaterSetting = f.readLine()
+		f.close()
+		printer.centered('Congratulations, Your Are Now Upgraded', 6)
+		printer.centered('You Have Just Installed The Next Tier Of Security', 8)
+		printer.centered('Please Wait While We Check Some Things', 10)
+		printer.centered('Checking Files', 18)
+		for _, file in ipairs(scanFiles) do
+			sleep(0.4)
+			printer.centered(file, 19)
+			if not fs.exists(file) then
+				missingCheckFile = true
+			end
+		end
+		
+		if not missingCheckFile then
+			if updaterSetting == 'quiet' then os.reboot() end
+			term.clear()
+			printer.centered('Woooo Hooo!', 6)
+			printer.centered('You Have Successfully Installed This System', 8)
+			printer.centered('Click Anywhere To Reboot, Or Wait For Auto Reboot', 18)
+				
+				local function timerReboot()
+					for i=10, 1, -1 do
+						printer.centered('Auto Reboot In: '..i, 19)
+						sleep(1)
+						if i == 1 then os.reboot() end
+					end
+				end
+				
+				local function click()
+					os.pullEvent('mouse_click')
+					os.reboot()
+				end
+				
+				paralell.waitForAny(click, timerReboot)
+				os.reboot()
+		else
+			term.clear()
+			printer.centered('Thats Not Good!', 6)
+			printer.centered('It Seems Files That Should Have Been Downloaded', 8)
+			printer.centered('Are Missing From Your File Syste,', 9)
+			printer.centered('Rest assured, I am Almost Definetely Aware Of This', 11)
+			printer.centered('And This Issue Will Be Resolved', 12)
+			printer.centered('If Significant Time Has Passed And It Still Isnt Fixed', 13)
+			printer.centered('Then Please Report This As A Bug', 14)
+			sleep(10)
+			os.shutdown()
+		end]]--
+		
 		sleep(5)
 		local f = fs.open('systemFiles/Programs/configuration', 'r')
 		local prog = f.readLine()
@@ -92,7 +169,8 @@ end
 
 yes = btnInit('Update', nil, nil, termX-(#'Update' + 2), 18, 1, colors.green, 1, 256, function() downloadStart() end, false, nil, nil, nil)
 no = btnInit('Dont Update', nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('cancel') request_code = "Cancelled" return 'Cancelled' end, false, nil, nil, nil)
-
+element.opacity(yes, false)
+element.opacity(no, false)
 
 function PrintCentered(text, y)
 	local w, h = term.getSize()
@@ -165,7 +243,7 @@ return
 end
 
 
-function downloader(quietDownload)
+function downloader(quietDownload, quick)
 drawTitleBar()
 PrintCentered("Downloading Scripts From GitHub... Please Wait", 6)
 PrintCentered("", 19)
@@ -200,7 +278,7 @@ if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/mas
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/rangeLock", "/systemFiles/Programs/rangeLock", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/OpenPDetect", "/systemFiles/Programs/OpenPDetect", true, 19) == 'ERROR' then return 'Error' end
-if quietDownload then os.reboot() else return true end
+if quietDownload then os.reboot() elseif quick then return else return true end
 end
 
 function main()
