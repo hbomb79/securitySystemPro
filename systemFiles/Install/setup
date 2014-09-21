@@ -1,0 +1,331 @@
+runningProgram = shell.getRunningProgram()
+LogFile.i('Suite Setup Started', runningProgram)
+term.setBackgroundColor(256)
+term.clear()
+elements = {}
+Events = {}
+
+--Load All Required APIs As Start-up Didn't Have Time To!
+os.loadAPI('api/download')
+os.loadAPI('api/errora')
+os.loadAPI('api/printer')
+os.loadAPI('api/element')
+os.loadAPI('api/titleBar')
+
+function git(url, toPath, visible, yAxis) --Download From Git-hub To A PATH Specified in Arguments
+ for i=1, 3 do
+ sleep(0)
+  local response = http.get(url)
+  if response then
+    local data = response.readAll()
+	  local file = io.open(toPath, "w")
+	  file:write(data)
+	  file:close()
+	    if visible then
+	      printer.centered(toPath, yAxis)
+	    end
+	  return true
+  else
+     if useErrorBSOD then errora.err('Failed To Download Files', 'The setup program couldt find the file queued for download', true, false) else return errorMes end
+  end
+ end
+ if useErrorBSOD then errora.err('Failed To Download Files', 'The setup program had trouble downloading', true, false) else return errorMes end
+end
+
+current = {
+	settings = {}
+	}
+LogFile.i('Setup Tables Initiated', runningProgram)
+termX, termY = term.getSize()
+
+function readN(len, replaceChar)
+  submitted = false
+  term.setTextColor(1)
+  len = len or 10
+  local input=""
+  local key = 0
+  term.setCursorBlink(true)
+  repeat
+        event, p1, p2, p3 = os.pullEvent()
+        if event=="char" then
+          if #input < len then
+			input = input .. p1
+			term.write(replaceChar or p1)
+          end
+        elseif event=="key" and p1==keys.backspace and #input > 0 then
+          input = input:sub(1,#input-1)
+          local x,y = term.getCursorPos()
+          term.setCursorPos(x-1,y)
+          term.write(" ")
+          term.setCursorPos(x-1,y)
+        elseif event == "submit_Result" then --Button Event
+			submitted = true
+			return input
+		elseif event == "mouse_click" then
+			doClick('mouse_click', nil, p2, p3)
+		end
+  until submitted
+end
+
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to true
+	return btn
+end
+
+function drawTitleBar()
+	titleBar.draw('HbombOS Security Suite', 'Setup', colors.cyan, 256, 128, 256, 1)
+end
+
+function goToPage(page)
+	term.setCursorBlink(false)
+	term.clear()
+	drawTitleBar()
+	ok.text = "Next"
+	cancel.text = "Back"
+	cancel.func = function() goToPage(current.page-1) end
+	ok.func = function() goToPage(current.page + 1) end
+	for i, v in ipairs(elements) do
+		element.opacity(v, false)
+	end
+	if page == 0 then
+		element.opacity(ok, true)
+		Initialise()
+	elseif page == 1 then
+		current.page = 1
+		ok.func = function(event) os.queueEvent('submit_Result') end
+		element.opacity(ok, true)
+		element.opacity(cancel, true)
+		cancel.func = function(event) goToPage(current.page - 1) end
+		pcNAME()
+	elseif page == 2 then
+		current.page = 2
+		element.opacity(yes, true)
+		element.opacity(no, true)
+		element.opacity(cancel, true)
+		updateSetting()
+	elseif page == 3 then
+		current.page = 3
+		cancel.func = function() goToPage(current.page-1) end
+		ok.func = function(event) os.queueEvent('submit_Result') end
+		element.opacity(ok, true)
+		element.opacity(cancel, true)
+		adminSet()
+	elseif page == 4 then
+		current.page = 4
+		element.opacity(yes, true)
+		element.opacity(no, true)
+		element.opacity(cancel, true)
+		cancel.func = function() goToPage(current.page-1) end
+		yes.func = function() current.settings.debugChoice = true goToPage(current.page+1) end
+		no.func = function() current.settings.debugChoice = false goToPage(current.page+1) end
+		debugMode()
+	elseif page == 5 then
+		current.page = 4
+		element.opacity(cancel, true)
+		cancel.func = function(event) goToPage(current.page - 1) end	
+		ok.text = "Save"		
+		element.opacity(ok, true)
+		ok.func = function(event) saveSettings() end
+		complete()
+	end
+end
+
+function saveSettings()
+	os.setComputerLabel(current.settings.pcName)--Set PC Label
+	local f = fs.open('systemFiles/Install/updateConfig', 'w')
+	f.writeLine(tostring(current.settings.quietUpdate))
+	f.close()
+	local f = fs.open('systemFiles/security/adminPass', 'w')
+	f.writeLine(current.settings.adminPass)
+	f.close()
+	local h = fs.open('systemFiles/debugConfig', 'w')
+	h.writeLine(current.settings.debugChoice)
+	h.close()
+	os.reboot()
+end
+
+requiredFiles = { --Files that setup checks exist...
+	"startup",
+	"systemFiles/Programs/pin",
+	"systemFiles/Programs/dualKey",
+	"systemFiles/Programs/keycard",
+	"systemFiles/Programs/keycardDual",
+	"systemFiles/Programs/OpenPDetect",
+	"systemFiles/Programs/reactor",
+	"systemFiles/Programs/rangeLock",
+	"systemFiles/Install/installer",
+	"systemFiles/Install/updater",
+	"api/printer",
+	"api/errora",
+	"api/systemCheck",
+	"api/element",
+	"api/titleBar",
+	"api/update",
+	"api/download"
+}
+
+function checkFS()
+	for i, v in ipairs(requiredFiles) do
+		sleep(0)
+		if not fs.exists(v) then
+			missingFile = true
+			fileMissing = v
+		end
+	end
+	
+	if missingFile then
+		term.clear()
+		drawTitleBar()
+		printer.centered('Setup Has Detected A Problem!', 4)
+		printer.centered('During Initial System Scan Setup Detected', 6)
+		printer.centered('Missing Files Which Are Required To Continue', 7)
+		printer.centered('This Problem Is Easily Resolved!', 9)
+		printer.centered('Click "Fix Now" To Redownload The Security Suite', 10)
+		printer.centered('Or Click "Shutdown" To Ofcourse... Shutdown', 11)
+		printer.centered('If The Problem Still Persists Then Please Report', 13)
+		no.text = "Shutdown"
+		yes.text = "Fix Now"
+		no.func = function() os.shutdown() end
+		no.width = #'Shutdown' + 2
+		yes.width = #'Fix Now' + 2
+		yes.x = yes.x - 1
+		yes.func = function() printer.centered('Please Wait While We Download The Required Programs!', 15) sleep(0.2) git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer", nil, nil) shell.run'systemFiles/Install/installer' end --Redownload The Installer And Reinstall
+		element.opacity(yes, true)
+		element.opacity(no, true)
+		while true do
+			local event, arg1, arg2, arg3 = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, arg1, arg2, arg3)
+			end
+		end
+	end
+	
+end
+
+function Initialise()
+	drawTitleBar()
+	element.opacity(ok, false)
+	if not first then
+		printer.centered('Setting Up A Few Things...', 6)
+		printer.centered('Registering Event Systems', 10)
+		eventRegister('mouse_click', doClick)
+		eventRegister('mouse_drag', doClick)
+		eventRegister('terminate', function(event) os.shutdown() end)
+		sleep(0)
+		printer.centered('Checking File System Integrity', 10)
+		checkFS()
+		printer.centered('Checking File API Suuport', 10)
+		if fs.exists('systemFiles/api/errora') then useErrorBSOD = true else useErrorBSOD = false end	
+		first = true
+		Initialise()
+	end
+	current.page = 0
+	printer.centered('Welcome To The HbombOS Security Suite', 6)
+	printer.centered('Your Only A Few Steps Away From Using Your New', 7)
+	printer.centered('Professional Security Suite!', 8)
+	printer.centered('Please Click The NEXT Button To Start!', 10)
+	ok.func = function(event) goToPage(current.page + 1) end
+	element.opacity(ok, true)
+	eventLoop()
+end	
+
+function pcNAME() --Set your computername
+	while true do	
+		current.page = 1
+		printer.centered('Computer Name', 4)
+		printer.centered('Enter A Desired Name For Your Computer', 6)
+		printer.centered('When your happy with it, Click "Next"', 7)
+		term.setCursorPos(termX/2-#'Computer Name: ',10)
+		write('Computer Name: ')
+		local input = readN(20)
+		if input ~= '' then element.opacity(ok, true) current.settings.pcName = input goToPage(current.page + 1) break end
+	end
+end
+
+function updateSetting() --Configure Updater
+	current.page = 2
+	printer.centered('Quiet Updating', 4)
+	printer.centered('Quiet updating allows the PC to update', 6)
+	printer.centered('without your consent, meaning you can have a', 7)
+	printer.centered('a computer update even if it isnt accessible', 8)
+	printer.centered('else it will simply sit there waiting for you', 9)
+	no.func = function(event) current.settings.quietUpdate = false goToPage(current.page + 1) end
+	yes.func = function(event) current.settings.quietUpdate = true goToPage(current.page +1) end
+	cancel.func = function(event) goToPage(current.page-1) end
+end
+
+function adminSet() --Set Admin Password
+	current.page = 3
+	cancel.func = function() goToPage(current.page - 1) end
+	--ok.func = function() goToPage(current.page + 1) end
+	while true do
+		printer.centered('Admin Password', 4)
+		printer.centered('The admin password is very important', 7)
+		printer.centered('It is required to a number of tasks that you', 8)
+		printer.centered('may need to perform', 9)
+		printer.centered('Ensure you dont forget it!', 11)
+		term.setCursorPos(termX/2-#'Admin Password: ',15)
+		write('Admin Password: ')
+		local adminPass = readN(20,"*")
+		if adminPass ~= '' then current.settings.adminPass = adminPass goToPage(current.page + 1) break end
+	end
+end
+
+function debugMode() --Setup Debug Mode
+	current.page = 4
+	printer.centered("Debug Mode", 4)
+	printer.centered('If you intend to edit my code', 6)
+	printer.centered('then please ENABLE this option to prevent', 7)
+	printer.centered('auto log reporting...', 8)
+end
+
+
+function complete()
+	current.page = 5
+	printer.centered('Setup Complete!', 6)
+	printer.centered('Your Security Suite Is Now Ready To Go', 8)
+	printer.centered('Click "Save" To Confirm You Settings And Reboot', 9)
+	printer.centered('Or "Back" To Revise Your Choices', 10)
+	printer.centered('You get to pick your desired program', 13)
+	printer.centered('after reboot', 14)
+end
+
+function eventRegister(event, functionToRun)
+	if not Events[event] then
+		Events[event] = {}
+	end
+	table.insert(Events[event], functionToRun)
+	LogFile.i('Event: '..tostring(event)..' Registered', runningProgram)
+end
+
+function eventLoop() --This runs the functions that was assigned to the event in initialise()
+  while true do
+	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+	  if Events[event] then
+		for i, e in ipairs(Events[event]) do
+		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+		end
+      end
+   end
+end
+
+yes = btnInit('Enable', nil, nil, termX-(#'Enable' + 2), 18, 1, colors.green, 1, 256, onClick, false, nil, nil, nil)
+no = btnInit('Dont Enable', nil, nil, termX-(#'Enable' + #'Dont Enable' + 5), 18, 1, colors.red, 1, 256, onClick, false, nil, nil, nil)
+ok = btnInit('Next', nil, nil, termX-(#'Next' + 2), 18, 1, 128, 1, 256, function(event) pcNAME() end, false, nil, nil, nil)
+cancel = btnInit('Back', nil, nil, 2 , 18, 1, colors.cyan, 1, 256, function(event) pcNAME() end, false, nil, nil, nil)
+
+element.opacity(yes, false)
+element.opacity(no, false)
+element.opacity(cancel, false)
+element.opacity(ok, false)
+
+function doClick(event, btn, x, y)
+	functionToRun = element.tryClick(elements, x, y)
+	if functionToRun then --Check click location
+		functionToRun()
+	end
+end
+
+Initialise()
