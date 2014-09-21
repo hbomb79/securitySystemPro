@@ -1,6 +1,8 @@
 -- This is the first time setup so the computer will
 -- Download all the required scripts.
+local args = { ... }
 running = true
+elements = {}
 -- Checking System Support
 if not http then
   error "You Must Enable HTTP In Computer-craft Con-figs To Use The System!"
@@ -8,6 +10,123 @@ end
 
 if not term.isColor() then
   error "This Computer Does Not Appear To Be Advanced, If It Is Advanced, Then Please Report This"
+end
+
+function create(text, width, height, x, y, tc, bg, otc, obg, func, toggle, secBG, secTC, secText, parent) --Return the new button so it can be called later to be drawn
+	local new = {} --New Table To Store Details
+	setmetatable( new, {__index = self} ) --New Metatable To Set Index To Self
+	new.text = text or 'Nil Text' --Button Text
+	new.width = width or #text + 2	--Button width
+	if secText then new.secWidth = #secText + 2 else new.secWidth = #text + 2 end
+	new.height = height or 1 --Button Height
+	new.pad = pad or 2 --Padding Variable
+	new.x = x or 1 --Button X Positioning
+	new.y = y or 1 --Button Y Positioning
+	new.tc = tc or colors.white --Button Text Color
+	new.bg = bg or 128 --Button Background Color
+	new.otc = otc or colors.white --Original Background Color
+	new.obg = obg or 256 --Orignial Text Color
+	new.func = func or nil --Function on click
+	new.toggle = toggle or false --Whether the button should change state on click
+	new.secondaryBackground = secBG	or bg --Toggle Background Color
+	new.secondaryTextColor = secTC or tc --Toggle Text Color
+	new.toggleState = 1 --Set toggle state to default
+	new.secondaryText = secText or text
+	new.visible = true
+	new.parent = parent or 'Nil'
+	return new
+end
+
+function tryClick(elementTable, x, y) --On Click Check Co-Ords, If match run the function assigned to the button
+	if elementTable then
+		for i, v in ipairs(elementTable) do
+			if x >= v.x and x < v.x + v.width then
+				if y == v.y then
+					if v.visible then 
+						if v.toggle then element.toggle(v) end
+						if v.parent then
+							for i, p in ipairs(elementTable) do
+								if p.parent == v.parent then
+									if p ~= v then p.toggleState = 1 else p.toggleState = 2 end
+									draw(p)
+								end
+							end
+						end
+						if v.func then return(v.func) end
+					end
+				end
+			end
+		end
+	end
+end
+
+function eraseCurrent(elem)
+	if elem then
+		if elem.toggleState == 2 then textSpec = elem.secondaryText widthSpec = elem.secWidth else textSpec = elem.text widthSpec = elem.width end 
+		term.setCursorPos(elem.x, elem.y)
+		term.setBackgroundColor(elem.obg)
+		if elem.width and elem.secWidth then
+			if elem.toggleState == 1 then
+				write(string.rep(' ', elem.secWidth ))
+			elseif elem.toggleState == 2 then
+				write(string.rep(' ', elem.width ))
+			end	
+		end
+	end
+end
+
+function draw(elem) --Visually Draw The Button Provided
+	if elem then eraseCurrent(elem) end
+	if elem.visible then
+		if elem.toggleState == 2 then term.setTextColor(elem.secondaryTextColor) else term.setTextColor(elem.tc) end
+		if elem.toggleState == 2 then term.setBackgroundColor(elem.secondaryBackground) else term.setBackgroundColor(elem.bg) end
+		term.setCursorPos(elem.x, elem.y)
+		write(string.rep(' ', elem.width )) --Create The Background Panel
+		if elem.toggleState == 2 then textSpec = elem.secondaryText widthSpec = elem.secWidth else textSpec = elem.text widthSpec = elem.width end 
+		term.setCursorPos(elem.x + (widthSpec - #textSpec)/2, elem.y) --Set The Cursor Pos In The Correct Padding Pos So The Text Appears In The Correct Location
+		write(textSpec)--Print The Button Text On The Button
+	else
+		term.setTextColor(elem.otc)
+		term.setBackgroundColor(elem.obg)
+		term.setCursorPos(elem.x, elem.y)
+		write(string.rep(' ', elem.width )) --Create The Background Panel
+		term.setCursorPos(elem.x, elem.y) --Set The Cursor Pos In The Correct Padding Pos So The Text Appears In The Correct Location
+	end
+	term.setTextColor(elem.otc)
+	term.setBackgroundColor(elem.obg)
+end
+
+function toggle(elem)
+	if elem.toggle then
+		if elem.toggleState == 1 then elem.toggleState = 2
+		elseif elem.toggleState == 2 then elem.toggleState = 1 end
+		draw(elem)
+	end
+end
+
+function opacity(elem, state) --Set or toggle visibility of a button, if invisible the BG color will be what you assigned when creating the button
+	if elem then
+		if state ~= 't' then --Manual Adjust
+			elem.visible = state
+		else --Toggle Auto
+			if elem.visible == true then elem.visible = false else elem.visible = true end
+		end
+		draw(elem)
+	end
+end
+
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to true
+	return btn
+end
+
+function doClick(event, btn, x, y)
+	functionToRun = element.tryClick(elements, x, y)
+	if functionToRun then --Check click location
+		functionToRun()
+	end
 end
 
 function PrintCentered(text, y)
@@ -48,35 +167,44 @@ local function checkSite()
   end
 end
 
+termX, termY = term.getSize()
+
 function start()
-  term.setBackgroundColor(256)
-  PrintCentered('Welcome To The', 7)
-  PrintCentered('Hbomb Security Suite', 8)
-  PrintCentered('Install Wizzard', 9)
-  PrintCentered('Please Press Y To Continue Or N To Cancel!',11)
-  PrintCentered('BEWARE',13)
-  PrintCentered('All Files Already In Destination Will Be',14)
-  PrintCentered('Overwritten',15)
-  while true do
-    event, key = os.pullEvent('key')
-	  if key == keys.y then
-        return true
-	  elseif key == keys.n then
-        return false
+  if args[1] == 'auto' then
+	  return true
+  else
+	  term.setBackgroundColor(256)
+	  PrintCentered('Welcome To The', 7)
+	  PrintCentered('Hbomb Security Suite', 8)
+	  PrintCentered('Install Wizzard', 9)
+	  PrintCentered('Please Press Y To Continue Or N To Cancel!',11)
+	  PrintCentered('BEWARE',13)
+	  PrintCentered('All Files Already In Destination Will Be',14)
+	  PrintCentered('Overwritten',15)	
+	  yes = btnInit('Install', nil, nil, termX-#'Install'-2, termY-1, 1, colors.green, 1, 256, function() os.queueEvent('continue') end, false, nil, nil, nil, nil)
+	  no = btnInit('Dont Install', nil, nil, 2, termY-1, 1, colors.red, 1, 256, function() os.reboot() end, false, nil, nil, nil, nil)
+	  while true do
+		event, btn, x, y = os.pullEvent()
+		if event == "mouse_click" then
+			doClick(event, btn, x, y)
+		elseif event == "continue" then
+			break
+		end
 	  end
+	  return true
   end
 end
 
-function cancel()
-  os.reboot()
-end
- 
 function open()
-if not start() then cancel() end
+start()
+opacity(yes ,false)
+opacity(no ,false)
 term.clear()
 drawTitleBar()
 term.setBackgroundColor(256)
 term.setTextColor(1)
+  PrintCentered("Starting Download", 6)
+  PrintCentered("Establishing Connection With Github", 8)
   PrintCentered("Reading GitHub Repository", 18)
   if not checkSite() then
     PrintCentered("The GitHub Version File Does Not", 18)
@@ -85,10 +213,12 @@ term.setTextColor(1)
 	PrintCentered("The Installer Has Encountered An Issue!", 2)
 	return false
   end
+  PrintCentered("Connection With Github Established", 8)
   PrintCentered("GitHub Repository Located", 18)
   sleep(1)
   PrintCentered("GitHub Repository Connection Established", 18)
   sleep(0)
+  PrintCentered("Downloading And Installing Files", 8)
   PrintCentered("Starting Download Sequence", 18)
   sleep(0.1)
   return true
@@ -113,28 +243,29 @@ term.setBackgroundColor(256)
 		  PrintCentered ("Download: "..toPath, 19)
 		  return true
 		else
-		  error "We Believe The Path Specified Is Invalid, Report If Not Your Fault"
+		  print "We Believe The Path Specified Is Invalid, Report If Not Your Fault"
+		  sleep(3)
+		  os.shutdown()
 		end
 	else
-	  error ("The File Or Files At: "..getUrl.." Do Not Appear To Exist! Please Report This Issue On Forums Or Through GitHub")
+	  print ("The File Or Files At: "..getUrl.." Do Not Appear To Exist! Please Report This Issue On Forums Or Through GitHub")
+	  sleep(3)
+	  os.shutdown()
 	end
   end
-  error ("Failed To Download The File From URL: "..getUrl.." Please try again later, If this is the 2nd time you've seen this, then report it on the fourms")
+  print ("Failed To Download The File From URL: "..getUrl.." Please try again later, If this is the 2nd time you've seen this, then report it on the fourms")
+  sleep(3)
+  os.shutdown()
 end
 
 function createDirectory() --Used to create directories for version 1.5 and below
   fs.makeDir('/systemFiles/')
-  sleep(0.5)
   fs.makeDir('/systemFiles/BootLogos/')
-  sleep(1)
   fs.makeDir('/systemFiles/Install/')
-  sleep(0)
   fs.makeDir('/api/')
-  sleep(1)
   fs.makeDir('/Documentation/')
   fs.makeDir('/systemFiles/Programs/')
   fs.makeDir('/systemFiles/Security/')
-  sleep(0)
 end
 
 function thanks()
@@ -150,7 +281,7 @@ function thanks()
   f.close()
   PrintCentered ("You Are Now Running The Latest Version: "..currVer, 10)
   PrintCentered ("Hope You Enjoy, Click Anywhere To Get Started", 19)
-  os.pullEvent('mouse_click')
+  if args[1] ~= 'auto' then os.pullEvent('mouse_click') else return end
   os.reboot()
 end
 
@@ -164,6 +295,7 @@ downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/maste
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", "version")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/setup", "systemFiles/Install/setup")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot0.nfp", "systemFiles/BootLogos/boot0.nfp")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot1.nfp", "systemFiles/BootLogos/boot1.nfp")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/BootLogos/boot2.nfp", "systemFiles/BootLogos/boot2.nfp")
@@ -180,6 +312,8 @@ downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/maste
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/printer", "/api/printer")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/titleBar", "/api/titleBar")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/LogFile", "/api/LogFile")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/element", "/api/element")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/api/uInput", "/api/uInput")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/dualKey", "/systemFiles/Programs/dualKey")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycard", "/systemFiles/Programs/keycard")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/keycardDual", "/systemFiles/Programs/keycardDual")
@@ -192,10 +326,12 @@ downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/maste
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LICENSE", "/Documentation/LICENSE")
 PrintCentered("Complete", 19)
 thanks()
+return
 end
 
 if open() then 
   download()
+  return
 else
   sleep(3)
   os.reboot()
