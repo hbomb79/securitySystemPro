@@ -239,6 +239,8 @@ while true do
 		end
 end
 request_code = 'Cancelled'
+element.opacity(no, false)
+element.opacity(yes, false)
 return
 end
 
