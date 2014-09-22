@@ -1,4 +1,4 @@
---User Input API
+--User Input API Allowing For advanced text and number inputs that can be returned with buttons and events...
 
 
 function doClick(event, btn, x, y, buttonTable) --Checks if click happened... Used for button inputs
@@ -15,7 +15,6 @@ function nRead(len, replaceChar) --Number ONLY Input, Returns with: enter key
   submitted = false
   LogFile.i('Number Input Called', runningProgram) --Log Input Start
   Num = false
-  term.setTextColor(1)
   len = len or 10
   local input=""
   local key = 0
@@ -26,18 +25,20 @@ function nRead(len, replaceChar) --Number ONLY Input, Returns with: enter key
 		    p1 = tonumber(p1)
 		    Num = true
 		  elseif type(p1) == type(_string) then
-		    term.setTextColor(colors.red)
 		    Num = "Word"
 		    return Num
 		  end
         if e=="char" then
           if #input < len then
+			term.setCursorBlink(true)
 		    if type(p1) == type(_int) then
                 input = input .. p1
                 term.write(replaceChar or p1)
 			end
-          end
+		  end
+		  if #input >= len then term.setCursorBlink(false) end
         elseif e=="key" and p1==keys.backspace and #input > 0 then
+		  term.setCursorBlink(true)
           input = input:sub(1,#input-1)
           local x,y = term.getCursorPos()
           term.setCursorPos(x-1,y)
@@ -55,19 +56,18 @@ function eventN(len, replaceChar, buttonTable) --Number Only Event Input, Return
   submitted = false
   LogFile.i('Number Button Input Called', runningProgram)
   Num = false
-  term.setTextColor(1)
   len = len or 10
   local input=""
   local key = 0
   term.setCursorBlink(true)
   repeat
         local e,p1, p2, p3 = os.pullEvent()
-		  if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
+		  if e == "char" and p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
 		    p1 = tonumber(p1)
 		    Num = true
-		  elseif type(p1) == type(_string) then
-		    term.setTextColor(colors.red)
+		  elseif e == "char" and type(p1) == type(_string) then
 		    Num = "Word"
+			term.setCursorBlink(false)
 		    return Num
 		  end
         if e=="char" then
@@ -77,7 +77,9 @@ function eventN(len, replaceChar, buttonTable) --Number Only Event Input, Return
                 term.write(replaceChar or p1)
 			end
           end
+		  if #input >= len then term.setCursorBlink(false) end
         elseif e=="key" and p1==keys.backspace and #input > 0 then
+		  term.setCursorBlink(true)
           input = input:sub(1,#input-1)
           local x,y = term.getCursorPos()
           term.setCursorPos(x-1,y)
@@ -97,7 +99,6 @@ end
 
 function eventRead(len, replaceChar, buttonTable) --Any Key Read, Returns with: submit_Result
   submitted = false
-  term.setTextColor(1)
   len = len or 10
   local input=""
   local key = 0
@@ -109,7 +110,9 @@ function eventRead(len, replaceChar, buttonTable) --Any Key Read, Returns with: 
 			input = input .. p1
 			term.write(replaceChar or p1)
           end
+		  if #input >= len then term.setCursorBlink(false) end
         elseif event=="key" and p1==keys.backspace and #input > 0 then
+		  term.setCursorBlink(true)
           input = input:sub(1,#input-1)
           local x,y = term.getCursorPos()
           term.setCursorPos(x-1,y)
@@ -126,11 +129,10 @@ function eventRead(len, replaceChar, buttonTable) --Any Key Read, Returns with: 
   term.setCursorBlink(false)
 end
 
-function eventRead(len, replaceChar) --Any Key Read, Returns with: enter key
+function keyRead(len, replaceChar) --Any Key Read, Returns with: enter key
   submitted = false
   LogFile.i('Number Input Called', runningProgram) --Log Input Start
   Num = false
-  term.setTextColor(1)
   len = len or 10
   local input=""
   local key = 0
@@ -138,11 +140,15 @@ function eventRead(len, replaceChar) --Any Key Read, Returns with: enter key
   repeat
        local e,p1 = os.pullEvent()
         if e=="char" then
+		term.setCursorBlink(false)
           if #input < len then
+			term.setCursorBlink(true)
 			input = input .. p1
 			term.write(replaceChar or p1)
-          end
+		  end
+		  if #input >= len then term.setCursorBlink(false) end
         elseif e=="key" and p1==keys.backspace and #input > 0 then
+		  term.setCursorBlink(true)
           input = input:sub(1,#input-1)
           local x,y = term.getCursorPos()
           term.setCursorPos(x-1,y)

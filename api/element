@@ -19,7 +19,7 @@ function create(text, width, height, x, y, tc, bg, otc, obg, func, toggle, secBG
 	new.toggleState = 1 --Set toggle state to default
 	new.secondaryText = secText or text
 	new.visible = true
-	new.parent = parent or 'Nil'
+	new.parent = parent or nil
 	return new
 end
 
@@ -30,14 +30,12 @@ function tryClick(elementTable, x, y) --On Click Check Co-Ords, If match run the
 				if y == v.y then
 					if v.visible then 
 						if v.toggle then element.toggle(v) end
-						if v.parent then
 							for i, p in ipairs(elementTable) do
 								if p.parent == v.parent then
 									if p ~= v then p.toggleState = 1 else p.toggleState = 2 end
 									draw(p)
 								end
 							end
-						end
 						if v.func then return(v.func) end
 					end
 				end
@@ -62,6 +60,7 @@ function eraseCurrent(elem)
 end
 
 function draw(elem) --Visually Draw The Button Provided
+	local oldX, oldY = term.getCursorPos()
 	if elem then eraseCurrent(elem) end
 	if elem.visible then
 		if elem.toggleState == 2 then term.setTextColor(elem.secondaryTextColor) else term.setTextColor(elem.tc) end
@@ -80,6 +79,7 @@ function draw(elem) --Visually Draw The Button Provided
 	end
 	term.setTextColor(elem.otc)
 	term.setBackgroundColor(elem.obg)
+	term.setCursorPos(oldX, oldY)
 end
 
 function toggle(elem)
