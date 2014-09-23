@@ -36,19 +36,38 @@ scanFiles = {
 	'api/systemCheck',
 	'startup',
 	'version',
-	'systemFiles/bootFail.nfp',
-	'systemFiles/BootLogos/boot0.nfp',
-	'systemFiles/BootLogos/boot1.nfp',
-	'systemFiles/BootLogos/boot2.nfp',
-	'systemFiles/BootLogos/boot3.nfp',
-	'systemFiles/BootLogos/boot4.nfp',
-	'systemFiles/BootLogos/boot5.nfp',
-	'systemFiles/BootLogos/boot6.nfp',
-	'systemFiles/BootLogos/boot7.nfp',
-	'systemFiles/BootLogos/boot8.nfp',
+	'systemFiles/Programs/dualKey',
+	'systemFiles/Programs/reactor',
+	'systemFiles/Programs/keycard',
+	'systemFiles/Programs/keycardDual',
+	'systemFiles/Programs/OpenPDetect',
+	'systemFiles/Programs/pin',
+	'systemFiles/Programs/rangeLock',
+	'systemFiles/Images/BootLogos/boot0.nfp',
+	'systemFiles/Images/BootLogos/boot1.nfp',
+	'systemFiles/Images/BootLogos/boot2.nfp',
+	'systemFiles/Images/BootLogos/boot3.nfp',
+	'systemFiles/Images/BootLogos/boot4.nfp',
+	'systemFiles/Images/BootLogos/boot5.nfp',
+	'systemFiles/Images/BootLogos/boot6.nfp',
+	'systemFiles/Images/BootLogos/boot7.nfp',
+	'systemFiles/Images/progressBar/load0.nfp',
+	'systemFiles/Images/progressBar/load1.nfp',
+	'systemFiles/Images/progressBar/load2.nfp',
+	'systemFiles/Images/progressBar/load3.nfp',
+	'systemFiles/Images/progressBar/load4.nfp',
+	'systemFiles/Images/progressBar/load5.nfp',
+	'systemFiles/Images/progressBar/load6.nfp',
+	'systemFiles/Images/progressBar/load7.nfp',
+	'systemFiles/Images/progressBar/load8.nfp',
+	'systemFiles/Images/Update/update1.nfp',
+	'systemFiles/Images/Update/update2.nfp',
+	'systemFiles/Images/Update/update3.nfp',
 	'systemFiles/Install/installer',
 	'systemFiles/Install/updater',
 	'systemFiles/Install/setup'
+	'Documentation/LICENSE',
+	'Documentation/README'
 }
 
 function oldVersion()
@@ -86,8 +105,9 @@ function oldVersion()
 		printer.centered('You Have Just Installed The Next Tier Of Security', 8)
 		printer.centered('Please Wait While We Check Some Things', 10)
 		printer.centered('Checking Files', 18)
+		missingCheckFile = false
 		for _, file in ipairs(scanFiles) do
-			sleep(0.4)
+			sleep(0.1)
 			printer.centered(file, 19)
 			if not fs.exists(file) then
 				missingCheckFile = true

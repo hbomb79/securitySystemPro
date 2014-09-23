@@ -5,26 +5,34 @@ term.clear()
 elements = {}
 Events = {}
 
+if not fs.exists('api/element') then
+	error'Fatal Error! Element API Cannot Be Found, Please Reinstall The Suite, Type: \"pastebin run ddsvm2fx\"'
+end
 --Load All Required APIs As Start-up Didn't Have Time To!
 os.loadAPI('api/download')
 os.loadAPI('api/errora')
 os.loadAPI('api/printer')
 os.loadAPI('api/element')
 os.loadAPI('api/titleBar')
+os.loadAPI('api/uInput')
 
-function git(url, toPath, visible, yAxis) --Download From Git-hub To A PATH Specified in Arguments
+function git(url, toPath, toVar, visible, yAxis) --Download From Git-hub To A PATH Specified in Arguments
  for i=1, 3 do
  sleep(0)
   local response = http.get(url)
   if response then
     local data = response.readAll()
-	  local file = io.open(toPath, "w")
-	  file:write(data)
-	  file:close()
-	    if visible then
-	      printer.centered(toPath, yAxis)
-	    end
-	  return true
+		if toPath then
+		  local file = io.open(toPath, "w")
+		  file:write(data)
+		  file:close()
+			if visible then
+			  printer.centered(toPath, yAxis)
+			end
+		  return true
+		elseif toVar then
+			return data
+		end
   else
      if useErrorBSOD then errora.err('Failed To Download Files', 'The setup program couldt find the file queued for download', true, false) else return errorMes end
   end
@@ -104,6 +112,7 @@ function goToPage(page)
 		element.opacity(yes, true)
 		element.opacity(no, true)
 		element.opacity(cancel, true)
+		element.opacity(quiet, true)
 		updateSetting()
 	elseif page == 3 then
 		current.page = 3
@@ -113,16 +122,19 @@ function goToPage(page)
 		element.opacity(cancel, true)
 		adminSet()
 	elseif page == 4 then
-		current.page = 4
+		current.page = 4		
+		yes.x = termX-2-#'Enable'
+		no.x = termX-6-#'Enable' - #'Dont Enable'
 		element.opacity(yes, true)
 		element.opacity(no, true)
 		element.opacity(cancel, true)
 		cancel.func = function() goToPage(current.page-1) end
 		yes.func = function() current.settings.debugChoice = true goToPage(current.page+1) end
 		no.func = function() current.settings.debugChoice = false goToPage(current.page+1) end
+
 		debugMode()
 	elseif page == 5 then
-		current.page = 4
+		current.page = 5
 		element.opacity(cancel, true)
 		cancel.func = function(event) goToPage(current.page - 1) end	
 		ok.text = "Save"		
@@ -147,28 +159,36 @@ function saveSettings()
 end
 
 requiredFiles = { --Files that setup checks exist...
-	"startup",
-	"systemFiles/Programs/pin",
-	"systemFiles/Programs/dualKey",
-	"systemFiles/Programs/keycard",
-	"systemFiles/Programs/keycardDual",
-	"systemFiles/Programs/OpenPDetect",
-	"systemFiles/Programs/reactor",
-	"systemFiles/Programs/rangeLock",
-	"systemFiles/Install/installer",
-	"systemFiles/Install/updater",
-	"api/printer",
-	"api/errora",
-	"api/systemCheck",
-	"api/element",
-	"api/titleBar",
-	"api/update",
-	"api/download"
+	'api/element',
+	'api/titleBar',
+	'api/LogFile',
+	'api/update',
+	'api/download',
+	'api/errora',
+	'api/uInput',
+	'api/printer',
+	'api/systemCheck',
+	'startup',
+	'version',
+	'systemFiles/Images/BootLogos/boot0.nfp',
+	'systemFiles/Images/BootLogos/boot1.nfp',
+	'systemFiles/Images/BootLogos/boot2.nfp',
+	'systemFiles/Images/BootLogos/boot3.nfp',
+	'systemFiles/Images/BootLogos/boot4.nfp',
+	'systemFiles/Images/BootLogos/boot5.nfp',
+	'systemFiles/Images/BootLogos/boot6.nfp',
+	'systemFiles/Images/BootLogos/boot7.nfp',
+	'systemFiles/Images/Update/update1.nfp',
+	'systemFiles/Images/Update/update2.nfp',
+	'systemFiles/Images/Update/update3.nfp',
+	'systemFiles/Install/installer',
+	'systemFiles/Install/updater',
+	'systemFiles/Install/setup'
 }
-
 function checkFS()
 	for i, v in ipairs(requiredFiles) do
 		sleep(0)
+		printer.centered(v, 11)
 		if not fs.exists(v) then
 			missingFile = true
 			fileMissing = v
@@ -185,13 +205,14 @@ function checkFS()
 		printer.centered('Click "Fix Now" To Redownload The Security Suite', 10)
 		printer.centered('Or Click "Shutdown" To Ofcourse... Shutdown', 11)
 		printer.centered('If The Problem Still Persists Then Please Report', 13)
+		printer.centered('Couldnt Find: '..fileMissing, 15)
 		no.text = "Shutdown"
 		yes.text = "Fix Now"
 		no.func = function() os.shutdown() end
 		no.width = #'Shutdown' + 2
 		yes.width = #'Fix Now' + 2
 		yes.x = yes.x - 1
-		yes.func = function() printer.centered('Please Wait While We Download The Required Programs!', 15) sleep(0.2) git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer", nil, nil) shell.run'systemFiles/Install/installer' end --Redownload The Installer And Reinstall
+		yes.func = function() printer.centered('Please Wait While We Download The Required Programs!', 15) sleep(0.2) git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/installer", "systemFiles/Install/installer", nil, nil, nil) shell.run'systemFiles/Install/installer' end --Redownload The Installer And Reinstall
 		element.opacity(yes, true)
 		element.opacity(no, true)
 		while true do
@@ -206,18 +227,30 @@ end
 
 function Initialise()
 	drawTitleBar()
-	element.opacity(ok, false)
+	element.opacity(ok, false)	
+	printer.centered('Checking Error File API Support', 10)	
+	if fs.exists('systemFiles/api/errora') then useErrorBSOD = true else useErrorBSOD = false end	
 	if not first then
 		printer.centered('Setting Up A Few Things...', 6)
 		printer.centered('Registering Event Systems', 10)
 		eventRegister('mouse_click', doClick)
+		sleep(0.1)
 		eventRegister('mouse_drag', doClick)
 		eventRegister('terminate', function(event) os.shutdown() end)
 		sleep(0)
 		printer.centered('Checking File System Integrity', 10)
 		checkFS()
-		printer.centered('Checking File API Suuport', 10)
-		if fs.exists('systemFiles/api/errora') then useErrorBSOD = true else useErrorBSOD = false end	
+		printer.centered('Gathering Version Information', 10)
+		printer.centered('Connecting To Internet Services', 11)
+		availableVersion = git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/version", nil, true, true, 11)
+		printer.centered('Version File Collected', 11)
+		printer.centered('Importing To Variable', 11)
+		sleep(0.3)
+		printer.centered('Gathering Current Version Information', 10)
+		local h = fs.open('version', 'r')
+		currentVersion = h.readLine()
+		h.close()
+		sleep(0.4)
 		first = true
 		Initialise()
 	end
@@ -246,13 +279,16 @@ end
 
 function updateSetting() --Configure Updater
 	current.page = 2
-	printer.centered('Quiet Updating', 4)
-	printer.centered('Quiet updating allows the PC to update', 6)
-	printer.centered('without your consent, meaning you can have a', 7)
-	printer.centered('a computer update even if it isnt accessible', 8)
-	printer.centered('else it will simply sit there waiting for you', 9)
+	printer.centered('Updating Setting', 4)
+	printer.centered('Updating allows the PC to update vital', 6)
+	printer.centered('files helping fix bugs.. Please select your', 7)
+	printer.centered('update mode below', 8)
+	printer.centered('Enable: Normal Mode, Waits For Your Consent', 10)
+	printer.centered('Quiet: Quiet Mode, Doesnt Wait For Your Consent', 11)
+	printer.centered('Disable: No Updating, No fixes for the software', 12)
 	no.func = function(event) current.settings.quietUpdate = false goToPage(current.page + 1) end
 	yes.func = function(event) current.settings.quietUpdate = true goToPage(current.page +1) end
+	quiet.func = function(event) current.settings.quietUpdate = 'quiet' goToPage(current.page +1) end
 	cancel.func = function(event) goToPage(current.page-1) end
 end
 
@@ -297,6 +333,7 @@ function eventRegister(event, functionToRun)
 		Events[event] = {}
 	end
 	table.insert(Events[event], functionToRun)
+	printer.centered(tostring(event), 11)
 	LogFile.i('Event: '..tostring(event)..' Registered', runningProgram)
 end
 
@@ -311,8 +348,9 @@ function eventLoop() --This runs the functions that was assigned to the event in
    end
 end
 
-yes = btnInit('Enable', nil, nil, termX-(#'Enable' + 2), 18, 1, colors.green, 1, 256, onClick, false, nil, nil, nil)
-no = btnInit('Dont Enable', nil, nil, termX-(#'Enable' + #'Dont Enable' + 5), 18, 1, colors.red, 1, 256, onClick, false, nil, nil, nil)
+yes = btnInit('Enable', nil, nil, termX-6-#'Enable'-#'Quiet', 18, 1, colors.green, 1, 256, onClick, false, nil, nil, nil)
+quiet = btnInit('Quiet', nil, nil, termX-(#'Quiet' +  2), 18, 1, colors.cyan, 1, 256, onClick, false, nil, nil, nil)
+no = btnInit('Dont Enable', nil, nil, termX-(#'Enable' + #'Dont Enable' + #'Quiet'+ 10), 18, 1, colors.red, 1, 256, onClick, false, nil, nil, nil)
 ok = btnInit('Next', nil, nil, termX-(#'Next' + 2), 18, 1, 128, 1, 256, function(event) pcNAME() end, false, nil, nil, nil)
 cancel = btnInit('Back', nil, nil, 2 , 18, 1, colors.cyan, 1, 256, function(event) pcNAME() end, false, nil, nil, nil)
 
@@ -320,6 +358,7 @@ element.opacity(yes, false)
 element.opacity(no, false)
 element.opacity(cancel, false)
 element.opacity(ok, false)
+element.opacity(quiet, false)
 
 function doClick(event, btn, x, y)
 	functionToRun = element.tryClick(elements, x, y)
