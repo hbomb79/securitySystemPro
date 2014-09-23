@@ -116,14 +116,14 @@ function opacity(elem, state) --Set or toggle visibility of a button, if invisib
 end
 
 function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
-	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	local btn = create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
 	table.insert(elements, btn) --Inserts into table so it can be scanned later
-	element.opacity(btn, true) --Sets visibility to true
+	opacity(btn, true) --Sets visibility to true
 	return btn
 end
 
 function doClick(event, btn, x, y)
-	functionToRun = element.tryClick(elements, x, y)
+	functionToRun = tryClick(elements, x, y)
 	if functionToRun then --Check click location
 		functionToRun()
 	end
