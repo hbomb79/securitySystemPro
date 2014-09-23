@@ -8,8 +8,30 @@ current = {
   }
 }
 Events ={}
+elements = {}
 current.config = false
 termX, termY = term.getSize()
+
+
+function doClick(event, btn, x, y)
+	functionToRun = element.tryClick(elements, x, y)
+	if functionToRun then --Check click location
+		functionToRun()
+	end
+end
+
+function checkClick(event, btn, x, y)
+	if not isSettingUp then
+		doClick(event, btn, x, y)
+	end
+end
+
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to true
+	return btn
+end
 
 function drawTitle()
   term.clear()
@@ -30,29 +52,33 @@ LogFile.i('OpenPDetect Setup Started', runningProgram)
 	printer.centered('Sensor Block', 9)
 	printer.centered('Therefore To Use This Program You Need', 11)
 	printer.centered('Open Peripheral Addons Installed', 12)
-	printer.centered('Click Anywhere On Screen To Start Setup', 19)
-	os.pullEvent('mouse_click')
-  end
-  
-  local function setupStart()
-    setupWelcome()
-	printer.centered('Welcome To The Detector Setup')
-	printer.centered('Click Anywhere To Begin Setup')
-	os.pullEvent('mouse_click')
+	printer.centered('Click Start To Setup', 19)
+	start = btnInit('Start', nil, nil, termX-2-#'Start', termY-1, 1, colors.cyan, 1, 256, function() os.queueEvent('start') end, false, nil, nil, nil, nil)
+		while true do
+			local event, btn, x, y = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, btn, x, y)
+			elseif event == "start" then
+				element.opacity(start, false)
+				break
+			end
+		end
+		return
   end
   
   local function whitelistAdd()
   LogFile.i('OpenPDetect whitelist Add Start', runningProgram)
+  continue = btnInit('Continue', nil, nil, termX-2-#'Continue', termY-1, 1, colors.cyan, 1, 256, function() os.queueEvent('Continue') end, false, nil, nil, nil, nil)
   while true do
     local function addNames()
     while true do
 	  inList = false
       setupWelcome()
+	  element.opacity(continue, true)
 	  printer.centered('Enter The Names You Would Like To', 6)
 	  printer.centered('Add To The Detector WhiteList', 7)
 	  printer.centered('These Are The Players Who Will Have Access', 9)
 	  printer.centered('Enter The Username, And Hit Enter To Add', 10)
-	  printer.centered('Then Press [alt] To Continue To The Next Step',19)
 	  term.setCursorPos(termX/2-#'Username: ', 13)
 	  write('Username: ')
 	  local input = read()
@@ -81,120 +107,165 @@ LogFile.i('OpenPDetect Setup Started', runningProgram)
     end
 	end
 	
+	local function buttonPress()
+		while true do
+			local event, btn, x, y = os.pullEvent('mouse_click')
+			doClick(event, btn, x, y)
+		end
+	end
+	
 	local function nextStep()
 	  while true do
-	    local event, key = os.pullEvent('key')
-		  if key == keys.leftAlt or key == keys.rightAlt then
-		    if #current.settings.whiteList <= 0 then
-			  term.setCursorBlink(false)
-	          printer.centered('Please Register At Least ONE Username', 19)
-			  LogFile.w('User Tried To Skip Whitelist When 0 Usernames Are In Table', runningProgram)
-	          sleep(0.5)
-			  lessThanOne = true
-			  return
-	        else
-			  lessThanOne = false
-			  return key
-			end
-		  end
+	    local event = os.pullEvent('Continue')
+		if #current.settings.whiteList <= 0 then
+		  term.setCursorBlink(false)
+		  printer.centered('Please Register At Least ONE Username', 19)
+		  LogFile.w('User Tried To Skip Whitelist When 0 Usernames Are In Table', runningProgram)
+		  sleep(0.5)
+		  lessThanOne = true
+		  return
+		else
+		  lessThanOne = false
+		  return key
+		end
 	  end
 	end
 	
-	parallel.waitForAny(nextStep, addNames)
+	parallel.waitForAny(nextStep, addNames, buttonPress)
 	if not lessThanOne then LogFile.i('Whitelist Complete', runningProgram) break end
   end
   return
   end
   
   local function ouputOption()
+	element.opacity(continue, false)
+	yes = btnInit('Enable', nil, nil, termX-2-#'Enable', termY-1, 1, colors.green, 1, 256, function() current.settings.outputOption = true os.queueEvent('Yes') end, false, nil, nil, nil, nil)
+	no = btnInit('Dont Enable', nil, nil, termX-6-#'Enable'-#'Dont Enable', termY-1, 1, colors.red, 1, 256, function() current.settings.outputOption = false os.queueEvent('No') end, false, nil, nil, nil, nil)
     term.setCursorBlink(false)
     setupWelcome()
+	element.opacity(yes, true)
+	element.opacity(no, true)
 	printer.centered('Do You Want The Computer To Ouput', 6)
 	printer.centered('A Redstone Signal When The Players Is', 7)
 	printer.centered('On The Whitelist', 8)
-	printer.centered('Y/N', 10)
 	printer.centered('You Pick What Side It Outputs From Next Step', 19)
 	  while true do
-	    local event, key = os.pullEvent('key')
-		  if key == keys.y then
-		    current.settings.outputOption = true
-			LogFile.i('Output Option: true', runningProgram)
+	    local event, p1, p2, p3 = os.pullEvent()
+		if event == "mouse_click" then
+			doClick(event, p1, p2, p3)
+		elseif event == 'Yes' then
 			return true
-		  elseif key == keys.n then
-		    current.settings.outputOption = false
-			LogFile.i('Output Option: false', runningProgram)
+		elseif event == "No" then
 			return false
-		  end
+		end
 	  end
   end
   
   local function outputSide()
-    while true do
-	sleep(0)
+	for _, elem in ipairs(elements) do
+		elem.toggleState = 1
+		element.opacity(elem, false)
+	end
     setupWelcome()
-	printer.centered("Redstone Output Side", 6)
-	term.setCursorPos(termX/2-#'Output Side: ',10)
-	  write ('Output Side: ')
-	  local vside = false
-		current.settings.redstoneSide = read()
-		for k,v in pairs(rs.getSides()) do
-			if v == current.settings.redstoneSide then
-				vside = true
-				break
-			end
+	right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function()current.settings.redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+	right.toggleState = 2
+	element.opacity(right, true)
+	current.settings.redstoneSide = 'right'
+	left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'left' end, true, colors.green, 1, 'Left', 'rsOut')
+	top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'top' end, true, colors.green, 1, 'Top', 'rsOut')
+	bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'bottom' end, true, colors.green, 1, 'Bottom', 'rsOut')
+	back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'back' end, true, colors.green, 1, 'Back', 'rsOut')
+	element.opacity(continue, true)
+	while true do
+		printer.centered("Redstone Output Side", 6)
+		printer.centered("Click A Button To Decide Your", termY-1)
+		printer.centered("Redstone Output Side", termY)
+		element.opacity(continue, true)
+		local event, btn, x, y = os.pullEvent()
+		if event == "mouse_click" then
+			doClick(event, btn, x, y)
+		elseif event == "Continue" then
+			break
 		end
-		if vside then LogFile.i('Redstone Side Set To: '..current.settings.redstoneSide, runningProgram) break end
-		  printer.centered("Invalid side!", 11)
-		  sleep(0.5)
-		  term.clear()
+	end
+	
+	for _, elem in ipairs(elements) do
+		if elem.parent == "rsOut" then
+			element.opacity(elem, false)
 		end
-	 return
+	end
+	element.opacity(continue ,false)
+	return
   end
   
-  local function alarmOption()
+    local function alarmOption()
+	element.opacity(continue, false)
+	yes.func = function() current.settings.alarmOption = true os.queueEvent('Yes') end
+	no.func = function() current.settings.alarmOption = false os.queueEvent('No') end
     term.setCursorBlink(false)
-    setupWelcome()
+    setupWelcome()	
+	element.opacity(yes, true)
+	element.opacity(no, true)
 	printer.centered('Do You Want The Computer To Ouput', 6)
 	printer.centered('A Redstone Signal When The Players Is', 7)
 	printer.centered('NOT On The Whitelist', 8)
-	printer.centered('Y/N', 10)
 	printer.centered('You Pick What Side It Outputs From Next Step', 19)
 	  while true do
-	    local event, key = os.pullEvent('key')
-		  if key == keys.y then
-		    current.settings.alarmOption = true
-			LogFile.i('Alarm Side Option: true', runningProgram)
+	    local event, p1, p2, p3 = os.pullEvent()
+		if event == "mouse_click" then
+			doClick(event, p1, p2, p3)
+		elseif event == 'Yes' then
 			return true
-		  elseif key == keys.n then
-		    current.settings.alarmOption = false
-			LogFile.i('Alarm Side Option: false', runningProgram)
+		elseif event == "No" then
 			return false
-		  end
+		end
 	  end
   end
   
   local function alarmOutput()
-    while true do
-	sleep(0)
-    setupWelcome()
-	printer.centered("Alarm Redstone Output Side", 6)
-	term.setCursorPos(termX/2-(#'Alarm Side: '),10)
-	  write ('Alarm Side: ')
-	  local vside = false
-		current.settings.alarmRedstoneSide = read()
-		for k,v in pairs(rs.getSides()) do
-			if v == current.settings.alarmRedstoneSide then
-				vside = true
+		for _, elem in ipairs(elements) do
+			elem.toggleState = 1
+			element.opacity(elem, false)
+		end
+		setupWelcome()
+		continue.func = function() os.queueEvent('Continue') end
+		printer.centered("Redstone Alarm Output Side", 6)
+		printer.centered("Click A Button To Decide Your", termY-1)
+		printer.centered("Output Side", termY)
+		element.opacity(continue, true)
+		current.settings.alarmRedstoneSide = 'right'
+		right.func = function() current.settings.alarmRedstoneSide = 'right' end
+		right.parent = 'rsAlarm'		
+		right.toggleState = 2
+		left.func = function() current.settings.alarmRedstoneSide = 'left' end
+		left.parent = 'rsAlarm'
+		top.func = function() current.settings.alarmRedstoneSide = 'top' end
+		top.parent = 'rsAlarm'
+		bottom.func = function() current.settings.alarmRedstoneSide = 'bottom' end
+		bottom.parent = 'rsAlarm'
+		back.func = function() current.settings.alarmRedstoneSide = 'back' end
+		back.parent = 'rsAlarm'		
+		for _, elem in ipairs(elements) do
+			if elem.parent == "rsAlarm" then
+				element.opacity(elem, true)
+			end
+		end
+		while true do
+			element.opacity(nextBtn, true)
+			local event, btn, x, y = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, btn, x, y)
+			elseif event == "Continue" then
 				break
 			end
 		end
-		if vside then LogFile.i('Alarm Side: '..current.settings.alarmRedstoneSide, runningProgram) break end
-		  printer.centered("Invalid side!", 11)
-		  sleep(0.5)
-		  term.clear()
+		for _, elem in ipairs(elements) do
+			if elem.parent == "rsAlarm" then
+				element.opacity(elem, false)
+			end
 		end
-	 return
-  end
+		element.opacity(nextBtn ,false)
+	end	
   
   local function setupSave()
     LogFile.i('Setup Complete', runningProgram)
@@ -243,6 +314,7 @@ function SaveSettings()
 	end
 	f.close()	
 end
+
 --Sensor Peripheral: openperipheral_sensor
 
 function scanSensor()
@@ -304,7 +376,7 @@ function checkScanner()
 		end
 	  end
 	end	
-	scanPlayers = os.startTimer(0.1)
+	scanPlayers = os.startTimer(0.5)
 	if denyPlayer or allowPlayer then return true else return false end
 end
 
@@ -315,17 +387,18 @@ function eventRegister(event, functionToRun)
 	table.insert(Events[event], functionToRun)
 end
 
+configBtn = btnInit('Enter Config', nil, nil, 19, termY-1, 1, colors.cyan, 1, 256, function() os.queueEvent('config') end, false, nil, nil, nil, nil)
+backBtn = btnInit('Return', nil, nil, 22, termY-1, 1, colors.cyan, 1, 256, function() os.queueEvent('back') end, false, nil, nil, nil, nil)
+element.opacity(backBtn, false)
+
 function drawScreen()
   if current.status == 'System Ready' then term.setTextColor(colors.blue)
-  elseif current.status == 'Access Granted' then term.setTextColor(colors.lime)
+  elseif current.status == 'Access Granted ' then term.setTextColor(colors.lime)
   elseif current.status == 'Access Denied' then term.setTextColor(colors.red) end
   printer.centered(current.status, 8)
-  term.setTextColor(256)
-  term.setBackgroundColor(128)
-  term.setCursorPos(termX-#'[alt] Setup', 1)
-  write('[alt] Setup')
   term.setTextColor(1)  
   term.setBackgroundColor(256)
+  element.opacity(configBtn, true)
   printer.centered('System Monitoring Nearby Entities', 19)
   printer.centered('Detector System', 6)
 end 
@@ -348,7 +421,7 @@ checkScanner()
 end
 
 function openSide() 
-  current.status = 'Access Granted'
+  current.status = 'Access Granted '
   if current.settings.redstoneSide then rs.setOutput(current.settings.redstoneSide, true) end
 end
 
@@ -567,7 +640,9 @@ function ConfigLogin()
   printer.centered('Please Enter Your Admin Password', 4)
   printer.centered('Linked To Your Security Suite To Access', 5)
   printer.centered('The Settings Menu', 6)
-  printer.centered('Press [alt] To Return', 19)
+  element.opacity(configBtn, false)
+  element.opacity(backBtn, true)
+  backBtn.func = function() current.config = false os.queueEvent('back') end
   
   local function LoginInput()
     while true do
@@ -583,33 +658,41 @@ function ConfigLogin()
     end
   end
   
-  local function keyExit()
-    while true do
-	  local event, key = os.pullEvent('key')
-        if key == keys.leftAlt or keys == keys.rightAlt then
-		  term.setCursorBlink(false)
-		  current.config = false
-          break
-	  end
+  local function eventListen()
+	while true do
+		local event, p1, p2, p3 = os.pullEvent()
+		if event == 'mouse_click' then doClick(event, p1, p2, p3)
+		elseif event == "back" then 
+			term.setCursorBlink(false)
+			current.config = false
+			break
+		end
 	end
+	return
   end
-    parallel.waitForAny(LoginInput, keyExit)
-    if current.config then configMenu() else eventLoop() end
+	parallel.waitForAny(LoginInput, eventListen)
+	if current.config then configMenu() else eventLoop() end
   end
+  
+  
+  
+  
 
 function keyHandler(event, key)
   if event == 'key' and key == keys.leftAlt or key == keys.rightAlt then
-    if current.config == false then ConfigLogin() end
+    if current.config == false then ConfigLogin() else return end
   end
 end
 
 function init()
 	LogFile.i('main Init function started', runningProgram)
+	eventRegister('mouse_click', checkClick)
 	eventRegister('timer', timerHandle)
-	eventRegister('key', keyHandler)
-	eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program', true) end)
+	--eventRegister('key', keyHandler)
+	eventRegister('terminate', function(event) errora.err('Termination Detected', 'You Attempted To Terminate The Program', true, false) end)
 	eventRegister('peripheral', scanSensor)
 	eventRegister('peripheral_detach', scanSensor)
+	eventRegister('config', function() if current.config == false then ConfigLogin() end end)
 	loadSettings()
 	eventLoop()
 end
@@ -618,5 +701,5 @@ end
   if err then
     term.setCursorBlink(false)
 	LogFile.e('Error Detected: '..err, runningProgram)
-	errora.err(err, 'Detector Lock Crashed, Report Error Above', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+	errora.err(err, 'Detector Lock Crashed, Report Error Above', true, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end

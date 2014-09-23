@@ -1,408 +1,486 @@
---os.pullEvent = os.pullEventRaw --Stop termination outside of loop
-runningProgram = shell.getRunningProgram() --Get running program for logFile writing!
-LogFile.i('Pin Lock Program Running...', runningProgram)
+runningProgram = shell.getRunningProgram()
+LogFile.i('Pin Lock Started' ,runningProgram)
 termX, termY = term.getSize()
-
---Assign Text Variables
-configText = "PIN: "
-rsText = "OutputSide: "
-rsTextin = "InputSide: "
-timeText = "OutputTime: "
-enterText = "PIN: "
-
--- Assign Type Variables
-_int = 1
-_string = ""
-
--- Starting Variable For PIN Loop
-waiting = true
-pressed = false
-
-function checkKey()
-if not setup then
-  if pressed then
-    oldX, oldY = term.getCursorPos()
-    printer.centered("Type your normal pin to continue", 19)
-    term.setCursorPos(oldX, oldY)
-  else
-    oldX, oldY = term.getCursorPos()
-    printer.centered("Press [alt] To Change Your Settings", 19)
-    term.setCursorPos(oldX, oldY)
-  end
-end
+elements = {}
+Events = {}
+current = {
+	settings = {}
+}
+isSetup = false
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText, parent) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText, parent) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to true
+	return btn
 end
 
-function check(pass)
-  if pass == pin then
-    return true
-  else
-    return false
-  end
-end
-
-function RSstart(Oside)
-  Oside = Oside or back
-  rs.setOutput(Oside, true)
-  return true
-end
-
-function RSstop()
-  for i=sideTime, 0, -1 do
-    printer.centered("Depowering Redstone In: "..i, 14)
-	sleep(1)
-	if i <= 0 then
-	  rs.setOutput(side, false)
-	  return true
+function doClick(event, btn, x, y)
+	functionToRun = element.tryClick(elements, x, y)
+	if functionToRun then --Check click location
+		functionToRun()
 	end
-  end
+end
+
+function setup()
+	element.opacity(configBtn, false)
+	LogFile.i('Setup Started Due To No Config File Being Found', runningProgram)
+	local function setupTitle()
+		titleBar.draw('HbombOS Security Suite', 'Pin Lock Setup', colors.cyan, 256, 128, 256, 1)
+	end
+	
+	local function welcome()
+		setupTitle()
+		nextBtn.func = function() os.queueEvent('start') end
+		element.opacity(nextBtn, true)
+		printer.centered('Hey! Your Very Close To Using Your Pin Lock', 6)
+		printer.centered('Click The Next Button To Get Started!', 8)
+			while true do
+				local event, btn, x, y = os.pullEvent()
+					if event == 'mouse_click' then
+						doClick(event, btn, x, y)
+					elseif event == 'start' then
+						return
+					end
+			end
+	end
+	
+	local function pinSet()
+		nextBtn.func = function() os.queueEvent('submit_Result') end
+		while true do
+			term.setCursorBlink(true)
+			setupTitle()
+			element.opacity(nextBtn, true)
+			printer.centered('PIN Creation', 6)
+			printer.centered('Please Enter Your New PIN', 8)
+			printer.centered('It Has To Be 4 Digits Long', 10)
+			term.setCursorPos(termX/2-#'PIN: ', 13)
+			write("PIN: ")
+			local newPin = uInput.eventN(4, '*', elements)
+			if newPin ~= ""	then
+				if newPin ~= "Word" then
+					if #newPin >= 4 then
+						current.settings.pinNumber = newPin
+						break
+					else
+						term.setCursorBlink(false)
+						printer.centered('Must Be 4 Digits', 19)
+						sleep(0.5)
+					end
+				else
+					term.setTextColor(1)
+					term.setCursorBlink(false)
+					printer.centered('Only Numbers May Be Entered Here', 19)
+					sleep(0.5)
+				end
+			end
+		end
+		element.opacity(nextBtn, false)
+		return
+	end
+	
+	local function rsOutputSide()
+		setupTitle()
+		nextBtn.func = function() os.queueEvent('Continue') end
+		printer.centered("Redstone Output Side", 6)
+		printer.centered("Click A Button To Decide Your", termY-1)
+		printer.centered("Redstone Output Side", termY)
+		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneOutsideSetup = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+		right.toggleState = 2
+		element.opacity(right, true)
+		current.settings.redstoneSide = 'right'
+		left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'left' end, true, colors.green, 1, 'Left', 'rsOut')
+		top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'top' end, true, colors.green, 1, 'Top', 'rsOut')
+		bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'bottom' end, true, colors.green, 1, 'Bottom', 'rsOut')
+		back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'back' end, true, colors.green, 1, 'Back', 'rsOut')
+		while true do
+			element.opacity(nextBtn, true)
+			local event, btn, x, y = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, btn, x, y)
+			elseif event == "Continue" then
+				break
+			end
+		end
+		
+		for _, elem in ipairs(elements) do
+			if elem.parent == "rsOut" then
+				element.opacity(elem, false)
+			end
+		end
+		element.opacity(nextBtn ,false)
+	end	
+	local function rsInputSide()
+		for _, elem in ipairs(elements) do
+			elem.toggleState = 1
+			element.opacity(elem, false)
+		end
+		setupTitle()
+		nextBtn.func = function() os.queueEvent('Continue') end
+		printer.centered("Redstone Input Side", 6)
+		printer.centered("Click A Button To Decide Your", termY-1)
+		printer.centered("Redstone Input Side", termY)
+		current.settings.inputSide = 'right'
+		right.func = function() current.settings.inputSide = 'right' end
+		right.parent = 'rsIn'		
+		right.toggleState = 2
+		left.func = function() current.settings.inputSide = 'left' end
+		left.parent = 'rsIn'
+		top.func = function() current.settings.inputSide = 'top' end
+		top.parent = 'rsIn'
+		bottom.func = function() current.settings.inputSide = 'bottom' end
+		bottom.parent = 'rsIn'
+		back.func = function() current.settings.inputSide = 'back' end
+		back.parent = 'rsIn'		
+		for _, elem in ipairs(elements) do
+			if elem.parent == "rsIn" then
+				element.opacity(elem, true)
+			end
+		end
+		while true do
+			element.opacity(nextBtn, true)
+			local event, btn, x, y = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, btn, x, y)
+			elseif event == "Continue" then
+				break
+			end
+		end
+		
+		for _, elem in ipairs(elements) do
+			if elem.parent == "rsIn" then
+				element.opacity(elem, false)
+			end
+		end
+		element.opacity(nextBtn ,false)
+	end	
+	
+	local function rsInputOption()
+		for _,  elem in ipairs(elements) do
+			element.opacity(elem, false)
+		end
+		setupTitle()
+		printer.centered('Would You Like The Computer To Act As', 8)
+		printer.centered('If The Pin Was Entered When It', 9)
+		printer.centered('Receives A Redstone Input', 10)
+		printer.centered('You Get To Pick What Side The Input', 12)
+		printer.centered('Has To Come From Next Step', 13)
+		yes = btnInit('Enable', nil, nil, termX-#'Enable'-2, termY-1, 1, colors.green, 1, 256, function() current.settings.inputOption = true os.queueEvent('ContinueInput') end, false, nil, nil, nil, nil)
+		no = btnInit('Dont Enable', nil, nil, yes.x-#'Dont Enable'-4, termY-1, 1, colors.red, 1, 256, function() current.settings.inputOption = false os.queueEvent('ContinueInput') end, false, nil, nil, nil, nil)
+		while true do
+			local event, p1, p2, p3 = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, p1, p2, p3)
+			elseif event == "ContinueInput" then
+				break
+			end
+		end
+		element.opacity(yes, false)
+		element.opacity(no, false)
+		return
+	end
+	
+	local function rsOutputTime()
+		while true do
+			setupTitle()
+			nextBtn.func = function() os.queueEvent('submit_Result') end
+			element.opacity(nextBtn, true)
+			printer.centered('Redstone Time Setting', 6)
+			printer.centered('How Long Should We Output A Redstone Signal For?', 8)
+			term.setCursorPos(termX/2-#'Output Time: ', 12)
+			write('Output Time: ')
+			local input = uInput.eventN(2, nil, elements)
+				if input ~= "" then
+					if input ~= 'Word' then
+						--Numbers Entered
+						current.settings.redstoneTime = input
+						break
+					else
+						term.setTextColor(colors.white)
+						term.setCursorBlink(false)
+						printer.centered('Only Numbers Can Be Entered Here', 19)
+						sleep(0.5)
+					end
+				end
+		end
+		return
+	end
+	
+	local function complete()
+		element.opacity(nextBtn, false)
+		setupTitle()
+		reboot = btnInit('Reboot', nil, nil, termX-2-#'Reboot', termY-1, 1, colors.cyan, 1, 256, function() os.queueEvent('rebootSys') end, false, nil, nil, nil, nil)
+		printer.centered('Woooo Hoooo!', 6)
+		printer.centered('Your PIN Lock Is Now Ready To Go', 8)
+		printer.centered('Simply Click Reboot To Get Going', 10)
+		while true do
+			element.opacity(reboot, true)
+			local event, btn, x, y = os.pullEvent()
+			if event == 'mouse_click' then
+				doClick(event, btn, x, y)
+			elseif event == 'rebootSys' then
+				SaveSettings()
+				os.reboot() 
+			end
+		end
+	end
+	
+welcome()
+pinSet()
+rsOutputSide()
+rsOutputTime()
+rsInputOption()
+if current.settings.inputOption then rsInputSide() end
+complete()
+end
+
+local _pinText = 'Enter Pin: '
+
+function drawPinField()
+	term.setCursorPos(termX/2-1+4, 10)
+	term.setBackgroundColor(1)
+	write(string.rep('     ', 1))
+	term.setBackgroundColor(256)
 end
 
 function checkConfig()
-  if not fs.exists("systemFiles/Programs/pinConfig") then --This means the config containing the password isnt created yet
-    return false
-  else
-    return true
-  end
-end
-
-function thank()
-  drawTitleBar()
-  printer.centered("Thank You For Setting Up", 4)
-  printer.centered("Your PIN Lock", 5)
-  printer.centered("Refer To Forums Or README In", 7)
-  printer.centered("Your Documentation Directory", 8)
-  printer.centered("For More Help.", 9)
-  printer.centered("Press ANY Key", 19)
-  os.pullEvent("key")
-  LogFile.i('Setup Finished, Rebooting', runningProgram)
-  os.reboot()
-end
-
-function RSinSetup()
- while true do
+LogFile.i('Config Login', runningProgram)
+  config = true
   term.clear()
-  drawTitleBar()
-  printer.centered("It Appears You Have Not Used This Program Before", 6)
-  printer.centered("Setting Up PIN Lock", 8)
-  printer.centered("Would You Like The Computer To Act As If",10)
-  printer.centered("The Password was Entered If It Receives A",11)
-  printer.centered("Redstone Signal On The Designated Side?",12)
-  printer.centered("Y/N",12)
-  printer.centered("You May Pick Which Side New Step",19)
-  ev, arg = os.pullEvent()
-   if ev == "key" then
-	if arg == keys.y then
-	  rsInSetting = true
-	  break
-	elseif arg == keys.n then
-	  rsInSetting = false
-	  break
-	end
-   end
-  end
-  return
-end
-
-function RSinSideSetup()
-  while true do
-    printer.centered("It Appears You Have Not Used This Program Before", 6)
-    printer.centered("Setting Up PIN Lock", 8)
-    printer.centered("You Picked That You Would Like The Computer",10)
-    printer.centered("To Respond To Redstone As If The Password",11)
-    printer.centered("Was Entered, What Side Do You Want The Input",12)
-    printer.centered("To Have To Come From?",13)
-	term.setCursorPos(termX/2-(#rsTextin), 15)
-	  write (rsText)
-	  local vside = false
-		rsInputSide = read()
-		for k,v in pairs(rs.getSides()) do
-			if v == rsInputSide then
-				vside = true
-				break
-			end
-		end
-		if vside then break end
-		  print("Invalid side!")
-		  sleep(0.5)
-		  term.clear()
-		end
-	 return true
-  end 
-
-function readN(len, replaceChar)
-  term.setTextColor(1)
-  len = len or 10
-  local input=""
-  local key = 0
-  term.setCursorBlink(true)
-  repeat
-   checkKey()
-        e,p1 = os.pullEvent()
-		if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
-		  p1 = tonumber(p1)
-		elseif type(p1) == type(_string) then
-		  term.setTextColor(colors.red)
-		  printer.centered("Only Numbers! You Entered: "..p1.." Of Type: "..type(p1), 19)
-		  return nil
-		end
-        if e=="char" then
-          if #input < len then
-		    if type(p1) == type(_int) then
-                input = input .. p1
-                term.write(replaceChar or p1)
-			end
-          end
-        elseif e=="key" and p1==keys.backspace and #input > 0 then
-          input = input:sub(1,#input-1)
-          local x,y = term.getCursorPos()
-          term.setCursorPos(x-1,y)
-          term.write(" ")
-          term.setCursorPos(x-1,y)
-        end
-  until p1==keys.enter
-  term.setCursorBlink(false)
-  return input
-end
-
-
-function drawTitleBar()
-  term.clear()
-  titleBar.draw("HbombOS Security Suite", "PIN Lock", colors.cyan, 256, 128, 256, 1) --Syntax: Text, Subtext, Text Color, SubText Color, Bg Color, DefaultBGcolor, DefaultTextColor
-end
-
-drawTitleBar()
-
-if not checkConfig() then  
-  LogFile.i('Start Setup', runningProgram)
-  setup = true
-  waitinput = true
-  while waitinput do 
-  term.clear()
-  drawTitleBar()
-  printer.centered("It Appears You Have Not Used This Program Before", 6)
-  printer.centered("Setting Up PIN Lock", 8)
-  printer.centered("Enter Your NEW Pin, Can Only Be 4 Digits Long!", 10)
-  waitinput = true
-    term.setCursorPos(termX/2-#configText, 12)
-	write(configText)
-	term.setTextColor(1)
-	pinInput = readN(4, "*")
-    if pinInput then
-     if #pinInput < 4 then
-	  term.setTextColor(colors.red)
-      printer.centered("Input Must Be Four Numbers Long", 14)
-	 else break end
-	end
-  end
-	  waitinput = false
-	  while true do
-	  term.clear()
-	  drawTitleBar()
-      printer.centered("It Appears You Have Not Used This Program Before", 6)
-      printer.centered("Setting Up PIN Lock", 8)
-	  printer.centered("Enter The Side You Want The Redstone To Emit From?",10)
-	  term.setCursorPos(termX/2-(#rsText),12)
-	  write (rsText)
-	  local vside = false
-		rsInput = read()
-		for k,v in pairs(rs.getSides()) do
-			if v == rsInput then
-				vside = true
-				break
-			end
-		end
-		if vside then break end
-		  print("Invalid side!")
-		  sleep(0.5)
-		  term.clear()
-		end
-		  term.clear()
-		  drawTitleBar()
-          printer.centered("It Appears You Have Not Used This Program Before", 6)
-          printer.centered("Setting Up PIN Lock", 8)
-	      printer.centered("How Long would you like the redstone output?",10)
-		  term.setCursorPos(termX/2-(#timeText), 12)
-		  write (timeText)
-		  local timeInput = readN(2)
-		    if not timeInput then
-		      printer.centered("Time Must Be Greater That One Second", 13)
-		    end
-  RSinSetup()
-    if rsInSetting then
-	  RSinSideSetup()
-	end
-  term.clear()
-  drawTitleBar()
-  printer.centered ("Please Wait While We Save Your Settings...", 6)
-  sleep(1)
-  LogFile.i('Saving Setup Settings', runningProgram)
-  local f = fs.open("/systemFiles/Programs/pinConfig", "w")
-  f.writeLine(pinInput)
-  sleep(0)
-  printer.centered("Saved PIN", 7)
-  sleep(0)
-  f.writeLine(rsInput)
-  printer.centered("Saved Redstone Out", 7)
-  sleep(0)
-  f.writeLine(timeInput)
-  printer.centered("Saved Time Ouput", 7)
-  sleep(0)
-  f.writeLine(tostring(rsInSetting))
-  printer.centered("Saved Redstone Input Setting", 7)
-  sleep(0)
-  if rsInSetting then
-    f.writeLine(rsInputSide)
-  end
-  sleep(0)
-  printer.centered("Saved Redstone Input Side", 7)
-  sleep(0)
+  titleBar.draw('HbombOS Security Suite', 'Pin Lock', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Please Enter Your Administartor Password', 6)
+  printer.centered('To Access Your Configuration Options', 7)
+  local f = fs.open('systemFiles/Security/adminPass', 'r')
+  adminPassFile = f.readLine()
   f.close()
-  printer.centered("Saving Root Path", 7)
-  sleep(1)
-  local f = fs.open("systemFiles/Programs/configuration", "w")
-  f.writeLine('systemFiles/Programs/pin')
-  thank()
-else
-  printer.centered("Loading Configuration...", 4)
-  LogFile.i('Loading Config', runningProgram)
-  sleep(0.5)
-  local f = fs.open("systemFiles/Programs/pinConfig", "r")
-  pin = f.readLine()
-  side = f.readLine()
-  sideTime = f.readLine()
-  rsInputUse = f.readLine()
-  if rsInputUse == "true" then
-    rsInputUseSide = f.readLine()
-  end
-  f.close()
-  printer.centered("Loaded!", 4)
-  sleep(0)
-  
-function login()
-waiting = true
-  while waiting do
-    term.clear()
-	drawTitleBar()
-    term.setTextColor(1)
-    printer.centered("HbombOS Security Suite", 4)
-    printer.centered("Running PIN LOCK", 5)
-    printer.centered("Please Enter The Pin Below", 7)
-    term.setCursorPos(termX/2-(#enterText-2), 10)
-    write(enterText)
-    textIready = readN(4, "*")
-	if textIready then
-      if check(textIready) then
-        printer.centered("Correct PIN", 12)
-	    return true
-      else
-        printer.centered("Incorrect PIN", 12)
-      end
-	end
-  end
-end
-end
-
-function removeConfig()
-LogFile.i('Remove Config Function Called', runningProgram)
-local function removeSet()
-  term.clear()
-  drawTitleBar()
-  printer.centered("Type in your administrator password", 4)
-  printer.centered("To reset the PIN Lock configuration", 5)
-  local f = fs.open("systemFiles/Security/adminPass", "r")
-  adminPassword = f.readLine()
-  f.close()
-  configText = "Admin Password: "
-  term.setCursorPos(termX/2-#configText, 7)
+  configText = 'Password: '
+  term.setCursorPos(termX/2-#configText, 10)
   write(configText)
-  adminPasswordInput = read("*")
-  if adminPasswordInput == adminPassword then
-    return true
-  else
-    return false
-  end
+  configInput = read('*')
+  if configInput == adminPassFile then configMenu() else printer.centered('Incorrect Password.. Returning', 19) sleep(0.5) isSetup = false return 'return' end
 end
 
-if removeSet() then
-  printer.centered("Removing Configuration File", 19)
-  sleep(0)
-  fs.delete('systemFiles/Programs/pinConfig')
-  LogFile.i('pinConfig Removed!', runningProgram)
-  printer.centered("Removed Config", 19)
-  sleep(1)
-  os.reboot()
-else pressed = false shell.run('systemFiles/Programs/pin') end
-end
-
-
-function waitForSetupKey()
-	while true do
-	 checkKey()
-	  local event, arg = os.pullEvent()
-	  if event == 'setupQue' then
-	    return nil
-	  elseif event == "key" then
-	    if arg == keys.leftAlt or arg == keys.rightAlt then
-		pressed = true
-		checkKey()
-	  	return arg 
+function configMenu()
+LogFile.i('Config Menu Opened', runningProgram)
+  titleBar.draw('HbombOS Security Suite', 'Pin Lock Settings', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Pick An Option Below', 6)
+  local continue = false
+  local options = {
+  	    {'Re Configure Lock', function()
+          setup()
+		end},
+		{'Reset Configuration', function()
+		  LogFile.i('Removing Config', runningProgram)
+		  fs.delete('systemFiles/Programs/rangeLockSettings')
+		  pressed = false
+		  config = true
+		  printer.centered('Removed!', 19)
+		  sleep(1)
+		  os.reboot()
+		end},
+		{'Cancel And Return', function()
+		  isSetup = false
+		  term.clear()
+          return
+		end}
+	}
+	local selected = 1
+	local function draw()
+		for i, v in ipairs(options) do
+			local bg = 256
+			local tc = colours.white
+			if i == selected then
+				bg = 256
+				tc = colours.blue
+			end
+			term.setTextColor(tc)
+			term.setBackgroundColor(bg)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
 		end
-	  end
 	end
+	local wait = true
+	draw()
+	while wait do
+		local event, key = os.pullEvent('key')
+		if key == keys.up then
+			selected = selected - 1
+			if selected < 1 then
+				selected = 1
+			end
+		elseif key == keys.down then
+			selected = selected + 1
+			if selected > #options then
+				selected = #options
+			end
+		elseif key == keys.enter then
+		  options[selected][2]()
+		  wait = false
+		end
+		draw()
+	end
+	return continue
 end
 
+configBtn = btnInit('Enter Config', nil, nil, termX/2-(#'Enter Config'/2), termY-1, 1, colors.cyan, 1, 256, function() toggleConfigText() end, true, colors.green, nil, nil, nil)
 
-function Start()
- setup = false
- keyrunning = true
-  while keyrunning do
-    local key = nil
-    local success = false
-    parallel.waitForAll(function()success = login() os.queueEvent('setupQue') end, function() key = waitForSetupKey() end)
-	  if success and key == keys.leftAlt or key == keys.rightAlt then
-	    setup = true
-		checkKey()
-        success = removeConfig()
-	  end
-	    return success
-  end  
+function correctPIN()
+	element.opacity(configBtn, false)
+	rs.setOutput(current.settings.redstoneSide, true)
+	for i = tonumber(current.settings.redstoneTime), 1, -1 do
+		if i > 1 then printer.centered('Depowering Redstone In: '..i..' Seconds', 17) elseif i == 1 then printer.centered('Depowering Redstone In: '..i..' Second', 17) else os.reboot() end
+		sleep(1)
+		if i == 1 then
+			rs.setOutput(current.settings.redstoneSide, false)
+		end
+	end	
+	return
 end
 
-function RedstoneInputReceive()
-  while true do
-    sleep(0)
-	rsReceive = redstone.getInput(rsInputUseSide)
-	  if rsReceive then
-	    break
-	  end
-  end
-  return true
+function updateScreen()
+	titleBar.draw('HbombOS Security Suite', 'Pin Lock', colors.cyan, 256, 128, 256, 1)
+	drawPinField()
+	element.opacity(configBtn, true)
+	term.setTextColor(colors.white)
+	printer.centered('Please Enter Your PIN', 6)
+	printer.centered('Below', 7)
+	if isSetup then configBtn.toggleState = 2 printer.centered('Enter Your PIN To Enter Config', 19) else configBtn.toggleState = 1 end
+	element.opacity(configBtn, true)
+	term.setCursorPos(termX/2-#_pinText+4, 10)
+	write(_pinText)
+	term.setTextColor(colors.black)
+	term.setBackgroundColor(1)
 end
 
-function init() --Everything gets called here!
-LogFile.i('Main Function Statred', runningProgram)
+function pinEnter()
+	local function enterPin()
+		while true do
+			updateScreen()
+			local input = uInput.nRead(4, '*', elements)
+			term.setTextColor(1)
+			term.setBackgroundColor(256)
+			if input ~= "" then
+				if input ~= 'Word' then
+					if input == current.settings.pinNumber then
+						printer.centered('Correct Pin', 19)
+						if not isSetup then
+							--Open Door etc...
+							correctPIN()
+						else
+							element.opacity(configBtn, false)
+							--Launch Setup Here
+							checkConfig()
+						end
+					else
+						element.opacity(configBtn, false)
+						term.setTextColor(colors.white)
+						term.setCursorBlink(false)
+						printer.centered('Incorrect Pin', 19)
+						sleep(0.5)
+					end
+				else
+					element.opacity(configBtn, false)
+					term.setTextColor(colors.white)
+					term.setCursorBlink(false)
+					printer.centered('Only Numbers Can Be Entered Here', 19)
+					sleep(0.5)
+				end
+			end
+		end
+	end
+	
 	while true do
-	  if rsInputUse == "true" then
-		parallel.waitForAny(Start, RedstoneInputReceive)
-		term.setCursorBlink(false)
-		RSstart(side)
-		RSstop()
-		term.setCursorBlink(true)
-		rsReceive = false
-		rsReceive = redstone.getInput(rsInputUseSide)
-	   -- parallel.waitForAny(Start, RedstoneInputReceive)
-	  else
-		Start()
-		RSstart(side)
-		RSstop()
-		Start()
-	  end
+		sleep(0)
+		parallel.waitForAny(enterPin, eventLoop)
+	end
+	
+end
+
+function loadSettings()
+  LogFile.i('Loading Settings', runningProgram)
+  if fs.exists('systemFiles/Programs/pinConfig') then
+		local f = fs.open('systemFiles/Programs/pinConfig', 'r')
+		if f then
+			current.settings = textutils.unserialize(f.readAll())
+			LogFile.i('Settings Loaded', runningProgram)
+		end
+		f.close()
+	else
+		setup()
 	end
 end
 
-  local _, err = pcall(init) --Error Catching, All Functions Are Called From initialise() at some point...
-  if err then
-    term.setCursorBlink(false)
-	LogFile.e('XPCALL Error: '..err, runningProgram)
-	errora.err(err, 'Pin Lock Has Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
-  end
+function SaveSettings()
+    LogFile.i('Saving Settings', runningProgram)
+	current.settings = current.settings or {}
+	local f = fs.open('systemFiles/Programs/pinConfig', 'w')
+	if f then
+		f.write(textutils.serialize(current.settings))	    
+		LogFile.i('Settings Saved', runningProgram)
+	end
+	f.close()	
+end
+
+
+function toggleConfigText()
+	local oldX, oldY = term.getCursorPos()
+	if not isSetup then isSetup = true else isSetup = false end
+	if isSetup then printer.centered('Enter Your PIN To Enter Config', 19)
+	elseif not isSetup then printer.centered(' ', 19) end
+	term.setCursorPos(oldX, oldY)
+	term.setCursorBlink(true)
+	if isSetup then configBtn.toggleState = 2 else configBtn.toggleState = 1 end
+	element.opacity(configBtn, true)
+	term.setBackgroundColor(1)
+	term.setTextColor(colors.black)
+end
+
+function redstoneCheck(event)
+	if rs.getInput(current.settings.inputSide) then
+		term.setCursorBlink(false)
+		term.setBackgroundColor(256)
+		term.setTextColor(1)
+		printer.centered('Redstone Signal Received', 19)
+		correctPIN()
+		updateScreen()
+		term.setCursorBlink(true)
+	end
+end
+
+function Initialise()	
+	nextBtn = btnInit('Next', nil, nil, termX-2-#'Next', termY-1, 1, colors.cyan, 1, 256, function() end, false, nil, nil, nil, nil)
+	backBtn = btnInit('Back', nil, nil, termX-2-#'Back', termY-1, 1, colors.cyan, 1, 256, function() end, false, nil, nil, nil, nil)
+	element.opacity(backBtn, false)	
+	eventRegister('timer', timerHandler)
+	eventRegister('mouse_click', doClick)
+	loadSettings()
+	if tostring(current.settings.inputOption) == 'true' then eventRegister('redstone', redstoneCheck) end
+	--eventRegister('key', keyHandler)
+	eventRegister('reboot', function(event) os.reboot() end)
+	eventRegister('terminate', function(event) errora.err('Malicious Activity Detected', 'You Attempted To Terminate The Program', true, false) end)
+	pinEnter()
+end
+
+function eventLoop() --This runs the functions that was assigned to the event in initialise()
+  while true do
+	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+	  if Events[event] then
+		for i, e in ipairs(Events[event]) do
+		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+		end
+      end
+   end
+end
+
+function eventRegister(event, functionToRun)
+	if not Events[event] then
+		Events[event] = {}
+	end
+	table.insert(Events[event], functionToRun)
+	LogFile.i('Event: '..tostring(event)..' Registered', runningProgram)
+end
+
+local _, err = pcall(Initialise) --Error Catching, All Functions Are Called From initialise() at some point...
+if err then
+	term.setCursorBlink(false)
+	LogFile.e('Pin Lock Crash: '..err, runningProgram)
+	errora.err(err, 'Pin Lock Has Crashed, Report Code Above', true, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
+end

@@ -5,6 +5,7 @@ current = {
   reactor = {}
   }
 Events={}
+elements = {}
 current.monitorPresent = false
 current.page = 'Main'
 termX, termY = term.getSize()
@@ -13,6 +14,33 @@ current.reactor.manualMode = false
 --Definitions
 _int = 1
 _string = 'a'
+
+
+function doClick(event, btn, x, y)
+	functionToRun = element.tryClick(elements, x, y)
+	if functionToRun then --Check click location
+		functionToRun()
+	end
+end
+
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to true
+	return btn
+end
+
+pBtn = btnInit('Power: ON', nil, nil, 2, termY-3, 1, colors.green, 1, 256, function() keyHandler('key', keys.s) end, true, colors.red, 1, 'Power: OFF')
+aBtn = btnInit('Auto: ON', nil, nil, pBtn.x+pBtn.width+2, termY-3, 1, colors.green, 1, 256, function() keyHandler('key', keys.f) end, true, colors.red, 1, 'Auto: OFF')
+cBtn = btnInit('Config', nil, nil, aBtn.x+aBtn.width+2, termY-3, 1, colors.green, 1, 256, function() keyHandler('key', keys.leftAlt) end, false, nil, nil, nil)
+rBtn = btnInit('Control Rods', nil, nil, cBtn.x+cBtn.width+2, termY-3, 1, colors.green, 1, 256, function() keyHandler('key', keys.c) end, false, nil, nil, nil)
+
+function buttonRedraw()
+	element.opacity(pBtn ,true)
+	element.opacity(aBtn ,true)
+	element.opacity(cBtn ,true)
+	element.opacity(rBtn ,true)
+end
 
 function readN(len, replaceChar)
   term.setTextColor(1)
@@ -266,14 +294,15 @@ function statusPrint()
   overlay()
   current.page = 'Main'
   checkReactor()
-  printer.centered('[S] To Toggle Reactor', 13)
+ --[[ printer.centered('[S] To Toggle Reactor', 13)
   printer.centered('[F] To Toggle Auto Mode', 14)
   printer.centered('[C] To Adjust Control Rods', 15)
-  printer.centered('[ALT] To Change Settings', 16)
+  printer.centered('[ALT] To Change Settings', 16)]]--
   term.setCursorPos(termX-#tostring(state), 1)
   term.setBackgroundColor(128)
-  if state then term.setTextColor(colors.lime) elseif not state then term.setTextColor(colors.red) else term.setTextColor(1) end
+  if state then pBtn.toggleState = 1 term.setTextColor(colors.lime) elseif not state then pBtn.toggleState = 2 term.setTextColor(colors.red) else term.setTextColor(1) end
   write(tostring(state))
+  buttonRedraw()
   term.setTextColor(1)
   term.setBackgroundColor(256)
   printer.centered('Energy Stored: '..rfStored, 4)
@@ -287,10 +316,12 @@ function statusPrint()
   term.setTextColor(1)
   printer.centered('Active Control Rods: '..controlRodAmount, 11)
   if current.monitorPresent == true then monStatusPrint() end
+  if current.reactor.manualMode == true then aBtn.toggleState = 2 else aBtn.toggleState = 1 end
   if current.reactor.manualMode == false then autoControl() end
   if current.reactor.manualMode == true then term.setTextColor(colors.orange) printer.centered('Manual Mode Engaged', 19) end
   if current.reactor.manualMode == true and current.monitorPresent then Display.setTextColor(colors.orange) MonWrite('Manual Mode Engaged', monY) Display.setTextColor(1) end
   term.setTextColor(1)
+  buttonRedraw()
   statusRefresh = os.startTimer(0.1)
 end
 
@@ -349,10 +380,6 @@ while true do
   if current.monitorPresent == true then monStatusPrint() end
   overlay()
   printer.centered('Please Type Your Custom Control Rod Setting', 5)
-  --[[printer.centered('If The Reactor Is In Auto Mode', 7)
-  printer.centered('This Settings Will Be Changed Back', 8)
-  printer.centered('Straight Away, Change The Reactor To Manual', 9)
-  printer.centered('To Prevent This', 10)  ]]--
   printer.centered('0% - 100%', 19)
   term.setCursorPos(termX/2-#'Percent: ', 12)  
   write'Percent: '
@@ -483,7 +510,6 @@ scanReactor()
 end
 
 function monTouch(event,side, x, y)
---error(event..' x: '..x..' y: '..y)
   if x >= monX-5 and y == 1 then
      current.reactor.manualMode = true
 	 if current.monitorPresent then current.monitorTitleUpdate = true end
@@ -497,13 +523,14 @@ function Initialise()
 LogFile.i('Initialise Function Called', runningProgram)
   overlay()
   loadSettings()
-  eventRegister('key', keyHandler)
+  --eventRegister('key', keyHandler)
   eventRegister('timer', timerHandler)
-  eventRegister('terminate', function(event) errora.err('Malicious Activity Detected', 'You Attempted To Terminate The Software!', true) end)
+  eventRegister('terminate', function(event) errora.err('Uh Oh', 'Malicious Activity Detected', true, false) end)
   eventRegister('monitor_resize', findMonitor)
   eventRegister('peripheral', scanDevices)
   eventRegister('peripheral_detach', scanDevices)
   eventRegister('monitor_touch', monTouch)
+  eventRegister('mouse_click', doClick)
   findMonitor()
   scanReactor()
   programEventLoop()
@@ -642,5 +669,7 @@ local _, err = pcall(Initialise)
   if err then
     term.setCursorBlink(false)
 	LogFile.e('XPCALL Error: '..err, runningProgram)
-	errora.err(err, 'The Reactor Program Has Crashed, Error Code Above', true)
+	errora.err(err, 'The Reactor Program Has Crashed, Error Code Above', true, true)
   end
+--The program appears to have left the loop, Reboot to stop error reporting!
+os.reboot()

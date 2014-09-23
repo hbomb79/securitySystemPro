@@ -605,5 +605,5 @@ local _, err = pcall(init) --Error Catching, All Functions Are Called From initi
   if err then
     term.setCursorBlink(false)
 	LogFile.e('XPCALL Error: '..err, runningProgram)
-	errora.err(err, 'Keycard Has Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
+	errora.err(err, 'Keycard Has Crashed', true, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
   end

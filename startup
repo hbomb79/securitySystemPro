@@ -1,120 +1,78 @@
--- This script loads the APIs Required as well as checks for missing files and updates via GitHub
--- The Installer Will Check If The Computer is compatible
-runningProgram = shell.getRunningProgram()
 os.pullEvent = os.pullEventRaw
 termX, termY = term.getSize()
-os.loadAPI('api/LogFile')
-os.loadAPI('api/systemCheck')
-systemCheck.checkhttp()
--- Fade In!
+runningProgram = shell.getRunningProgram()
+if fs.exists('api/LogFile') then os.loadAPI('api/LogFile') else error'Missing Files! Reinstall' end
 LogFile.Initialise()
-LogFile.i('Loading Boot Screen', runningProgram)
-LogFile.i('Fading Screen', runningProgram)
-term.setBackgroundColour(colours.black)	
-term.clear()
-sleep(0.1)
-term.setBackgroundColour(colours.grey)
-term.clear()
-sleep(0.1)
-term.setBackgroundColour(colours.lightGrey)
-term.clear()
-sleep(0.1)
-
-
-
-configFiles = {
-	"systemFiles/Security/adminPass",
-	"systemFiles/Install/updateConfig",
-	"systemFiles/debugConfig"
+LogFile.i('System Started', runningProgram)
+if fs.exists('version') then
+	local f = fs.open('version', 'r')
+	local currentVer = f.readLine()
+	f.close()
+	LogFile.i('Suite Version: '..currentVer, runningProgram)
+	LogFile.i('Starting Main Program', runningProgram)
+end
+--[[System Variables]]--
+current = {}
+elements = {}
+Events = {}
+configEnter = false
+configIn = false
+local cfgFiles = {
+	'systemFiles/Install/updateConfig',
+	'systemFiles/debugConfig',
+	'systemFiles/security/adminPass'
 }
+local newFiles = {
+	'api/element',
+	'api/uInput',
+	'systemFiles/Install/setup'
+}
+LogFile.i('Declared System Configs And Variables', runningProgram)
+--[[Computer Check]]--
 
-for _, file in ipairs(configFiles) do
+term.clear()
+term.setBackgroundColor(colors.black)
+sleep(0.1)
+term.clear()
+term.setBackgroundColor(colors.gray)
+sleep(0.1)
+term.clear()
+term.setBackgroundColor(256)
+sleep(0.1)
+
+for _, file in ipairs(cfgFiles) do
 	if not fs.exists(file) then
-		if fs.exists('systemFiles/Install/setup') then shell.run('systemFiles/Install/setup') else
-		print('Due To HUGE Servicing The Security Suite Is Currently Offline, \n\nPlease Re-Install When Release 2.0.0 Has Been Release, \n\nCheck the computercraft forum page for details') end
-		print('\n\n\nClick Anywhere To Shutdown')
-		os.pullEvent('mouse_click')
-		os.shutdown()
-	end
-end
-
-local file = fs.open('systemFiles/Security/adminPass', 'r')
-local adminPassword = file.readLine()
-file.close()
-
-function RecieveStartupKey()
-	while true do
-	  local event, arg = os.pullEvent()
-	  if event == 'BootDone' then
-	    return nil
-	  elseif event == "key" then
-	    if arg == keys.leftAlt or key == keys.rightAlt then
-		bootKey = true
-		checkStartKey()
-	  	return arg 
+		if fs.exists('systemFiles/Install/setup') then
+			shell.run('systemFiles/Install/setup')
+		else
+			error('It appears you are running on an inferior version of the suite, please type \n \'pastebin get ddsvm2fx Install\' then run \'Install\'')
 		end
-	  end
-	  
 	end
 end
 
-function checkStartKey()
-  term.setBackgroundColor(128)
-  term.setTextColor(256)
-  if bootKey then
-    Boottext = "Entering Setup"
-  else
-    Boottext = "[alt] Setup"
-  end
-    term.setCursorPos(termX-(#Boottext+1), 1)
-    write(Boottext)
-  term.setBackgroundColor(256)
-  term.setTextColor(1)
+for _, file in ipairs(newFiles) do
+	if not fs.exists(file) then
+		error'Please Update Your Suite Manually As Your Are Missing Vital Files, to reinstall simply type: pastebin get ddsvm2fx Install and then type Install to run the installer'
+	end
 end
 
-function initBackground(color) --Use To Quickly assemble GUI
-  term.setBackgroundColor(color)
-  term.clear()  
-  drawTitleBar()
+if not term.isColor() then
+	error'The suite must be run on an advanced computer'
 end
-bootX = termX/2-7
-bootY = termY/2-4
--- Loads All Boot Images
-LogFile.i('Loading Boot Images', runningProgram)
-BL0 = paintutils.loadImage("systemFiles/BootLogos/boot0.nfp")
-BL1 = paintutils.loadImage("systemFiles/BootLogos/boot1.nfp")
-BL2 = paintutils.loadImage("systemFiles/BootLogos/boot2.nfp")
-BL3 = paintutils.loadImage("systemFiles/BootLogos/boot3.nfp")
-BL4 = paintutils.loadImage("systemFiles/BootLogos/boot4.nfp")
-BL5 = paintutils.loadImage("systemFiles/BootLogos/boot5.nfp")
-BL6 = paintutils.loadImage("systemFiles/BootLogos/boot6.nfp")
-BL7 = paintutils.loadImage("systemFiles/BootLogos/boot7.nfp")
-BL8 = paintutils.loadImage("systemFiles/BootLogos/boot8.nfp")
-BLFinal = paintutils.loadImage('systemFiles/bootFail.nfp')
 
-function bootLogo (state, x, y, bgcolor)
-  if state == 0 then
-    paintutils.drawImage(BL0, x, y)
-  elseif state == 1 then
-    paintutils.drawImage(BL1, x, y)
-  elseif state == 2 then
-    paintutils.drawImage(BL2, x, y)
-  elseif state == 3 then
-    paintutils.drawImage(BL3, x, y)
-  elseif state == 4 then
-    paintutils.drawImage(BL4, x, y)
-  elseif state == 5 then
-    paintutils.drawImage(BL5, x, y)
-  elseif state == 6 then
-    paintutils.drawImage(BL6, x, y)
-  elseif state == 7 then
-    paintutils.drawImage(BL7, x, y)
-  elseif state == 8 then
-    paintutils.drawImage(BL8, x, y)
-  elseif state == 9 then
-    paintutils.drawImage(BLFinal, x, y)
-  end
-  term.setBackgroundColor(bgcolor)
+if pocket then
+	error'The suite must be run on an advanced computer'
+end
+
+LogFile.i('System Check Complete... Success!', runningProgram)
+
+--[[System Functions]]--
+
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to true
+	return btn
 end
 
 function PrintCentered(text, y)
@@ -125,29 +83,116 @@ function PrintCentered(text, y)
     write(text)
 end
 
-function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
+function checkStartupKey()
+	if not configEnter then
+		bootText = "[ALT] Setup "
+	elseif configEnter then
+		bootText = "Setup Queued"
+	end
+	term.setCursorPos(termX-#bootText, 1)
+	term.setBackgroundColor(128)
+	term.setTextColor(256)
+	write(bootText)
+end
+
+function drawTitleBar()
+	term.setBackgroundColor(256)
+	term.clear()
+	term.setTextColor(colors.cyan)
+	term.setCursorPos(1,1)
+	term.setBackgroundColor(128)
+	term.clearLine()
+	write('HbombOS Security Suite')
+	term.setCursorPos(1,2)
+	term.clearLine()
+	term.setTextColor(256)
+	write('Boot')
+	checkStartupKey()
+	term.setTextColor(1)
+	term.setBackgroundColor(256)
+end
+
+function doClick(event, btn, x, y)
+	functionToRun = element.tryClick(elements, x, y)
+	if functionToRun then --Check click location
+		functionToRun()
+	end
+end
+
+function checkClick(event, btn, x, y)
+	if not isSettingUp then
+		doClick(event, btn, x, y)
+	end
+end
+
+function eventRegister(event, functionToRun)
+	if not Events[event] then
+		Events[event] = {}
+	end
+	table.insert(Events[event], functionToRun)
+	LogFile.i('Event: '..tostring(event)..' Registered', runningProgram)
+end
+
+bootX = termX/2-1
+bootY = 7
+
+LogFile.i('System Functions Declared', runningProgram)
+
+--[[Main Functions]]--
+
+function loadingApi()
+	logo0 = paintutils.loadImage('systemFiles/Images/BootLogos/boot0.nfp')
+	logo1 = paintutils.loadImage('systemFiles/Images/BootLogos/boot1.nfp')
+	logo2 = paintutils.loadImage('systemFiles/Images/BootLogos/boot2.nfp')
+	logo3 = paintutils.loadImage('systemFiles/Images/BootLogos/boot3.nfp')
+	logo4 = paintutils.loadImage('systemFiles/Images/BootLogos/boot4.nfp')
+	logo5 = paintutils.loadImage('systemFiles/Images/BootLogos/boot5.nfp')
+	logo6 = paintutils.loadImage('systemFiles/Images/BootLogos/boot6.nfp')
+	logo7 = paintutils.loadImage('systemFiles/Images/BootLogos/boot7.nfp')
+	while true do
+		paintutils.drawImage(logo0, bootX, bootY)
+		sleep(0.1)
+		paintutils.drawImage(logo1, bootX, bootY)
+		sleep(0.1)
+		paintutils.drawImage(logo2, bootX, bootY)
+		sleep(0.1)
+		paintutils.drawImage(logo3, bootX, bootY)
+		sleep(0.1)
+		paintutils.drawImage(logo4, bootX, bootY)
+		sleep(0.1)
+		paintutils.drawImage(logo5, bootX, bootY)
+		sleep(0.1)
+		paintutils.drawImage(logo6, bootX, bootY)
+		sleep(0.1)
+		paintutils.drawImage(logo7, bootX, bootY)
+		sleep(0.1)
+	end
+end
+
+loadX = termX/2-10
+loadY = 16
+
+function loadAPIs()
   drawTitleBar()
   local currentImage = -1
 	local total = #fs.list("/api")
 	term.setBackgroundColor(256)
-	PrintCentered("Loading APIs", 17)
+	--PrintCentered("Loading APIs, Please Wait", 16)
+	PrintCentered("Created By hbomb_79", 19)
 	for _, fileApi in pairs(fs.list('/api')) do
 		if string.sub(fileApi,1,1) ~= "." then
 			if math.floor(_*(8/total)) ~= currentImage then
 				currentImage = math.floor(_*(8/total))
-				local image = paintutils.loadImage('systemFiles/BootLogos/boot'..currentImage..'.nfp')
-				paintutils.drawImage(image, bootX, bootY)
-			end		
+				local image = paintutils.loadImage('systemFiles/Images/progressBar/load'..currentImage..'.nfp')
+				paintutils.drawImage(image, loadX, loadY)
+				sleep(0)
+			end
 			LogFile.i('Loading: '..fileApi, runningProgram)
 			if os.loadAPI('/api/'..fileApi) then
-			sleep(0)
-			term.setBackgroundColor(256)
-			term.setTextColor(colors.white)
-            term.setCursorPos(1,19)
-			term.clearLine()
-			term.setCursorPos(1,18)
-			term.clearLine()
-			PrintCentered(fileApi.." Loaded!", 18)
+			--term.setTextColor(colors.gray)
+			--term.setBackgroundColor(256)
+			--PrintCentered(fileApi, 17)
+			--term.setTextColor(1)
 			LogFile.i(fileApi..' Api Loaded', runningProgram)
 		    else
 			  LogFile.e('Failed To Load API: '..fileApi, runningProgram)
@@ -155,24 +200,102 @@ function loadAPIs()  --Auto Loads ALL APIs It Can As Long As They Are In /api
 			end
 		end
 	end
-	sleep(0.1)
+	term.setBackgroundColor(256)
 	term.clear()
-	initBackground(256)
 	drawTitleBar()
 	return true
 end
 
-function drawTitleBar()
-  term.setBackgroundColor(128)
-  term.setCursorPos(1,1)
-  term.clearLine()
-  term.setTextColor(colors.cyan)
-  write "HbombOS Security Suite"
-  term.setCursorPos(1,2)
-  term.clearLine()
-  term.setTextColor(256)
-  write "Startup"
-  checkStartKey()
+function changeAdminPassword()
+	cancel = btnInit('Cancel', nil, nil, 2,termY - 1 , 1, colors.red, 1, 256, onClick, false, nil, nil, nil)
+	continue = btnInit('Next', nil, nil, termX, termY-1, 1, colors.green, 1, 256, onClick, false, nil, nil, nil)
+	continue.x = termX-(continue.width+2)
+	element.draw(continue)
+	local function setupTitle()
+		titleBar.draw("HbombOS Security Suite", "Password Management", colors.cyan, 256, 128, 256, 1)
+	end
+	
+	local function reDraw()
+		element.opacity(cancel, true)
+		element.opacity(continue, true)
+	end
+	
+	function oldPassword()
+		cancel.func = function() bootMenuOptions() end
+		continue.func = function() os.queueEvent('submit_Result') end
+		while true do
+			term.setCursorBlink(true)
+			term.clear()
+			setupTitle()
+			reDraw()
+			printer.centered('Before you can set your new password', 6)
+			printer.centered('you must enter your current admin password', 7)
+			term.setCursorPos(termX/2-#'Current Password: ', 10)
+			write('Current Password: ')
+			local input = uInput.eventRead(20, '*', elements)
+			term.setCursorBlink(false)
+			if input == current.adminPass then newPassword() break else printer.centered('Incorrect Admin Password', 19) sleep(0.5) end
+		end
+	end
+	
+	function newPassword()
+		cancel.func = function() bootMenuOptions() end
+		cancel.text = "Cancel"
+		continue.func = function() os.queueEvent('submit_Result') end
+		while true do
+			term.setCursorBlink(true)
+			term.clear()
+			setupTitle()
+			reDraw()
+			printer.centered('Great! Now enter your new password', 6)
+			printer.centered('below, then click "Next"', 7)
+			term.setCursorPos(termX/2-#'New Password: ', 10)
+			write('New Password: ')
+			local input = uInput.eventRead(20, '*', elements)
+			term.setCursorBlink(false)
+			if input ~= "" then local NewPassword = input verify(NewPassword) break end
+		end
+	end
+
+	function verify(passwordToVerify)
+		cancel.func = function() newPassword() end
+		cancel.text = "Back"
+		continue.func = function() os.queueEvent('submit_Result') end			
+		os.pullEvent('submit_Result')
+		while true do
+			term.setCursorBlink(true)
+			term.clear()
+			setupTitle()
+			reDraw()
+			printer.centered('Last Step Now! Simply Re-enter your new password', 6)
+			printer.centered('and then click "Finish"', 7)
+			term.setCursorPos(termX/2-#'Repeat Password: ', 10)
+			write('Repeat Password: ')
+			local input = uInput.eventRead(20, '*', elements)
+			term.setCursorBlink(false)
+			if input == passwordToVerify then editFile('systemFiles/Security/adminPass', 'w', passwordToVerify) complete() break else printer.centered('Passwords Don\'t Not Match!', 19) sleep(0.5) newPassword() end
+		end
+	end
+	
+    function complete()
+		term.setCursorBlink(false)			
+		reboot = btnInit('Reboot', nil, nil, termX, termY-1, 1, colors.green, 1, 256, function() os.reboot() end, false, nil, nil, nil)
+		reboot.x = termX-(reboot.width+2)
+		term.clear()
+		setupTitle()
+		reDraw()			
+		element.opacity(cancel, false)
+		element.opacity(continue, false)
+		element.opacity(reboot, true)
+		printer.centered('All Done!', 6)
+		printer.centered('Your Password Has Been Changed', 7)
+		printer.centered('Click "Reboot"', 8)
+		while true do
+			local event, button, x, y = os.pullEvent('mouse_click')
+			doClick(event, button, x, y)
+		end
+	end
+	oldPassword()
 end
 
 function editFile(filePath, editType, editContent)
@@ -184,6 +307,7 @@ function editFile(filePath, editType, editContent)
 		LogFile.e('Attempted To Edit File Without All Args', runningProgram)
 	end
 end
+
 
 function programMenu()
     LogFile.i('Program Selection Menu Open', runningProgram)
@@ -266,248 +390,36 @@ function programMenu()
 	return continue
 end
 
-function programCheckConfig()
-LogFile.i('Checking Program Config', runningProgram)
-  if not fs.exists('systemFiles/Programs/configuration') then programMenu() else
-    local f = fs.open('systemFiles/Programs/configuration', "r")
-	programStart = f.readLine()
-	f.close()
-	if not programStart then programMenu() else
-	  if programStart == "" then programMenu() else 
-	    local f = fs.open('systemFiles/Programs/configuration', 'r')
-		fileStartup = f.readLine()
-		f.close()
-	  end
+function bootMenuLogin()
+	configIn = true
+	returnBtn = btnInit('Return', nil, nil, termX/2-3, termY-1, 1, colors.cyan, 1, 256, function() returnMenu = true end, false, nil, nil, nil, nil)
+	local function bootLogin()
+		while true do
+			titleBar.draw('HbombOS Security Suite', 'BIOS Login', colors.cyan, 256, 128, 256, 1)
+			printer.centered('Enter Your Administrator Password To', 6)
+			printer.centered('Access These Settings', 7)
+			term.setCursorPos(termX/2-#'Admin Pass: ', 10)
+			element.opacity(returnBtn, true)
+			write('Admin Pass: ')
+			local input = uInput.keyRead(20, "*")
+			if input ~= "" then
+				if input == current.adminPass then element.opacity(returnBtn, false) bootMenuOptions() return end
+			end
+		end
 	end
-  end
-end
-
-function main() --The main function, calls all child functions
-  --First all APIs must be loaded to perform the system checks later on
-  LogFile.i('Main Initialise Function Started', runningProgram)
-  i = 0
-  loadAPIs()
-  programCheckConfig()
-  term.setBackgroundColor(256)
-  term.setTextColor(1)
-  checkForUpdates()
-  return true
-end
-
-function updatePursue()
-	--First redownload the updater...
-	if not download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") then printer.centered('Error Occured While Downloading Updater!', 19) sleep(1) return 'Cancel' end
-	local h = fs.open('systemFiles/Install/updateConfig', 'r')
-	updateSetting = h.readLine()
-	h.close()
-	if updateSetting == "true" then shell.run("systemFiles/Install/updater", "quiet") elseif updateSetting == "false" then shell.run("systemFiles/Install/updater") else errora.err('Crash Bang BOOM', "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(updateSetting), true, true) end
-	if request_code == "Cancelled" then return 'Cancel'
-	elseif request_code == "Error" then
-		updateError()
-	else errora.err('Crash Bang BOOM', 'Updater Returned Unknown Code: '..tostring(request_code), true, true) end
-end
-
-function updateError()
-	term.clear()
-	drawTitleBar()
-	printer.centered('The Updater Is Having Some Problems Connecting', 6)
-	printer.centered('Ensure You Are Connected To The Internet', 8)
-	printer.centered('Well Try Again Next Reboot', 10)
-	sleep(3)
+	
+	local function eventListen()
+		while true do
+			local event, p1, p2, p3 = os.pullEvent('mouse_click')
+			doClick(event, p1, p2, p3)
+			if returnMenu then returnMenu = false return end
+		end
+	end
+	
+	parallel.waitForAny(eventListen, bootLogin)
+	term.setCursorBlink(false)
 	return
 end
-
-function checkForUpdates()
-	LogFile.i('Checking For Updates', runningProgram)
-	while true do
-		term.setBackgroundColor(256)
-		term.clear()
-		drawTitleBar()
-		printer.centered('Checking For Software Updates', 6)
-		printer.centered('Please Wait...', 19)
-		updateState = update.Check()
-		if updateState == true then
-			--There is an update available
-			if updatePursue() == 'Cancel' then Cupdate = true break end
-		elseif updateState == false then
-			--There is not an update available
-			break
-		elseif updateState == "ERROR" then
-			--Error!
-			updateError()
-			break
-		else
-			os.reboot()
-		end
-	end
-	if Cupdate then return 'Cancel' else return true end
-end
-
-elements={}
-
-function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
-	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
-	table.insert(elements, btn) --Inserts into table so it can be scanned later
-	element.opacity(btn, true) --Sets visibility to true
-	return btn
-end
-
-function doClick(event, btn, x, y)
-	functionToRun = element.tryClick(elements, x, y)
-	if functionToRun then --Check click location
-		functionToRun()
-	end
-end
-
-function readButton(len, replaceChar)
-  submitted = false
-  term.setTextColor(1)
-  len = len or 10
-  local input=""
-  local key = 0
-  term.setCursorBlink(true)
-  repeat
-        event, p1, p2, p3 = os.pullEvent()
-        if event=="char" then
-          if #input < len then
-			input = input .. p1
-			term.write(replaceChar or p1)
-          end
-        elseif event=="key" and p1==keys.backspace and #input > 0 then
-          input = input:sub(1,#input-1)
-          local x,y = term.getCursorPos()
-          term.setCursorPos(x-1,y)
-          term.write(" ")
-          term.setCursorPos(x-1,y)
-        elseif event == "submit_Result" then --Button Event
-			submitted = true
-			return input
-		elseif event == "mouse_click" then
-			doClick('mouse_click', nil, p2, p3)
-		end
-  until submitted
-end
-
-function changeAdminPassword()
-	cancel = btnInit('Cancel', nil, nil, 2,termY - 1 , 1, colors.red, 1, 256, onClick, false, nil, nil, nil)
-	continue = btnInit('Next', nil, nil, termX, termY-1, 1, colors.green, 1, 256, onClick, false, nil, nil, nil)
-	continue.x = termX-(continue.width+2)
-	element.draw(continue)
-	local function setupTitle()
-		titleBar.draw("HbombOS Security Suite", "Password Management", colors.cyan, 256, 128, 256, 1)
-	end
-	
-	local function reDraw()
-		element.opacity(cancel, true)
-		element.opacity(continue, true)
-	end
-	
-	function oldPassword()
-		cancel.func = function() bootMenuOptions(true) end
-		continue.func = function() os.queueEvent('submit_Result') end
-		while true do
-			term.setCursorBlink(true)
-			term.clear()
-			setupTitle()
-			reDraw()
-			printer.centered('Before you can set your new password', 6)
-			printer.centered('you must enter your current admin password', 7)
-			term.setCursorPos(termX/2-#'Current Password: ', 10)
-			write('Current Password: ')
-			local input = readButton()
-			term.setCursorBlink(false)
-			if input == adminPassword then newPassword() break else printer.centered('Incorrect Admin Password', 19) sleep(0.5) end
-		end
-	end
-	
-	function newPassword()
-		cancel.func = function() bootMenuOptions(true) end
-		cancel.text = "Cancel"
-		continue.func = function() os.queueEvent('submit_Result') end
-		while true do
-			term.setCursorBlink(true)
-			term.clear()
-			setupTitle()
-			reDraw()
-			printer.centered('Great! Now enter your new password', 6)
-			printer.centered('below, then click "Next"', 7)
-			term.setCursorPos(termX/2-#'New Password: ', 10)
-			write('New Password: ')
-			local input = readButton()
-			term.setCursorBlink(false)
-			if input ~= "" then local NewPassword = input verify(NewPassword) break end
-		end
-	end
-
-	function verify(passwordToVerify)
-		cancel.func = function() newPassword() end
-		cancel.text = "Back"
-		continue.func = function() os.queueEvent('submit_Result') end
-		while true do
-			term.setCursorBlink(true)
-			term.clear()
-			setupTitle()
-			reDraw()
-			printer.centered('Last Step Now! Simply Re-enter your new password', 6)
-			printer.centered('and then click "Finish"', 7)
-			term.setCursorPos(termX/2-#'Repeat Password: ', 10)
-			write('Repeat Password: ')
-			local input = readButton()
-			term.setCursorBlink(false)
-			if input == passwordToVerify then editFile('systemFiles/Security/adminPass', 'w', passwordToVerify) complete() break else printer.centered('Passwords Don\'t Not Match', 19) sleep(0.5) newPassword() end
-		end
-	end
-	
-    function complete()		
-			term.setCursorBlink(false)
-			continue.text = "Reboot"
-			element.draw(continue)
-			term.clear()
-			setupTitle()
-			reDraw()
-			element.opacity(cancel, false)
-			continue.func = function() os.reboot() end
-			printer.centered('All Done!', 6)
-			printer.centered('Your Password Has Been Changed', 7)
-			printer.centered('Click "Reboot"', 8)
-		while true do
-			local event, button, x, y = os.pullEvent('mouse_click')
-				doClick(event, button, x, y)
-		end
-	end
-	oldPassword()
-end
-
-
-function bootMenu()
-LogFile.i('Boot Menu Entered', runningProgram)
-while true do
-  term.clear()
-  titleBar.draw("HbombOS Security Suite", "BIOS Login", colors.cyan, 256, 128, 256, 1)
-  function adminPasswordE()
-    PrintCentered("HbombOS Security Suite", 4)
-    PrintCentered("Boot Options", 5)
-    PrintCentered("Type In Admin Password To Continue", 18)
-    PrintCentered("Or Reboot (CTRL+R) To Cancel", 19)
-    adminPassText = "Password: "
-    term.setCursorPos(termX/2-#adminPassText, 7)
-    write (adminPassText)
-    local input = read("*")
-      if input == adminPassword then 
-  	    return true
-	  end
-  end
-  if adminPasswordE() then 
-    return true
-  else
-    LogFile.w('Incorrect Admin Password In BootMenu', runningProgram)
-    printer.centered("Incorrect!", 8)
-	sleep(0.5)
-  end
-end
-
-end
-
 
 local suiteFilesConfig = {
 	"systemFiles/Security/adminPass",
@@ -523,12 +435,9 @@ local suiteFilesConfig = {
 	"systemFiles/debugConfig"
 }
 
-function bootMenuOptions(skip)
+function bootMenuOptions()
 	term.setCursorBlink(false)
     LogFile.i('Boot Menu Option Opened', runningProgram)
-		if not skip then
-			if not bootMenu() then bootMenu() end
-		end
     term.setTextColor(1)
     term.setBackgroundColor(256)
     term.clear()
@@ -543,10 +452,10 @@ function bootMenuOptions(skip)
 		term.clear()
 		PrintCentered("Removing System Settings", 6)
 		sleep(0)
-			for _, file in ipairs(suiteFilesConfig) do
-				sleep(0.2)
-				if fs.exists(file) then printer.centered(file, 19) fs.delete(file) end
-			end
+		for _, file in ipairs(suiteFilesConfig) do
+			sleep(0.2)
+			if fs.exists(file) then printer.centered(file, 19) fs.delete(file) end
+		end
 		printer.centered('System Settings Removed!', 6)
 		printer.centered('Rebooting...', 19)
 		sleep(1)
@@ -594,23 +503,9 @@ function bootMenuOptions(skip)
 		 titleBar.draw("HbombOS Security Suite", "Password Management", colors.cyan, 256, 128, 256, 1)
 		 changeAdminPassword()
 		end},
-		{'Force Update', function() 
-		  LogFile.i('Force Updating Client', runningProgram)
-		  term.clear()
-		  titleBar.draw("HbombOS Security Suite", "Force Updating", colors.cyan, 256, 128, 256, 1)
-	   	  printer.centered("Downloading New Update Firmware", 19) 
-		  printer.centered("Force Updating Client", 6) 
-          sleep(1)
-		  download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") 
-		  printer.centered("Running Updater", 19) 
-		  sleep(0)
-		  shell.run("systemFiles/Install/updater") 
-		  sleep(4)
-		  continue = true
-		end},
-		{'Change Startup File', function() programMenu() end},
+		{'Change Startup Program', function() programMenu() end},
 		{'Re-Configure Suite', function() shell.run'systemFiles/Install/setup' end},
-		{'Edit Mode', function() 
+		{'Debug Mode', function() 
 			term.setTextColor(1)
 			term.setBackgroundColor(256)
 			term.clear()
@@ -627,21 +522,62 @@ function bootMenuOptions(skip)
 			term.setBackgroundColor(256)
 			while true do --Main loop waiting for mouse click
 				event, button, arg1, arg2 = os.pullEvent()
+				if event == "mouse_click" then
+				functionToRun = element.tryClick(elements, arg1, arg2)
+					if functionToRun then --Check click location
+						functionToRun()
+						break
+					end
+				end
+			end
+			local h = fs.open('systemFiles/debugConfig', 'w')
+			h.writeLine(tostring(debugModeChange))
+			h.close()
+			printer.centered('Choice Confirmed... Returning', 19)
+			element.opacity(Enable, false)
+			element.opacity(Disable, false)
+			sleep(1)
+			return
+		end},
+		{'Update Settings', function() 
+			LogFile.i('Update Setting', runningProgram)
+			term.setTextColor(1)
+			term.setBackgroundColor(256)
+			term.clear()
+			titleBar.draw("HbombOS Security Suite", "Settings", colors.cyan, 256, 128, 256, 1)
+			PrintCentered("HbombOS Security Suite", 4)
+			PrintCentered("Updater Settings", 5)
+			PrintCentered('Enable: Normal Mode, Requires Consent', 8)
+			PrintCentered('Disable: No Updating At All [Not Recommended]', 9)
+			PrintCentered('Quiet: Updates Without Consent [Recommended]', 10)
+			updateOn = btnInit('Enable', nil, nil, termX-10, termY-1, 1, colors.cyan, 1, 256, function(event) updateSetting = true os.queueEvent('continue') end, false, nil, nil, nil)
+			updateOff = btnInit('Disable', nil, nil, 2, termY-1, 1, colors.red, 1, 256, function(event) updateSetting = false os.queueEvent('continue') end, false, nil, nil, nil)
+			updateQuiet = btnInit('Quiet', nil, nil, termX-28, termY-1, 1, colors.green, 1, 256, function(event) updateSetting = 'quiet' os.queueEvent('continue') end, false, nil, nil, nil)
+			term.setTextColor(1)
+			term.setBackgroundColor(256)
+			while true do --Main loop waiting for mouse click
+				event, button, arg1, arg2 = os.pullEvent()
 					if event == "mouse_click" then
 					functionToRun = element.tryClick(elements, arg1, arg2)
 						if functionToRun then --Check click location
 							functionToRun()
 							break
 						end
+					elseif event == "continue" then
+						break
 					end
 			end
-			local h = fs.open('systemFiles/debugConfig', 'w')
-			h.writeLine(tostring(debugModeChange))
+			local h = fs.open('systemFiles/Install/updateConfig', 'w')
+			h.writeLine(tostring(updateSetting))
 			h.close()
 			printer.centered('Choice Confirmed... Returning', 19)
+			element.opacity(updateOn, false)
+			element.opacity(updateOff, false)
+			element.opacity(updateQuiet, false)
 			sleep(1)
 			return
 		end},
+		{'View System Log', function() LogFile.i('Viewing log', runningProgram) shell.run('edit', 'systemFiles/logFile.log') return end},
 		{'Continue Boot', function() LogFile.i('Left Boot Menu', runningProgram) continue = true end}
 	}
 
@@ -656,7 +592,7 @@ function bootMenuOptions(skip)
 			end
 			term.setTextColor(tc)
 			term.setBackgroundColor(bg)
-			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 4)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 2)
 		end
 	end
 	local wait = true
@@ -719,9 +655,16 @@ function bootMenuOptions(skip)
 				PrintCentered('                          ', 0)
 				term.setTextColor(1)
 				term.setBackgroundColor(256)
-			elseif options[selected][1] == "Edit Mode" then
+			elseif options[selected][1] == "Debug Mode" or options[selected][1] == "Update Settings" then
 				options[selected][2]()
 				_ = false
+				term.clear()
+				titleBar.draw("HbombOS Security Suite", "Settings", colors.cyan, 256, 128, 256, 1)
+				PrintCentered("HbombOS Security Suite", 4)
+				PrintCentered("Boot Options", 5)
+				PrintCentered("Use Your Arrow Keys To Select, Enter To Confirm", 19)
+			elseif options[selected][1] == "View System Log" then
+				options[selected][2]()
 				term.clear()
 				titleBar.draw("HbombOS Security Suite", "Settings", colors.cyan, 256, 128, 256, 1)
 				PrintCentered("HbombOS Security Suite", 4)
@@ -741,52 +684,138 @@ function bootMenuOptions(skip)
 	return continue
 end
 
-function Start()
-  checkStartKey()
-  local key = nil
-  local success = false
-  parallel.waitForAll(function()success = main() os.queueEvent('BootDone') end, function() key = RecieveStartupKey() end)
-	if success and key == keys.leftAlt or key == keys.rightAlt then
-      success = bootMenuOptions()
+function keyHandler(event, key)
+	if key == keys.leftAlt or key == keys.rightAlt then
+		if configIn == false then
+			if configEnter then configEnter = false else configEnter = true end
+			checkStartupKey()
+		end
 	end
-	  return success
-  end
-   
-function readFiles()
-  LogFile.i('Reading System Config', runningProgram)
-  printer.centered("Reading Configuration Files", 19)
-  local f = fs.open('systemFiles/Programs/configuration', 'r') --Opens Config
-  fileStartup = f.readLine()
-  f.close()
-  	if fileStartup then --Checks If The User Has A File Chosen
-	  printer.centered("Running: "..fileStartup, 19)
-	  LogFile.i('Running User File: '..fileStartup, runningProgram)
-	  --shell.run('systemFiles/install/setup')
-	  shell.run(fileStartup) --Runs User Specified Program
-	  print("Program Has Ended! Rebooting")
-	  sleep(1)
-	  LogFile.e('Program: '..fileStartup..' Crashed', runningProgram)
-	  os.reboot()
-	end
-  printer.centered("No Default File Stored", 19)
-  sleep(1)
-  os.reboot() --Reboots So User Can Pick There Program
 end
 
-function initialise() --Function Used To Trace Error Catching
-  term.setBackgroundColor(256)
-  term.clear()
-  drawTitleBar()
-  if Start() then 
-    readFiles() 
-  else 
-    errora.err("Uh Oh! Booting Failed", "The start-up process failed when waiting", true, false) 
-  end
+function updateGet()
+	if not download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Install/updater", "systemFiles/Install/updater") then printer.centered('Error Occured While Downloading Updater!', 19) sleep(1) return 'Cancel' end
+	drawTitleBar()
+	if current.updateSetting == "quiet" then shell.run("systemFiles/Install/updater", "quiet") elseif current.updateSetting == "true" then shell.run("systemFiles/Install/updater") else errora.err('Crash Bang BOOM', "The Updater Launch Script Failed To Launch the Updater, Returned: "..tostring(updateSetting), true, true) end
+	if request_code == "Cancelled" then return 'Cancel'
+	elseif request_code == "Error" then
+		return 'Error'
+	else errora.err('Crash Bang BOOM', 'Updater Returned Unknown Code: '..tostring(request_code), true, true) end
 end
 
-local _, err = pcall(initialise) --Error Catching, All Functions Are Called From initialise() at some point...
+function checkUpdates()
+	local function check()		
+		printer.centered('Checking For Software Updates', 6)
+		printer.centered('This Might Take A While', 10)
+		printer.centered('Created By hbomb_79', 19)
+		if current.updateSetting == "false" then return end
+		updateAvail = update.Check()
+		if updateAvail == true then
+			--Update Available
+			return true
+		elseif updateAvail == "ERROR" then
+			return 'Error'
+		elseif not updateAvail then return'upToDate' end
+	end
+	
+	local function loadingU()
+		i = 0
+		while true do
+			i = i + 1
+			logo1 = paintutils.loadImage('systemFiles/Images/update/update1.nfp')
+			logo2 = paintutils.loadImage('systemFiles/Images/update/update2.nfp')
+			logo3 = paintutils.loadImage('systemFiles/Images/update/update3.nfp')
+			loadX = termX/2-2
+			loadY = 15
+			paintutils.drawImage(logo1, loadX, loadY)
+			sleep(0.1)
+			paintutils.drawImage(logo2, loadX, loadY)
+			sleep(0.1)
+			paintutils.drawImage(logo3, loadX, loadY)
+			sleep(0.1)
+			if i == 35 then
+				loadingState = "Timed Out"
+				return
+			end
+		end
+	end
+	
+	parallel.waitForAny(function() updateCheckState = check() end, loadingU)
+	if updateCheckState == true then 
+		local updateGetState = updateGet()
+		if updateGetState == 'Cancel' then return
+		elseif updateGetState == 'Error' then
+			drawTitleBar()
+			printer.centered('We Cant Check For Updates Now', 6)
+			printer.centered('Ensure You Are Connected To The Internet', 8)
+			printer.centered('Well Retry Next Boot', 10)
+			sleep(3)
+			return
+		end
+	elseif updateCheckState == "upToDate" then return false 
+	elseif updateCheckState == "Error" then
+		drawTitleBar()
+		printer.centered('We Cant Check For Updates Now', 6)
+		printer.centered('Ensure You Are Connected To The Internet', 8)
+		printer.centered('Well Retry Next Boot', 10)
+		sleep(3)
+		return
+	end
+	if loadingState == "Timed Out" then term.setBackgroundColor(256) printer.centered('This Took To Long, Well Try Again Later', 19) sleep(2) return end
+	os.shutdown()
+end
+
+function start()
+	parallel.waitForAny(loadAPIs, loadingApi)	
+	if current.updateSetting == "true" or current.updateSetting == "quiet" then checkUpdates() end
+	if configEnter then bootMenuLogin() end
+end
+
+function Initialise()
+	if not fs.exists('systemFiles/Programs/configuration') then programMenu() end
+	loadSettings()
+	eventRegister('terminate', function() os.reboot() end)
+	eventRegister('key', keyHandler)
+	eventRegister('reboot', function() os.reboot() end)
+	eventRegister('shutdown', function() os.shutdown() end)	
+	parallel.waitForAny(start, eventLoop)
+	shell.run(tostring(current.programToRun))
+	--shell.run('shell')
+	print('Program Crash!')
+	sleep(3)
+	os.reboot()
+end
+
+function eventLoop() --This runs the functions that was assigned to the event in initialise()
+  while true do
+	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+	  if Events[event] then
+		for i, e in ipairs(Events[event]) do
+		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+		end
+      end
+   end
+end
+
+function loadSettings()
+	local f = fs.open('systemFiles/debugConfig', 'r')
+	current.debugMode = f.readLine()
+	f.close()
+	local f = fs.open('systemFiles/Install/updateConfig', 'r')
+	current.updateSetting = f.readLine()
+	f.close()
+	local f = fs.open('systemFiles/security/adminPass', 'r')
+	current.adminPass = f.readLine()
+	f.close()
+	local f = fs.open('systemFiles/Programs/configuration', 'r')
+	current.programToRun = f.readLine()
+	f.close()
+end
+
+local _, err = pcall(Initialise) --Error Catching, All Functions Are Called From initialise() at some point...
   if err then
     LogFile.e('XPCALL Error Caught: '..err, runningProgram)
     term.setCursorBlink(false)
+	print(err)
 	errora.err(err, 'Startup Has Crashed! Please Report Above Error', true, false) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end

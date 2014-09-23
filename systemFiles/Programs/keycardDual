@@ -1,16 +1,11 @@
 runningProgram = shell.getRunningProgram()
 LogFile.i('keycardDual Program Running... ', runningProgram)
-
-
 Events ={}
 current = {
   Settings = {}
 }
 
-
-
 termX, termY = term.getSize()
-
 current.Disks = 0
 current.ValidDisks = 0
 current.InvalidDisks = 0
@@ -122,12 +117,12 @@ function keyHandler(event, key)
 end
 
 function initialise()
-	LogFile.i('initialise Function called', runningProgram)
+  LogFile.i('initialise Function called', runningProgram)
   drawTitle()
   printer.centered('Registering Events', 6)
   eventRegister('disk', diskInsert)
   eventRegister('disk_eject', diskRemove)
-  eventRegister('terminate', function(event) errora.err('Uh Oh!', 'Termination Detected, Thats Naughty', true) end)
+  eventRegister('terminate', function(event) errora.err('Uh Oh!', 'Termination Detected, Thats Naughty', true, false) end)
   eventRegister('redstone', redstoneInputDetect)  
   eventRegister('timer', timerHandler)  
   eventRegister('key', keyHandler)
@@ -573,5 +568,5 @@ end
   if err then
     term.setCursorBlink(false)
 	LogFile.e('XPCALL Error: '..err, runningProgram)
-	errora.err(err, 'keycardDual Crashed', true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
+	errora.err(err, 'keycardDual Crashed', true, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door waiting for a prompt
   end
