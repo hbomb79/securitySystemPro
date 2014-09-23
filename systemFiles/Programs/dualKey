@@ -2,7 +2,9 @@ runningProgram = shell.getRunningProgram()
 termX, termY = term.getSize()
 LogFile.i('Digital Lock/Dualkey Program Started', runningProgram)
 Events = {}
-current = { settings = {} }
+current = { 
+	settings = {} 
+	}
 elements = {}
 term.clear()
 titleBar.draw("HbombOS Security Suite", 'Digital Lock', colors.cyan, 256, 128, 256, 1)
@@ -506,6 +508,7 @@ function loadSettings()
 			current.settings = textutils.unserialize(f.readAll())
 			LogFile.i('Settings Loaded', runningProgram)
 		end
+		if current.settings.inputOption == nil then setup() end
 		f.close()
 	else
 		setup()
