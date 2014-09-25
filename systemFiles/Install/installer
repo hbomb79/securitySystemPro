@@ -237,9 +237,10 @@ term.setBackgroundColor(256)
 		  PrintCentered ("Delete: "..toPath, 19)
 		end
 		if toPath then
-		  local file = io.open(toPath, "w")
-		  file:write(data)
-		  file:close()
+		  if fs.exists(toPath) then fs.delete(toPath) end
+		  local file = fs.open(toPath, "w")
+		  file.write(data)
+		  file.close()
 		  PrintCentered ("Download: "..toPath, 19)
 		  return true
 		else
@@ -260,7 +261,9 @@ end
 
 function createDirectory() --Used to create directories for version 1.5 and below
   fs.makeDir('/systemFiles/')
-  fs.makeDir('/systemFiles/BootLogos/')
+  fs.makeDir('/systemFiles/Images/BootLogos/')
+  fs.makeDir('/systemFiles/Images/Update/')
+  fs.makeDir('/systemFiles/Images/progressBar/')
   fs.makeDir('/systemFiles/Install/')
   fs.makeDir('/api/')
   fs.makeDir('/Documentation/')
