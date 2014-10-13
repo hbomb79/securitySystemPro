@@ -722,9 +722,9 @@ function checkUpdates()
 		i = 0
 		while true do
 			i = i + 1
-			logo1 = paintutils.loadImage('systemFiles/Images/update/update1.nfp')
-			logo2 = paintutils.loadImage('systemFiles/Images/update/update2.nfp')
-			logo3 = paintutils.loadImage('systemFiles/Images/update/update3.nfp')
+			logo1 = paintutils.loadImage('systemFiles/Images/Update/update1.nfp')
+			logo2 = paintutils.loadImage('systemFiles/Images/Update/update2.nfp')
+			logo3 = paintutils.loadImage('systemFiles/Images/Update/update3.nfp')
 			loadX = termX/2-2
 			loadY = 15
 			paintutils.drawImage(logo1, loadX, loadY)
