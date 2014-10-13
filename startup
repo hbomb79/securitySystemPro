@@ -20,7 +20,7 @@ configIn = false
 local cfgFiles = {
 	'systemFiles/Install/updateConfig',
 	'systemFiles/debugConfig',
-	'systemFiles/security/adminPass'
+	'systemFiles/Security/adminPass'
 }
 local newFiles = {
 	'api/element',

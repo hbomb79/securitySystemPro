@@ -75,17 +75,6 @@ function oldVersion()
 		if not fs.exists(api) then missingFileApi = true end
 	end
 	if missingFileApi then
-		--[[term.clear()
-		drawTitleBar()
-		printer.centered('Missing Files', 6)
-		printer.centered('We Have Detected Missing APIs Which Are Required', 8)
-		printer.centered('these Apis come with suite version 2.0.0', 9)
-		printer.centered('which isnt released, therefore the updater is', 10)
-		printer.centered('disabled, when the update is released', 11)
-		printer.centered('your client will reinstall the suite, we wont', 12)
-		printer.centered('need your consent so you wont even know', 13)
-		printer.centered('Update Release In Approx 2 days', 15)
-		printer.centered('Running Program In 5 Seconds', 19)]]--
 		--New Version Release... Un comment below when ready, also comment rest
 		printer.centered('Version 2.0.0 Is Now Available...', 6)
 		printer.centered('This Version Requires The Suite To Be', 8)
@@ -122,7 +111,6 @@ function oldVersion()
 			printer.centered('Woooo Hooo!', 6)
 			printer.centered('You Have Successfully Installed This System', 8)
 			printer.centered('Click Anywhere To Reboot, Or Wait For Auto Reboot', 18)
-				
 				local function timerReboot()
 					for i=10, 1, -1 do
 						printer.centered('Auto Reboot In: '..i, 19)
@@ -135,7 +123,6 @@ function oldVersion()
 					os.pullEvent('mouse_click')
 					os.reboot()
 				end
-				
 				paralell.waitForAny(click, timerReboot)
 				os.reboot()
 		else
@@ -150,17 +137,7 @@ function oldVersion()
 			sleep(10)
 			os.shutdown()
 		end
-		sleep(5)--[[
-		local f = fs.open('systemFiles/Programs/configuration', 'r')
-		local prog = f.readLine()
-		f.close()
-		if prog then
-			shell.run(''..prog..'')
-		else
-			os.shutdown()
-		end]]--
-		os.shutdown()
-
+		os.reboot()
 	end
 end
 
