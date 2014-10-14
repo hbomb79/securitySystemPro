@@ -270,7 +270,7 @@ LogFile.i('Config Menu Opened', runningProgram)
 		end},
 		{'Reset Configuration', function()
 		  LogFile.i('Removing Config', runningProgram)
-		  fs.delete('systemFiles/Programs/rangeLockSettings')
+		  fs.delete('systemFiles/Programs/pinConfig')
 		  pressed = false
 		  config = true
 		  printer.centered('Removed!', 19)
