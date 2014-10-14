@@ -98,7 +98,7 @@ function setup()
 		end
 		setupTitle()
 		nextBtn.func = function() os.queueEvent('Continue') end
-		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneOutsideSetup = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
 		right.toggleState = 2
 		element.opacity(right, true)
 		current.settings.redstoneSide = 'right'

@@ -22,19 +22,15 @@ function nRead(len, replaceChar) --Number ONLY Input, Returns with: enter key
   repeat
        local e,p1 = os.pullEvent()
 		  if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
-		    p1 = tonumber(p1)
 		    Num = true
 		  elseif type(p1) == type(_string) then
 		    Num = "Word"
-		    return Num
 		  end
-        if e=="char" then
+        if e=="char" and Num == true then
           if #input < len then
 			term.setCursorBlink(true)
-		    if type(p1) == type(_int) then
-                input = input .. p1
-                term.write(replaceChar or p1)
-			end
+			input = input .. p1
+			term.write(replaceChar or p1)
 		  end
 		  if #input >= len then term.setCursorBlink(false) end
         elseif e=="key" and p1==keys.backspace and #input > 0 then
@@ -63,19 +59,14 @@ function eventN(len, replaceChar, buttonTable) --Number Only Event Input, Return
   repeat
         local e,p1, p2, p3 = os.pullEvent()
 		  if e == "char" and p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
-		    p1 = tonumber(p1)
 		    Num = true
 		  elseif e == "char" and type(p1) == type(_string) then
 		    Num = "Word"
-			term.setCursorBlink(false)
-		    return Num
 		  end
-        if e=="char" then
+        if e=="char" and Num == true then
           if #input < len then
-		    if type(p1) == type(_int) then
-                input = input .. p1
-                term.write(replaceChar or p1)
-			end
+			input = input .. p1
+			term.write(replaceChar or p1)
           end
 		  if #input >= len then term.setCursorBlink(false) end
         elseif e=="key" and p1==keys.backspace and #input > 0 then

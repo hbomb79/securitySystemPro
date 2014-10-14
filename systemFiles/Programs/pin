@@ -66,11 +66,11 @@ function setup()
 						printer.centered('Must Be 4 Digits', 19)
 						sleep(0.5)
 					end
-				else
+				--[[else
 					term.setTextColor(1)
 					term.setCursorBlink(false)
 					printer.centered('Only Numbers May Be Entered Here', 19)
-					sleep(0.5)
+					sleep(0.5)]]--
 				end
 			end
 		end
@@ -84,7 +84,7 @@ function setup()
 		printer.centered("Redstone Output Side", 6)
 		printer.centered("Click A Button To Decide Your", termY-1)
 		printer.centered("Redstone Output Side", termY)
-		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneOutsideSetup = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() current.settings.redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
 		right.toggleState = 2
 		element.opacity(right, true)
 		current.settings.redstoneSide = 'right'
@@ -194,11 +194,11 @@ function setup()
 						--Numbers Entered
 						current.settings.redstoneTime = input
 						break
-					else
+					--[[else
 						term.setTextColor(colors.white)
 						term.setCursorBlink(false)
 						printer.centered('Only Numbers Can Be Entered Here', 19)
-						sleep(0.5)
+						sleep(0.5)]]--
 					end
 				end
 		end

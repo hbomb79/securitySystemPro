@@ -44,6 +44,7 @@ detailString = detail or 'System Crash, Unknown Cause'
 					"version="..textutils.urlEncode(tostring(version)).."&"..
 					"error="..textutils.urlEncode(tostring(logDetails)).."&"..
 					"errorMess="..textutils.urlEncode(tostring(errorMess)).."&"..
+					"computerID="..textutils.urlEncode(tostring(pcid) .. " (" ..tostring(pcname) .. ") ").."&"..
 					"detail="..textutils.urlEncode(tostring(detailString)));
 					printer.centered('Sending Report To Servers', 18)
 					if _ then
