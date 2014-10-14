@@ -18,7 +18,8 @@
 --------------------------
 --This Version ChangeLog--
 --------------------------
--- Version 2.0.0... Too many to list here!
+-- Fixes number input bug stopping number input on version 1.5 of CC
+-- Also fixes uInput API
 ------------------
 --END OF CHANGES--
 ------------------

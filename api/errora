@@ -62,8 +62,8 @@ detailString = detail or 'System Crash, Unknown Cause'
 end
 
 function err(code, reason, autorestart, reportConfirm)
-  pcname = os.getComputerLabel() or 'No Name Set'
-  pcid = os.getComputerID() or 'No ID, IMPOSSIBLE'
+  pcname = os.getComputerLabel() or 'Error: No Name'
+  pcid = os.getComputerID() or 'Error: No ID'
   autorestart = autorestart or false --Set automatic restart to false if not specified
   getSize() --Get terminal size
   term.setBackgroundColor(colors.blue)
