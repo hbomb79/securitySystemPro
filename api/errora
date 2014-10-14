@@ -38,6 +38,7 @@ detailString = detail or 'System Crash, Unknown Cause'
 				else
 					systemProduct = 'Pocket System'
 					printer.centered('Pocket PC Deteted, Cancelling Report', 18)
+					return
 				end
 				local _ = http.post('http://harryfelton.host56.com/errorReport.php', --Error report url to website file!
 					"product="..textutils.urlEncode(tostring(systemProduct)).."&"..
