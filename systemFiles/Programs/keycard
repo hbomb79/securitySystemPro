@@ -1,214 +1,508 @@
 os.pullEvent = os.pullEventRaw
 runningProgram = shell.getRunningProgram()
-LogFile.i('Keycard Program Running... ', runningProgram)
+LogFile.i('Keycard V2 Program Running... ', runningProgram)
 termX, termY = term.getSize()
+isSetup = false
 
-----------------------
---Assign Text Values--
-----------------------
-diskText = "Side: "
-nameDriveText = "File Name: "
-nameDriveDataText = "Security Key: "
-RedstoneOutText = "Output Side: "
-RedstoneInputText = "Input Side: "
-RedstoneTimeText = "Time: "
+local blacklistedChars = {
+	'/',
+	'*',
+	'(',
+	')',
+	'~',
+	'`',
+	'!',
+	'@',
+	'#',
+	'$',
+	'%',
+	'^',
+	'&',
+	'-',
+	'_',
+	'+',
+	'=',
+	'?',
+	'>',
+	'<',
+	'.',
+	',',
+	'|',
+	'\\'
+}
 
--------------------------
---Assign Variable Types--
--------------------------
-_int = 1
-_string = ""
-setup = false
-config = false
+current = {
+	settings = {}
+	}
+Events = {}
+elements = {}
 
--------
---END--
--------
-
-function readN(len, replaceChar, HasToBeNum)
-  Num = false
-  term.setTextColor(1)
-  len = len or 10
-  local input=""
-  local key = 0
-  term.setCursorBlink(true)
-  repeat
-   checkKey()
-        e,p1 = os.pullEvent()
-		  if p1 == "0" or p1 == "1" or p1 == "2" or p1 == "3" or p1 == "4" or p1 == "5" or p1 == "6" or p1 == "7" or p1 == "8" or p1 == "9" then
-		    p1 = tonumber(p1)
-		    Num = true
-		  elseif type(p1) == type(_string) then
-		    term.setTextColor(colors.red)
-		    Num = "Word"
-		    return Num
-		  end
-        if e=="char" then
-          if #input < len then
-		    if type(p1) == type(_int) then
-                input = input .. p1
-                term.write(replaceChar or p1)
-			end
-          end
-        elseif e=="key" and p1==keys.backspace and #input > 0 then
-          input = input:sub(1,#input-1)
-          local x,y = term.getCursorPos()
-          term.setCursorPos(x-1,y)
-          term.write(" ")
-          term.setCursorPos(x-1,y)
-        end
-  until p1==keys.enter
-  term.setCursorBlink(false)
-  return input
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText, parent) --Function to create button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText, parent) --Calls API to generate button
+	table.insert(elements, btn) --Inserts into table so it can be scanned later
+	element.opacity(btn, true) --Sets visibility to false
+	return btn
 end
 
-
-function RSstart(Oside)
-  Oside = Oside or back
-  rs.setOutput(Oside, true)
-  return true
-end
-
-function RSstop()
-  for i=rsTime, 0, -1 do
-    printer.centered("Depowering Redstone In: "..i, 14)
-	sleep(1)
-	if i <= 0 then
-	  rs.setOutput(rsOutput, false)
-	  return true
+function doClick(event, btn, x, y)
+	functionToRun = element.tryClick(elements, x, y)
+	if functionToRun then
+		functionToRun()
 	end
-  end
 end
 
-function RedstoneInputReceive()
-  while true do
-    sleep(0)
-	rsReceive = redstone.getInput(inputSide)
-	  if rsReceive then
-	    printer.centered('Redstone Signal Received!', 19)
-	    break
-	  end
-  end
-  return true
+function checkClick(event, btn, x, y)
+	if not isSettingUp then
+		doClick(event, btn, x, y)
+	end
 end
 
-function checkKey()
---if not setup then
-  if pressed then
-    oldX, oldY = term.getCursorPos()
-    printer.centered("Insert A Valid Key-card To Enter Set-up", 19)
-    term.setCursorPos(oldX, oldY)
-  else
-    oldX, oldY = term.getCursorPos()
-    printer.centered("Press [alt] To Change Your Settings", 19)
-    term.setCursorPos(oldX, oldY)
-  end
---end
+function drawTitleBar()
+	titleBar.draw('HbombOS Secuity Suite', 'Keycard Lock', colors.cyan, 256, 128, 256, 1)
 end
 
-function waitForSetupKey()
-	while true do
-	 checkKey()
-	  local event, arg = os.pullEvent()
-	  if event == 'mainFunctionDone' then
-	    return nil
-	  elseif event == "key" then
-	    if arg == keys.leftAlt or arg == keys.rightAlt then
-		pressed = true
-		checkKey()
-	  	return arg 
+function setup()
+	setupContinue = btnInit('Next', nil, nil, termX-#'Next'-2, termY-1, colors.white, colors.cyan, 1, 256, nil, false, nil, nil, nil, nil)
+	setupConfirm = btnInit('Enable', nil, nil, termX-#'Enable'-4, termY-1, colors.white, colors.green, 1, 256, nil, false, nil, nil, nil, nil)
+	setupDeny = btnInit('Disable', nil, nil, termX-#'Enable'-#'Disable'-6, termY-1, colors.white, colors.red, 1, 256, nil, false, nil, nil, nil, nil)
+	
+	local function resetButton()
+		for _, elem in ipairs(elements) do
+			element.opacity(elem, false)
 		end
-	  end
+	end
+	
+	local function setupTitle()
+		resetButton()
+		titleBar.draw('HbombOS Secuity Suite', 'Keycard Lock Setup', colors.cyan, 256, 128, 256, 1)
+	end
+	
+	local function welcome()
+		setupTitle()
+		printer.centered('This Guide Will Help Setup Your Keycard Lock', 6)
+		printer.centered('Click \'Next\' To Begin!', 8)
+		setupContinue.func = function() os.queueEvent('start') end
+		while true do
+			
+		end
+	end
+	
+	local function driveSide()
+		setupTitle()
+		setupContinue.func = function() os.queueEvent('Continue') end
+		printer.centered("What Side Is The Disk Drive On", 6)
+		printer.centered("Click A Button To Decide Your", termY-1)
+		printer.centered("Drive Side", termY)
+		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() current.settings.driveSide = 'right' end, true, colors.green, 1, 'Right', 'drive')
+		right.toggleState = 2
+		element.opacity(right, true)
+		current.settings.driveSide = 'right'
+		left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.driveSide = 'left' end, true, colors.green, 1, 'Left', 'drive')
+		top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.driveSide = 'top' end, true, colors.green, 1, 'Top', 'drive')
+		bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.driveSide = 'bottom' end, true, colors.green, 1, 'Bottom', 'drive')
+		back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.driveSide = 'back' end, true, colors.green, 1, 'Back', 'drive')
+		while true do
+			element.opacity(setupContinue, true)
+			local event, btn, x, y = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, btn, x, y)
+			elseif event == "Continue" then
+				break
+			end
+		end
+		
+		for _, elem in ipairs(elements) do
+			if elem.parent == "drive" then
+				element.opacity(elem, false)
+			end
+		end
+		element.opacity(setupContinue ,false)
+	end
+	
+
+	
+	local function fileName()
+		setupContinue.func = function() os.queueEvent('submit_Result') end
+		while true do
+			setupTitle()
+			printer.centered('For Ultimate Security We Allow You To Choose', 6)
+			printer.centered('The File Name And Contents', 7)
+			printer.centered('Please Pick Your File Name Here', 9)
+			printer.centered('We Recommend Typing Completely Random Things Here!', 11)
+			term.setCursorPos(termX/2-#"File Name: ", 14)
+			write('File Name: ')
+			element.opacity(setupContinue, true)
+			local input = uInput.restrictedEventRead(20, nil, elements, blacklistedChars)
+			if input ~= "" then
+				current.settings.filePath = input
+				break
+			end
+		end
+	end
+	
+	local function fileContents()
+		while true do
+			setupTitle()
+			element.opacity(setupContinue, true)
+			printer.centered('For Supreme The Suite Allows You To Specify', 6)
+			printer.centered('The File Name And Contents, So Your Keycard', 7)
+			printer.centered('Cant Be Duplicated', 8)
+			printer.centered('Please Pick Your File Contents Here', 10)
+			printer.centered('This is effectively a PIN you wont need to remember', 11)
+			printer.centered('Make it random!', 12)
+			term.setCursorPos(termX/2-#"File Contents: ", 14)
+			write('File Contents: ')
+			local inputContent = uInput.restrictedEventRead(20, nil, elements, blacklistedChars)
+			if inputContent ~= "" then
+				current.settings.fileContent = inputContent
+				break
+			end
+		end
+	end
+	
+	local function diskRegister()
+		setupContinue.func = function() os.queueEvent('Continue') end
+		while true do
+			setupTitle()
+			printer.centered('Please Insert Floppy Disks You Want To Validate', 6)
+			printer.centered('They will have the file with the contents',8)
+			printer.centered('you chose afterwards',9)
+			LogFile.i('Total Known Registerd Disks: ', runningProgram)
+			if current.settings.registeredDisks > 0 then printer.centered('', 19) element.opacity(setupContinue, true) else printer.centered('Please Register Atleast One Disk To Continue', 19) element.opacity(setupContinue, false) end
+			local event, p1, p2, p3 = os.pullEvent()
+			if event == "disk" then
+				if p1 == current.settings.driveSide then
+					if disk.hasData(current.settings.driveSide) then
+						local currentDisk = disk.getMountPath(current.settings.driveSide)
+						local f = fs.open(currentDisk.."/"..current.settings.filePath, 'w')
+						f.writeLine(current.settings.fileContent)
+						f.close()
+						LogFile.i('Attempt To write to disk', runningProgram)
+						disk.eject(current.settings.driveSide)
+						if fs.exists(currentDisk.."/"..current.settings.filePath) then
+							LogFile.i('Disk Registeration Complete', runningProgram)
+							current.settings.registeredDisks = current.settings.registeredDisks + 1
+						else
+							LogFile.i('Couldnt Find Files After Registering, Assuming fail', runningProgram)
+							errora.err('Something Went Wrong', 'Attempts to create the files on your keycards failed!', false, false)
+						end
+					end
+				end
+			elseif event == "mouse_click" then
+				doClick(event, p1, p2, p3)
+			elseif event == "Continue" then break
+			end
+		end
+	end
+	
+	local function redstoneSide()
+		setupTitle()
+		setupContinue.func = function() os.queueEvent('Continue') end
+		printer.centered("Redstone Output Side", 6)
+		printer.centered("Click A Button To Decide Your", termY-1)
+		printer.centered("Redstone Output Side", termY)
+		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() current.settings.outputSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+		right.toggleState = 2
+		element.opacity(right, true)
+		current.settings.outputSide = 'right'
+		left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.outputSide = 'left' end, true, colors.green, 1, 'Left', 'rsOut')
+		top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.outputSide = 'top' end, true, colors.green, 1, 'Top', 'rsOut')
+		bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.outputSide = 'bottom' end, true, colors.green, 1, 'Bottom', 'rsOut')
+		back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.outputSide = 'back' end, true, colors.green, 1, 'Back', 'rsOut')
+		while true do
+			element.opacity(setupContinue, true)
+			local event, btn, x, y = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, btn, x, y)
+			elseif event == "Continue" then
+				break
+			end
+		end
+		
+		for _, elem in ipairs(elements) do
+			if elem.parent == "rsOut" then
+				element.opacity(elem, false)
+			end
+		end
+		element.opacity(setupContinue ,false)
+	end
+	
+	local function redstoneTime()
+		while true do
+			setupTitle()
+			setupContinue.func = function() os.queueEvent('submit_Result') end
+			element.opacity(setupContinue, true)
+			printer.centered('Redstone Time Setting', 6)
+			printer.centered('How Long Should We Output A Redstone Signal For?', 8)
+			term.setCursorPos(termX/2-#'Output Time: ', 12)
+			write('Output Time: ')
+			local input = uInput.eventN(2, nil, elements)
+				if input ~= "" then
+					current.settings.outputTime = input
+					break
+				end
+		end
+		return
+	end
+	
+	local function redstoneInSide()
+		setupTitle()
+		setupContinue.func = function() os.queueEvent('Continue') end
+		printer.centered("Redstone Input Side", 6)
+		printer.centered("Click A Button To Decide Your", termY-1)
+		printer.centered("Redstone Input Side", termY)
+		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() current.settings.inputSide = 'right' end, true, colors.green, 1, 'Right', 'rsIn')
+		right.toggleState = 2
+		element.opacity(right, true)
+		current.settings.inputSide = 'right'
+		left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.inputSide = 'left' end, true, colors.green, 1, 'Left', 'rsIn')
+		top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.inputSide = 'top' end, true, colors.green, 1, 'Top', 'rsIn')
+		bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.inputSide = 'bottom' end, true, colors.green, 1, 'Bottom', 'rsIn')
+		back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() current.settings.inputSide = 'back' end, true, colors.green, 1, 'Back', 'rsIn')
+		while true do
+			element.opacity(setupContinue, true)
+			local event, btn, x, y = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, btn, x, y)
+			elseif event == "Continue" then
+				break
+			end
+		end
+		
+		for _, elem in ipairs(elements) do
+			if elem.parent == "rsIn" then
+				element.opacity(elem, false)
+			end
+		end
+		element.opacity(setupContinue ,false)
+	end
+	
+	local function redstoneInput()
+		for _,  elem in ipairs(elements) do
+			element.opacity(elem, false)
+		end
+		setupTitle()
+		printer.centered('Would You Like The Computer To Act As', 8)
+		printer.centered('If The Pin Was Entered When It', 9)
+		printer.centered('Receives A Redstone Input', 10)
+		printer.centered('You Get To Pick What Side The Input', 12)
+		printer.centered('Has To Come From Next Step', 13)
+		yes = btnInit('Enable', nil, nil, termX-#'Enable'-2, termY-1, 1, colors.green, 1, 256, function() current.settings.inputOption = true os.queueEvent('ContinueInput') end, false, nil, nil, nil, nil)
+		no = btnInit('Dont Enable', nil, nil, yes.x-#'Dont Enable'-4, termY-1, 1, colors.red, 1, 256, function() current.settings.inputOption = false os.queueEvent('ContinueInput') end, false, nil, nil, nil, nil)
+		while true do
+			local event, p1, p2, p3 = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, p1, p2, p3)
+			elseif event == "ContinueInput" then
+				break
+			end
+		end
+		element.opacity(yes, false)
+		element.opacity(no, false)
+		return
+	end
+	
+	local function save()
+		setupTitle()
+		printer.centered('You Wanna Know What You Just Made?', 6)
+		printer.centered('The Best Descision! Enjoy Your New Keycard Lock!', 8)
+		printer.centered('Remember To Use The Enter Config Button To', 10)
+		printer.centered('Register More Keycards!', 11)
+		printer.centered('Saving Settings... ', 19)
+		sleep(1)
+		SaveSettings()
+		while true do
+			printer.centered('Settings Saved, Click Reboot!', 19)
+			setupContinue = btnInit('Reboot', nil, nil, termX-#'Reboot'-2, termY-1, 1, colors.cyan, 1, 256, function() os.reboot() end, false, nil, nil, nil, nil)
+			event, p1, p2, p3 = os.pullEvent()
+			if event == "mouse_click" then
+				doClick(event, p1, p2, p3)
+			end
+		end
+	end
+	
+driveSide()
+fileName()
+fileContents()
+diskRegister()
+redstoneSide()
+redstoneTime()
+redstoneInput()
+if current.settings.inputOption then redstoneInSide() end
+save()
+errora.err('Unknown Thread Escaped', 'How Did You Get Out Here!', true, false)
+end
+
+function loadSettings()
+  LogFile.i('Loading Settings', runningProgram)
+  if fs.exists('systemFiles/Programs/keycardConfig') then
+		local f = fs.open('systemFiles/Programs/keycardConfig', 'r')
+		if f then
+			current.settings = textutils.unserialize(f.readAll())
+			LogFile.i('Settings Loaded', runningProgram)
+		end
+		f.close()
+	else
+		current.settings.registeredDisks = 0
+		setup()
 	end
 end
 
-function checkDisk()
-  if fs.exists('disk/'..diskPath) then
-    local f = fs.open('disk/'..diskPath, 'r')
-	checkDiskData = f.readLine()
-	f.close()
-	  if checkDiskData == diskKey then
-	    return true
-	  else
-        return false
-	  end
-  else
-    return false
-  end
+function SaveSettings()
+    LogFile.i('Saving Settings', runningProgram)
+	current.settings = current.settings or {}
+	local f = fs.open('systemFiles/Programs/keycardConfig', 'w')
+	if f then
+		f.write(textutils.serialize(current.settings))	    
+		LogFile.i('Settings Saved', runningProgram)
+	end
+	f.close()	
+end
+
+
+function keyHandler(event, key)
+	--Handle Key Events... Deprecated
+end
+
+function toggleConfigText()
+	if not isSetup then isSetup = true else isSetup = false end
+	if isSetup then printer.centered('Insert Valid Keycard To Enter Config', 19)
+	elseif not isSetup then printer.centered(' ', 19) end
+	if isSetup then configBtn.toggleState = 2 else configBtn.toggleState = 1 end
+	element.opacity(configBtn, true)
+	term.setCursorBlink(false)
+end
+
+
+function Initialise()
+	drawScreen()
+	eventRegister('terminate', function(event) errora.err('Umm, Thats not allowed here!', 'Use the boot menu to access shell', true, false) end)
+	eventRegister('mouse_click', checkClick)
+	eventRegister('redstone', redstoneHandler)
+	eventRegister('key', keyHandler)
+	eventRegister('disk', checkDisk)
+	eventRegister('timer', timerHandler)
+	loadSettings()
+	sleep(0.3)
+	configBtn = btnInit('Enter Config', nil, nil, termX/2-(#'Enter Config'/2), termY-1, 1, colors.cyan, 1, 256, function() toggleConfigText() end, true, colors.green, nil, nil, nil)
+	current.status = 'System Ready'
+	drawScreen()
+	eventLoop()
+end
+
+function eventLoop()
+	while true do
+		local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
+		if Events[event] then
+			for i, e in ipairs(Events[event]) do
+			  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
+			end
+		end
+	end
+end
+
+function eventRegister(event, functionToRun)
+	if not Events[event] then
+		Events[event] = {}
+	end
+	table.insert(Events[event], functionToRun)
+	LogFile.i('Event: '..tostring(event)..' Registered', runningProgram)
+end
+
+function checkDisk(event, side)
+	current.status = 'Validating Disk'
+	drawScreen()
+	if event == "disk" then
+		if side == current.settings.driveSide then
+			local currentDisk = disk.getMountPath(current.settings.driveSide)
+			if disk.hasData(current.settings.driveSide) then
+				if fs.exists(currentDisk..'/'..current.settings.filePath) then
+					local diskFile = fs.open(currentDisk..'/'..current.settings.filePath, 'r')
+					local diskContents = diskFile.readAll()
+					if tostring(diskContents) == current.settings.fileContent then
+						correctDisk()
+						return
+					else
+						incorrectDisk()
+					end
+				else
+					incorrectDisk()
+				end
+			end
+		end
+	end
+	current.status = 'System Ready'
+	drawScreen()
+end
+
+function drawScreen()
+	drawTitleBar()
+	printer.centered('Keycard Lock', 6)
+	if current.status == 'System Ready' then
+		term.setTextColor(colors.blue)
+	elseif current.status == 'Validating Disk' then
+		term.setTextColor(colors.cyan)
+	elseif current.status == 'Outputing Redstone!' then
+		term.setTextColor(colors.green)
+	elseif current.status == 'System Starting' then
+		term.setTextColor(colors.red)
+	else
+		term.setTextColor(colors.white)
+	end
+	printer.centered(tostring(current.status), 7)
+	term.setTextColor(1)
+	printer.centered('Please Insert A Valid Keycard', 10)
+	element.opacity(configBtn, true)
+	if isSetup then printer.centered('Insert Valid Keycard To Enter Config', 19)
+	elseif not isSetup then printer.centered(' ', 19) end
+end
+current.status = 'System Starting'
+drawScreen()
+
+function ejectDisk(argsEject, ejectDriveSide)
+	if argsEject then
+		if argsEject == "-a" then
+			disk.eject("top")
+			disk.eject("bottom")
+			disk.eject("left")
+			disk.eject("right")
+			disk.eject("front")
+			disk.eject("back")
+		else
+			disk.eject(ejectDriveSide)
+		end
+	end
+end
+
+function checkConfig()
+  LogFile.i('Config Login', runningProgram)
+  ejectDisk("-a", nil)
+  config = true
+  term.clear()
+  titleBar.draw('HbombOS Security Suite', 'Keycard Lock', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Please Enter Your Administartor Password', 6)
+  printer.centered('To Access Your Configuration Options', 7)
+  local f = fs.open('systemFiles/Security/adminPass', 'r')
+  adminPassFile = f.readLine()
+  f.close()
+  configText = 'Password: '
+  term.setCursorPos(termX/2-#configText, 10)
+  write(configText)
+  configInput = read('*')
+  if configInput == adminPassFile then configMenu() else printer.centered('Incorrect Password.. Returning', 19) sleep(0.5) isSetup = false return 'return' end
 end
 
 function configMenu()
-	LogFile.i('Config Menu Opened', runningProgram)
-  drawTitleBar()
-  term.setTextColor(1)
-  term.setBackgroundColor(256)
-  term.clear()
-  PrintCentered("HbombOS Security Suite", 4)
-  PrintCentered("Keycard Configuration", 5)
-  PrintCentered("Please Enter Your Administrator Password", 7)
-  PrintCentered("To Open The Settings Menu", 8)
+LogFile.i('Config Menu Opened', runningProgram)
+  titleBar.draw('HbombOS Security Suite', 'Keycard Lock Settings', colors.cyan, 256, 128, 256, 1)
+  printer.centered('Pick An Option Below', 6)
   local continue = false
   local options = {
-  	    {'Register Key Cards', function()
-		  local function diskInit()
-            disksReg = 0
-            while true do
-	           titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	           printer.centered("Insert Disks Into The Disk Drives Now To Sync Them", 6)
-	           printer.centered("Press ALT To Save", 9)
-	           printer.centered("Registered Disks: "..disksReg, 11)
-	           event, side = os.pullEvent()
-	             if event == "disk" then
-		           if side == driveSide then
-		             local f = fs.open("disk/"..diskPath, "w")
-			           f.writeLine(diskKey)
-			           f.close()
-			           printer.centered("Files Written To Disk Drive", 19)
-			           disksReg = disksReg + 1
-			           disk.eject(driveSide)
-					end
-	             elseif event == 'key' then
-				   if side == keys.leftAlt or side == keys.rightAlt then
-				      pressed = false
-					  config = true
-				      --os.reboot()
-					  return
-					  
-				   end
-				 end
-			end
-		end
-    diskInit()
+  	    {'Re Configure Lock', function()
+          setup()
 		end},
-		{'Unregister Keycards', function() 
-		  local function diskUnInit()
-            disksReg = 0
-            while true do
-	           titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	           printer.centered("Insert Disks Into The Disk Drives Now To Remove Their", 6)
-	           printer.centered("Right To Use This Computer", 7)
-	           printer.centered("Press ALT To Save", 9)
-	           event, side = os.pullEvent()
-	             if event == "disk" then
-		           if side == driveSide then
-				       fs.delete("disk/"..diskPath)
-			           printer.centered("Files Deleted From Disk", 19)
-			           disk.eject(driveSide)
-					end
-	             elseif event == 'key' then
-				   if side == keys.leftAlt or side == keys.rightAlt then
-				      pressed = false
-					  config = true
-				      --os.reboot()
-					  return
-					  
-				   end
-				 end
-			end
-		end
-    diskUnInit()
-		end}, 
-		{'Reset Config', function()
+		{'Reset Configuration', function()
+		  LogFile.i('Removing Config', runningProgram)
 		  fs.delete('systemFiles/Programs/keycardConfig')
 		  pressed = false
 		  config = true
@@ -216,9 +510,9 @@ function configMenu()
 		  sleep(1)
 		  os.reboot()
 		end},
-		{'Cancel', function()
-		  pressed = false
-		  config = true
+		{'Cancel And Return', function()
+		  isSetup = false
+		  term.clear()
           return
 		end}
 	}
@@ -233,7 +527,7 @@ function configMenu()
 			end
 			term.setTextColor(tc)
 			term.setBackgroundColor(bg)
-			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 10)
+			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
 		end
 	end
 	local wait = true
@@ -259,351 +553,57 @@ function configMenu()
 	return continue
 end
 
-function configEdit()
-LogFile.i('Config Edit Funciton', runningProgram)
-  config = true
-  disk.eject(driveSide)
-  titleBar.draw('HbombOS Security Suite', 'Keycard Lock Setup', colors.cyan, 256, 128, 256, 1)
-  printer.centered('Please Enter Your Administrator Password', 6)
-  printer.centered('As Added Security!', 7)
-  configText = 'Password: '
-  term.setCursorPos(termX/2-#configText, 10)
-  write(configText)
-  ConfigInput = read("*")
-  local f = fs.open('systemFiles/Security/adminPass', 'r')
-  adminPasswordFile = f.readLine()
-  f.close()
-  if ConfigInput == adminPasswordFile then configMenu() else pressed = false return end
-end
-
-function main() --Waits For Disk Event!
-LogFile.i('main Function Called, Waiting for disks', runningProgram)
-  while true do
-    term.clear()
-    titleBar.draw('HbombOS Security Suite', 'Keycard Lock', colors.cyan, 256, 128, 256, 1)
-	checkKey()
-    printer.centered('Awaiting Disk Insert In Drive Side: '..driveSide, 6)
-    event, side = os.pullEvent("disk")
-	  if event == "disk" then
-	    if side == driveSide then	   
-	      if checkDisk() then 
-		    printer.centered('Correct Keycard', 19)
-		    return true 
-		  else 
-		    disk.eject(side)
-		    printer.centered('Invalid Disk Entered!', 19)
-			sleep(1)
-			disk.eject(side)
-		  end
-		end
-      end
-  end
-end
-
-function Start() --Starts The Program
-  while true do
-    local key = nil
-    local success = false
-    parallel.waitForAll(function()success = main() os.queueEvent('mainFunctionDone') end, function() key = waitForSetupKey() end)
-	  if success and key == keys.leftAlt or key == keys.rightAlt then
-        success = configEdit()
-	  end
-	 return success
-  end  
-end
-
-function LoopMain() --Continuously starts the program...
-LogFile.i('LoopMain Called', runningProgram)
-while true do
-  if useInput == "true" then
-    term.setCursorBlink(false)
-    parallel.waitForAny(Start, RedstoneInputReceive)
-	if config == false then
-	  disk.eject(driveSide)
-      RSstart(rsOutput)
-      RSstop()
-      term.setCursorBlink(true)
-	else
-	  config = false
+function correctDisk()
+	if not isSetup then
+		ejectDisk('-s', current.settings.driveSide)
+		rs.setOutput(current.settings.outputSide, true)
+		stopTimer = os.startTimer(tonumber(current.settings.outputTime))
+		printer.centered('Correct Keycard Entered', 19)
+		current.status = 'Outputing Redstone!'
+		drawScreen()
+	elseif isSetup then
+		element.opacity(configBtn, false)
+		--Launch Setup Here
+		checkConfig()
+		isSetup = false
+		current.status = 'System Ready'
+		configBtn.toggleState = 1
+		element.opacity(configBtn, false)
+		drawScreen()
 	end
-  else
-    Start()
-	if config == false then
-	  disk.eject(driveSide)
-      RSstart(rsOutput)
-      RSstop()
-	else
-	  config = false
-	end
-  end
-end
 end
 
-
-function loadConfig()
-LogFile.i('Loading Config', runningProgram)
- term.clear()
- titleBar.draw('HbombOS Security Suite', 'Keycard Lock', colors.cyan, 256, 128, 256, 1)
- printer.centered('Loading Configuration', 19)
-  local f = fs.open('systemFiles/Programs/keycardConfig', 'r')
-    driveSide = f.readLine()
-	diskPath = f.readLine()
-	diskKey = f.readLine()
-	rsOutput = f.readLine()
-	rsTime = f.readLine()
-	rsTime = tonumber(rsTime)
-	useInput = f.readLine()
-	  if useInput == "true" then
-	    inputSide = f.readLine()
-	  end
-	f.close()
+function incorrectDisk()
+	ejectDisk('-a', nil)
+	printer.centered('Invalid Disk Entered!', 19)
+	sleep(1)
+	printer.centered('', 19)
 end
 
-function setup() --If the config file does not exists, this function will be run
-LogFile.i('setup Started', runningProgram)
-  local function waitForConfig()
-    while true do
-      sleep(0)
-	  event, key = os.pullEvent()
-	  if event == "key" then
-	    if key == keys.leftAlt or key == keys.rightAlt then
-	      return key
-	    end
-	  end
-    end
-  end
-  
-  local function printSetup()
-	titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-    printer.centered("It Appears That You Have Not Used", 6)
-    printer.centered("The Program Before", 7)
-    printer.centered("Click Anywhere To Get Started With Set-up", 9)
-	os.pullEvent("mouse_click")
-  end
-  
-  local function diskSide()
-  while true do
-    titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	printer.centered("On What Side Is The Disk Drive On?", 6)
-	term.setCursorPos(termX/2-(#diskText),10)
-	  write (diskText)
-	  local vside = false
-		diskDriveSide = read()
-		for k,v in pairs(rs.getSides()) do
-			if v == diskDriveSide then
-				vside = true
-				break
-			end
-		end
-		if vside then break end
-		  printer.centered("Invalid side!", 10)
-		  sleep(0.5)
-		  term.clear()
-		end
-  end
-  
-  local function nameDrive()
-    while true do
-      titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	  printer.centered("For Added Security, Pick The FileName", 6)
-	  printer.centered("This Is Where The Security Key Will Be Stored", 7)
-      term.setCursorPos(termX/2-#nameDriveText, 10)
-	  write(nameDriveText)
-	  nameDriveInput = read()
-	    if nameDriveInput ~= "" then nameDriveInput = tostring(nameDriveInput) break end
-	end
-  end
-  
-  local function nameDriveData()
-    while true do
-      titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	  printer.centered("For Added Security, Pick The Security Key", 6)
-	  printer.centered("That Will Be Put On The Path You Specified", 7)
-      term.setCursorPos(termX/2-#nameDriveDataText, 10)
-	  write(nameDriveDataText)
-	  nameDriveDataInput = read()
-	    if nameDriveDataInput ~= "" then nameDriveDataInput = tostring(nameDriveDataInput) break end
-	end
-  end
-  
-  local function diskInit()
-   disksReg = 0
-    while true do
-	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	  printer.centered("Insert Disks Into The Disk Drives Now To Sync Them", 6)
-	  printer.centered("With The Data You Have Specified", 7)
-	  printer.centered("Press ALT To Continue To Next Step", 9)
-	  printer.centered("Registered Disks: "..disksReg, 11)
-	  event, side = os.pullEvent()
-	    if event == "disk" then
-		  if side == diskDriveSide then
-		    local f = fs.open("disk/"..nameDriveInput, "w")
-			if f then
-			  f.writeLine(nameDriveDataInput)
-			  f.close()
-			else
-			  printer.centered('Files Already Detected!', 18)
-			  printer.centered('Press Y To Delete Or N To Pick Another Path', 19)
-			  event, press = os.pullEvent()
-			  if event ==  "key" then
-			    if press == keys.y then
-				  fs.delete('disk/'..nameDriveInput)
-				  f.writeLine(nameDriveDataInput)
-			      f.close()
-				elseif press == keys.n then
-			      nameDrive()
-			      nameDriveData()
-				end
-			  end
-			end
-			printer.centered("Files Written To Disk Drive", 19)
-			disksReg = disksReg + 1
-			disk.eject(diskDriveSide)
-		  end
+function redstoneHandler()
+	if current.settings.inputOption then
+		if rs.getInput(current.settings.inputSide) then
+			printer.centered('Redstone Signal Received', 19)
+			rs.setOutput(current.settings.outputSide, true)
+			stopTimer = os.startTimer(tonumber(current.settings.outputTime))
+			current.status = 'Outputing Redstone!'
+			drawScreen()
 		end
 	end
-  end
-  
-  local function redstoneOutput()
-   while true do
-	titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	printer.centered("What Side Should The Redstone Output Be?", 6)
-	term.setCursorPos(termX/2-(#RedstoneOutText),10)
-	  write (RedstoneOutText)
-	  local vside = false
-		RedstoneOutSide = read()
-		for k,v in pairs(rs.getSides()) do
-			if v == RedstoneOutSide then
-				vside = true
-				break
-			end
-		end
-		if vside then break end
-		  printer.centered("Invalid side!", 10)
-		  sleep(0.5)
-		  term.clear()
-		end
-   end
-  
-  local function redstoneTime()
-   while true do
-	titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	printer.centered("How Long Should We Output Redstone For", 6)
-	term.setCursorPos(termX/2-(#RedstoneTimeText),10)
-	  write (RedstoneTimeText)
-	  RedstoneTimeInput = readN(3)
-	  if RedstoneTimeInput == "Word" then term.setCursorBlink(false) printer.centered("Numbers Only!", 19) sleep(0.5) term.setCursorBlink(true)
-	    elseif not RedstoneTimeInput then printer.centered("Cannot Be Nil", 19) sleep(0.5)
-		  elseif RedstoneTimeInput ~= "" then break end
-   end
-  end
-  
-  local function redstoneInputSetting()
-	while true do
-	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	  printer.centered("Do you want the computer to react to redstone", 6)
-	  printer.centered("the same way it would if the keycard was entered?", 7)
-	  printer.centered("You get to choose what side the", 10)
-	  printer.centered("redstone has to be applied to", 11)
-	  printer.centered("Y/N", 13)
-	    event, key = os.pullEvent()
-		if event == "key" then
-		  if key == keys.y then
-		    redstoneInSettingUse = true
-			return true
-		  elseif key == keys.n then
-		    redstoneInSettingUse = false
-			return false
-		  end
-		end
-	end
-  end
-  
-  local function redstoneInputSettingSide()
-    while true do
-	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	  printer.centered("What Side Does The redstone input need to be on", 6)
-  	  printer.centered("for the computer to react?", 7)
-	  titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	  printer.centered("What Side Should The Redstone Output Be?", 6)
-	  term.setCursorPos(termX/2-(#RedstoneInputText),10)
-	    write (RedstoneInputText)
-	    local vside = false
-		 RedstoneInputSide = read()
-		  for k,v in pairs(rs.getSides()) do
-		  	  if v == RedstoneInputSide then
-				  vside = true
-				  break
-			  end
-		  end
-		  if vside then break end
-		    printer.centered("Invalid side!", 10)
-		    sleep(0.5)
-		    term.clear()
-		  end
-	end
-  
-  local function save()
-	titleBar.draw("HbombOS Security Suite", "Keycard Setup", colors.cyan, 256, 128, 256, 1)
-	printer.centered("Thank You For Setting Up Your Keycard Lock", 6)
-	printer.centered("Please Wait While We Save Your Settings...", 8)
-	printer.centered("Opening File Handler", 19)
-	local f = fs.open('systemFiles/Programs/keycardConfig', 'w')
-	printer.centered('Saving Disk Oreintation', 19)
-	f.writeLine(diskDriveSide)
-	sleep(0)
-	printer.centered('Saving Security Names', 19)
-	f.writeLine(nameDriveInput)
-	sleep(0)
-	printer.centered('Saving Security Key', 19)
-	f.writeLine(nameDriveDataInput)
-	sleep(0)
-	printer.centered('Saving Redstone Output Information', 19)
-	f.writeLine(RedstoneOutSide)
-	sleep(0)
-	f.writeLine(RedstoneTimeInput)
-	sleep(0)
-	printer.centered('Saving Redstone Input Settings', 19)
-	f.writeLine(tostring(redstoneInSettingUse))
-	sleep(0)
-	  if redstoneInSettingUse then
-	    printer.centered('Saving Redstone Input Side', 19)
-		f.writeLine(RedstoneInputSide)
-		sleep(0)
-	  end
-  LogFile.i('Save Done, Rebooting', runningProgram)
-  printer.centered('Save Done, Rebooting System', 19)
-  sleep(1)
-  os.reboot()
-  end
-  -- Calls All The Functions To Setup The Program
-  printSetup()
-  diskSide()
-  nameDrive()
-  nameDriveData()
-while true do
-  parallel.waitForAny(diskInit, waitForConfig)
-  if disksReg < 1 then printer.centered("Please Register A Card!", 19) sleep(1) else break end
-end
-  redstoneOutput()
-  redstoneTime()
-    if redstoneInputSetting() then redstoneInputSettingSide() end
-  save()
 end
 
-function init()
-    LogFile.i('Init Function Started', runningProgram)
-	if not fs.exists('systemFiles/Programs/keycardConfig') then
-	  setup()
-	else
-	  loadConfig()
-	  LoopMain()
+function timerHandler(event, timer)
+	if timer == stopTimer then
+		rs.setOutput(current.settings.outputSide, false)
+		printer.centered('', 19)
+		current.status = 'System Ready'
+		drawScreen()
 	end
 end
 
-local _, err = pcall(init) --Error Catching, All Functions Are Called From initialise() at some point...
-  if err then
-    term.setCursorBlink(false)
-	LogFile.e('XPCALL Error: '..err, runningProgram)
-	errora.err(err, 'Keycard Has Crashed', true, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
-  end
+
+local _, err = pcall(Initialise)
+	if err then
+		LogFile.e('Keycard Lock Crash: '..err, runningProgram)
+		errora.err(err, 'Keycard Lock Crash, Umm, Something Went Splat!', true, true) --BSoD for protection, the 'true' is an auto-reboot option to prevent the door computer waiting for a prompt
+	end

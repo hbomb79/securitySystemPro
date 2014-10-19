@@ -1,4 +1,4 @@
-2.0.0.2
+2.1.0.2
 --Version Number MAJOR-MINOR-RELEASE
 
 --------------------
@@ -18,8 +18,7 @@
 --------------------------
 --This Version ChangeLog--
 --------------------------
--- Fixes number input bug stopping number input on version 1.5 of CC
--- Also fixes uInput API
+-- Complete recode of keycard lock... Enjoy *Note, Configs Have been removed*
 ------------------
 --END OF CHANGES--
 ------------------
