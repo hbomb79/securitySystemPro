@@ -167,7 +167,8 @@ function setup()
 			printer.centered('Please Insert Floppy Disks You Want To Validate', 6)
 			printer.centered('They will have the file with the contents',8)
 			printer.centered('you chose afterwards',9)
-			LogFile.i('Total Known Registerd Disks: ', runningProgram)
+			printer.centered('Total Known Registered Disks: '..tostring(current.settings.registeredDisks), 11)
+			LogFile.i('Total Known Registerd Disks: '..tostring(current.settings.registeredDisks), runningProgram)
 			if current.settings.registeredDisks > 0 then printer.centered('', 19) element.opacity(setupContinue, true) else printer.centered('Please Register Atleast One Disk To Continue', 19) element.opacity(setupContinue, false) end
 			local event, p1, p2, p3 = os.pullEvent()
 			if event == "disk" then
@@ -503,63 +504,153 @@ function checkConfig()
   if configInput == adminPassFile then configMenu() else printer.centered('Incorrect Password.. Returning', 19) sleep(0.5) isSetup = false return 'return' end
 end
 
-function configMenu()
-LogFile.i('Config Menu Opened', runningProgram)
-  titleBar.draw('HbombOS Security Suite', 'Keycard Lock Settings', colors.cyan, 256, 128, 256, 1)
-  printer.centered('Pick An Option Below', 6)
-  local continue = false
-  local options = {
-  	    {'Re Configure Lock', function()
-          setup()
-		end},
-		{'Reset Configuration', function()
-		  LogFile.i('Removing Config', runningProgram)
-		  fs.delete('systemFiles/Programs/keycardConfig')
-		  pressed = false
-		  config = true
-		  printer.centered('Removed!', 19)
-		  sleep(1)
-		  os.reboot()
-		end},
-		{'Cancel And Return', function()
-		  isSetup = false
-		  term.clear()
-          return
-		end}
-	}
-	local selected = 1
-	local function draw()
-		for i, v in ipairs(options) do
-			local bg = 256
-			local tc = colours.white
-			if i == selected then
-				bg = 256
-				tc = colours.blue
+function registerKeycard()
+	nextBtn = btnInit('Finish', nil, nil, termX/2-(#'Finish'/2), termY-1, 1, colors.cyan, 1, 256, function() os.queueEvent('Continue') end, false, nil, nil, nil, nil)
+	nextBtn.func = function() os.queueEvent('Continue') end
+	while true do
+		titleBar.draw('HbombOS Security Suite', 'Registration Wizard', colors.cyan, 256, 128, 256, 1)
+		printer.centered('Please Insert Floppy Disks You Want To Validate', 6)
+		printer.centered('They will have the file with the contents',8)
+		printer.centered('you chose afterwards',9)
+		printer.centered('Total Known Registered Disks: '..tostring(current.settings.registeredDisks), 11)
+		LogFile.i('Total Known Registerd Disks: '..tostring(current.settings.registeredDisks), runningProgram)
+		if current.settings.registeredDisks > 0 then printer.centered('', 19) element.opacity(nextBtn, true) else printer.centered('Please Register Atleast One Disk To Continue', 19) element.opacity(nextBtn, false) end
+		local event, p1, p2, p3 = os.pullEvent()
+		if event == "disk" then
+			if p1 == current.settings.driveSide then
+				if disk.hasData(current.settings.driveSide) then
+					local currentDisk = disk.getMountPath(current.settings.driveSide)
+					if not fs.exists(currentDisk.."/"..current.settings.filePath) then
+						local f = fs.open(currentDisk.."/"..current.settings.filePath, 'w')
+						f.writeLine(current.settings.fileContent)
+						f.close()
+						LogFile.i('Attempt To write to disk', runningProgram)
+						disk.eject(current.settings.driveSide)
+						if fs.exists(currentDisk.."/"..current.settings.filePath) then
+							LogFile.i('Disk Registeration Complete', runningProgram)
+							current.settings.registeredDisks = current.settings.registeredDisks + 1
+						else
+							LogFile.i('Couldnt Find Files After Registering, Assuming fail', runningProgram)
+							errora.err('Something Went Wrong', 'Attempts to create the files on your keycards failed!', false, false)
+						end
+					else
+						LogFile.w('Files Already Exist!', runningProgram)
+					end
+				end
 			end
-			term.setTextColor(tc)
-			term.setBackgroundColor(bg)
-			PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
+		elseif event == "mouse_click" then
+			doClick(event, p1, p2, p3)
+		elseif event == "Continue" then SaveSettings() break
 		end
+		ejectDisk("-a", nil)
 	end
-	local wait = true
-	draw()
-	while wait do
-		local event, key = os.pullEvent('key')
-		if key == keys.up then
-			selected = selected - 1
-			if selected < 1 then
-				selected = 1
+end
+
+function unregisterKeycard()
+	nextBtn = btnInit('Finish', nil, nil, termX/2-(#'Finish'/2), termY-1, 1, colors.cyan, 1, 256, function() os.queueEvent('Continue') end, false, nil, nil, nil, nil)
+	nextBtn.func = function() os.queueEvent('Continue') end
+	while true do
+		titleBar.draw('HbombOS Security Suite', 'Registration Wizard', colors.cyan, 256, 128, 256, 1)
+		printer.centered('Please Insert Floppy Disks You Want To Remove', 6)
+		printer.centered('They will have the file with the contents',8)
+		printer.centered('you chose afterwards removed',9)
+		printer.centered('Total Known Registered Disks: '..tostring(current.settings.registeredDisks), 11)
+		LogFile.i('Total Known Registerd Disks: '..tostring(current.settings.registeredDisks), runningProgram)
+		if current.settings.registeredDisks > 1 then printer.centered('', 19) element.opacity(nextBtn, true) else printer.centered('Only One Keycard Is Registered!', 19) element.opacity(nextBtn, false) sleep(2) return end
+		local event, p1, p2, p3 = os.pullEvent()
+		if event == "disk" then
+			if p1 == current.settings.driveSide then
+				if disk.hasData(current.settings.driveSide) then
+					local currentDisk = disk.getMountPath(current.settings.driveSide)
+					if fs.exists(currentDisk.."/"..current.settings.filePath) then
+						local f = fs.open(currentDisk.."/"..current.settings.filePath, "r")
+						local currentFileData = f.readLine()
+						f.close()
+						if currentFileData == current.settings.fileContent then
+							fs.delete(currentDisk.."/"..current.settings.filePath)
+							disk.eject(current.settings.driveSide)
+							current.settings.registeredDisks = current.settings.registeredDisks - 1
+						end
+					end
+				end
 			end
-		elseif key == keys.down then
-			selected = selected + 1
-			if selected > #options then
-				selected = #options
-			end
-		elseif key == keys.enter then
-		  options[selected][2]()
-		  wait = false
+		elseif event == "mouse_click" then
+			doClick(event, p1, p2, p3)
+		elseif event == "Continue" then SaveSettings() break
 		end
+		ejectDisk("-a", nil)
+	end
+end
+
+function configMenu()
+  LogFile.i('Config Menu Opened', runningProgram)
+  configRunning = true
+  while configRunning do
+	  titleBar.draw('HbombOS Security Suite', 'Keycard Lock Settings', colors.cyan, 256, 128, 256, 1)
+	  printer.centered('Pick An Option Below', 6)
+	  local continue = false
+	  local options = {
+			{'Re Configure Lock', function()
+			  setup()
+			end},
+			{'Register Keycards', function() 
+				registerKeycard()
+			end},		
+			{'Un-Register Keycards', function() 
+				if current.settings.registeredDisks > 1 then unregisterKeycard() else printer.centered('Only One Keycard Is Registered!', 19) sleep(1) printer.centered("", 19) end
+			end},
+			{'Reset Configuration', function()
+			  LogFile.i('Removing Config', runningProgram)
+			  fs.delete('systemFiles/Programs/keycardConfig')
+			  pressed = false
+			  config = true
+			  printer.centered('Removed!', 19)
+			  sleep(1)
+			  os.reboot()
+			end},
+			{'Cancel And Return', function()
+			end}
+		}
+		local selected = 1
+		local function draw()
+			for i, v in ipairs(options) do
+				local bg = 256
+				local tc = colours.white
+				if i == selected then
+					bg = 256
+					tc = colours.blue
+				end
+				term.setTextColor(tc)
+				term.setBackgroundColor(bg)
+				PrintCentered(' '..v[1]..' ', math.floor(#options/2) + i + 6)
+			end
+		end
+		local wait = true
 		draw()
+		while wait do
+			local event, key = os.pullEvent('key')
+			if key == keys.up then
+				selected = selected - 1
+				if selected < 1 then
+					selected = 1
+				end
+			elseif key == keys.down then
+				selected = selected + 1
+				if selected > #options then
+					selected = #options
+				end
+			elseif key == keys.enter then
+			  options[selected][2]()
+			  wait = false
+				if options[selected][1] == 'Cancel And Return' then
+					configRunning = false
+					isSetup = false
+					term.clear()
+					break
+				end
+			end
+			draw()
+		end
 	end
 	return continue
 end
