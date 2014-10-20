@@ -9,6 +9,7 @@
 -- Digital Lock: Stable***
 -- Reactor Program: Stable***
 -- Range Lock: Stable***
+-- OpenP Detector Lock: Stable***
 -- Keycard Lock: Stable***
 -- Keycard Dual Lock: Stable***
 
@@ -23,4 +24,6 @@
 --END OF CHANGES--
 ------------------
 
+
+-- **OpenP Detector Lock Pending Recode **--
 --For More information, or for a License agreement please check the 'Documentation' Directory in the main root of this computer.
