@@ -1054,6 +1054,7 @@ function eventLoop() --This runs the functions that was assigned to the event in
 	local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
 	  if Events[event] then
 		for i, e in ipairs(Events[event]) do
+		  LogFile.i("Event Called: "..tostring(event)..", "..tostring(arg1).." "..tostring(arg2).." "..tostring(arg3).." "..tostring(arg4).." "..tostring(arg5).." "..tostring(arg6), runningProgram)
 		  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
 		end
       end

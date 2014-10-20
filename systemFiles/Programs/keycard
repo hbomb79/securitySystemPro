@@ -376,6 +376,8 @@ end
 
 function Initialise()
 	drawScreen()
+	ejectDisk("-a", nil)
+	LogFile.i("Initialise Function", runningProgram)
 	eventRegister('terminate', function(event) errora.err('Umm, Thats not allowed here!', 'Use the boot menu to access shell', true, false) end)
 	eventRegister('mouse_click', checkClick)
 	eventRegister('redstone', redstoneHandler)
@@ -395,6 +397,7 @@ function eventLoop()
 		local event, arg1, arg2, arg3, arg4, arg5, arg6 = os.pullEventRaw()
 		if Events[event] then
 			for i, e in ipairs(Events[event]) do
+			  LogFile.i("Event Called: "..tostring(event)..", "..tostring(arg1).." "..tostring(arg2).." "..tostring(arg3).." "..tostring(arg4).." "..tostring(arg5).." "..tostring(arg6), runningProgram)
 			  e(event, arg1, arg2, arg3, arg4, arg5, arg6)
 			end
 		end
@@ -410,22 +413,28 @@ function eventRegister(event, functionToRun)
 end
 
 function checkDisk(event, side)
+	LogFile.i("Validating Disk", runningProgram)
 	current.status = 'Validating Disk'
 	drawScreen()
 	if event == "disk" then
+		LogFile.i("Disk Received", runningProgram)
 		if side == current.settings.driveSide then
+			LogFile.i("Disk In Correct Side", runningProgram)
 			local currentDisk = disk.getMountPath(current.settings.driveSide)
 			if disk.hasData(current.settings.driveSide) then
 				if fs.exists(currentDisk..'/'..current.settings.filePath) then
 					local diskFile = fs.open(currentDisk..'/'..current.settings.filePath, 'r')
 					local diskContents = diskFile.readAll()
 					if tostring(diskContents) == current.settings.fileContent then
+						LogFile.i("Correct Disk Entered", runningProgram)
 						correctDisk()
 						return
 					else
+						LogFile.i("Incorrect Disk", runningProgram)
 						incorrectDisk()
 					end
 				else
+					LogFile.i("Incorrect Disk", runningProgram)
 					incorrectDisk()
 				end
 			end
@@ -436,6 +445,7 @@ function checkDisk(event, side)
 end
 
 function drawScreen()
+	LogFile.i("Screen Drew", runningProgram)
 	drawTitleBar()
 	printer.centered('Keycard Lock', 6)
 	if current.status == 'System Ready' then
@@ -460,6 +470,7 @@ current.status = 'System Starting'
 drawScreen()
 
 function ejectDisk(argsEject, ejectDriveSide)
+	LogFile.i("Eject Disk: "..tostring(argsEject), runningProgram)
 	if argsEject then
 		if argsEject == "-a" then
 			disk.eject("top")
