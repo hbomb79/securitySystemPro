@@ -415,7 +415,7 @@ end
 
 function checkDisk(event, side)
 	LogFile.i("Validating Disk", runningProgram)
-	current.status = 'Validating Disk'
+	if not isOut then current.status = 'Validating Disk' end
 	drawScreen()
 	if event == "disk" then
 		LogFile.i("Disk Received", runningProgram)
@@ -441,7 +441,8 @@ function checkDisk(event, side)
 			end
 		end
 	end
-	current.status = 'System Ready'
+	ejectDisk("-a", nil)
+	if not isOut then current.status = 'System Ready' end
 	drawScreen()
 end
 
@@ -657,6 +658,7 @@ end
 
 function correctDisk()
 	if not isSetup then
+		isOut = true
 		ejectDisk('-s', current.settings.driveSide)
 		rs.setOutput(current.settings.outputSide, true)
 		stopTimer = os.startTimer(tonumber(current.settings.outputTime))
