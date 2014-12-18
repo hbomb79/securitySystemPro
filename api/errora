@@ -1,9 +1,29 @@
---[[
-DEBUG Mode
 
-If you intend to modify system settings or source script that may affect the suite causing a crash then please use the suite boot menus 'Debug Edit' option to enable debug mode to stop the bug reporter sending invalid reports
+--CRC32 System Modification Check, Thanks To oeed For His Help
 
-]]--
+function getHash()
+	local toCheck = {'/systemFiles/', '/api/', '/Documentation/', 'startup'}
+	local raw = addFile('startup', '')
+	raw = addFolder('/systemFiles/', '/api/', '/Documentation/', raw)
+	local hash = CRC32.Hash(raw)
+	return hash
+end
+
+function isModified()
+	printer.centered("Checking File System", 18)
+	local h = fs.open('/systemFiles/Security/.hash', 'r')
+	if h then
+		local correctHash = tonumber(h.readLine())
+		h.close()
+		local hash = GetHash()
+		if hash == correctHash then
+			LogFile.i('System is not modified.')
+			return false
+		end		
+	end
+	LogFile.w('System is modified, not submitting report.')
+	return true
+end
 
 if not fs.exists('systemFiles/debugConfig') then
 	local h = fs.open('systemFiles/debugConfig', 'w')
@@ -45,16 +65,20 @@ detailString = detail or 'System Crash, Unknown Cause'
 					"version="..textutils.urlEncode(tostring(version)).."&"..
 					"error="..textutils.urlEncode(tostring(logDetails)).."&"..
 					"errorMess="..textutils.urlEncode(tostring(errorMess)).."&"..
-					"computerID="..textutils.urlEncode(tostring(pcid) .. " (" ..tostring(pcname) .. ") ").."&"..
+					"computerID="..textutils.urlEncode(tostring(pcid)).."&"..
 					"detail="..textutils.urlEncode(tostring(detailString)));
 					printer.centered('Sending Report To Servers', 18)
-					if _ then
-						printer.centered('Error log submitted', 18)
+					if not isModified() then
+						if _ then
+							printer.centered('Error log submitted', 18)
+						else
+							printer.centered('Error log submit failed!', 18)
+						end
 					else
-						printer.centered('Error log submit failed!', 18)
+						printer.centered("You modified the file system!", 18)
 					end
 			else
-				printer.centered('Debug Mode Is: '..isDebug..' Not Sending Report', 18)
+				printer.centered('Debug Mode Is: '..isDebug..', Not Sending Report', 18)
 			end
 	else
 		printer.centered('No Log File Found, Cannot Send Report!', 18)

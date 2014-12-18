@@ -27,14 +27,18 @@ function tryClick(elementTable, x, y) --On Click Check Co-Ords, If match run the
 	if elementTable then
 		for i, v in ipairs(elementTable) do
 			if x >= v.x and x < v.x + v.width then
-				if y == v.y then
+				if y >= v.y and y <= v.y+v.height-1 then
 					if v.visible then 
-						if v.toggle then element.toggle(v) end
-							for i, p in ipairs(elementTable) do
-								if p.parent == v.parent then
-									if p ~= v then p.toggleState = 1 else p.toggleState = 2 end
-									draw(p)
+						if v.toggle then toggle(v) end
+							if v.parent then
+								for i, p in ipairs(elementTable) do
+									if p.parent == v.parent then
+										if p ~= v then p.toggleState = 1 else p.toggleState = 2 end
+										draw(p)
+									end
 								end
+							else
+								draw(v)
 							end
 						if v.func then return(v.func) end
 					end
@@ -51,9 +55,13 @@ function eraseCurrent(elem)
 		term.setBackgroundColor(elem.obg)
 		if elem.width and elem.secWidth then
 			if elem.toggleState == 1 then
-				write(string.rep(' ', elem.secWidth ))
+				for i = 0, elem.height-1 do
+					write(string.rep(' ', elem.secWidth ))
+				end
 			elseif elem.toggleState == 2 then
-				write(string.rep(' ', elem.width ))
+				for i = 0, elem.height-1 do
+					write(string.rep(' ', elem.width ))
+				end
 			end	
 		end
 	end
@@ -65,16 +73,20 @@ function draw(elem) --Visually Draw The Button Provided
 	if elem.visible then
 		if elem.toggleState == 2 then term.setTextColor(elem.secondaryTextColor) else term.setTextColor(elem.tc) end
 		if elem.toggleState == 2 then term.setBackgroundColor(elem.secondaryBackground) else term.setBackgroundColor(elem.bg) end
-		term.setCursorPos(elem.x, elem.y)
-		write(string.rep(' ', elem.width )) --Create The Background Panel
+		for i = 0, elem.height-1 do
+			term.setCursorPos(elem.x, elem.y+i)
+			write(string.rep(' ', elem.width)) --Create The Background Panel
+		end
 		if elem.toggleState == 2 then textSpec = elem.secondaryText widthSpec = elem.secWidth else textSpec = elem.text widthSpec = elem.width end 
-		term.setCursorPos(elem.x + (widthSpec - #textSpec)/2, elem.y) --Set The Cursor Pos In The Correct Padding Pos So The Text Appears In The Correct Location
+		term.setCursorPos(elem.x + (widthSpec - #textSpec)/2, elem.y+(elem.height/2)) --Set The Cursor Pos In The Correct Padding Pos So The Text Appears In The Correct Location
 		write(textSpec)--Print The Button Text On The Button
 	else
 		term.setTextColor(elem.otc)
 		term.setBackgroundColor(elem.obg)
-		term.setCursorPos(elem.x, elem.y)
-		write(string.rep(' ', elem.width )) --Create The Background Panel
+		for i = 0, elem.height-1 do
+			term.setCursorPos(elem.x, elem.y+i)
+			write(string.rep(' ', elem.width)) --Create The Background Panel
+		end
 		term.setCursorPos(elem.x, elem.y) --Set The Cursor Pos In The Correct Padding Pos So The Text Appears In The Correct Location
 	end
 	term.setTextColor(elem.otc)
@@ -84,9 +96,7 @@ end
 
 function toggle(elem)
 	if elem.toggle then
-		if elem.toggleState == 1 then elem.toggleState = 2
-		elseif elem.toggleState == 2 then elem.toggleState = 1 end
-		draw(elem)
+		if elem.toggleState == 1 then elem.toggleState = 2 else elem.toggleState = 1 end
 	end
 end
 
