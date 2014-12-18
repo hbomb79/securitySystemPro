@@ -350,6 +350,10 @@ function programMenu()
 		{'OpenP Detector Lock', function()
 		  editFile('systemFiles/Programs/configuration', 'w', 'systemFiles/Programs/OpenPDetect')
 		  os.reboot()
+		end},
+		{'Remote Control', function()
+		  editFile('systemFiles/Programs/configuration', 'w', 'systemFiles/Programs/remoteControl.lua')
+		  os.reboot()
 		end}
 	}
 
@@ -780,7 +784,8 @@ function Initialise()
 	eventRegister('shutdown', function() os.shutdown() end)	
 	parallel.waitForAny(start, eventLoop)
 	shell.run(tostring(current.programToRun))
-	--shell.run('shell')
+	--LogFile.i("Manual Program Run, Error Logs May Be Created")
+	--shell.run('systemFiles/Programs/remoteControl.lua')
 	print('Program Crash!')
 	sleep(3)
 	os.reboot()
