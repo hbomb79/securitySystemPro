@@ -296,6 +296,7 @@ if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/mas
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/rangeLock", "/systemFiles/Programs/rangeLock", true, 19) == 'ERROR' then return 'Error' end
 if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/OpenPDetect", "/systemFiles/Programs/OpenPDetect", true, 19) == 'ERROR' then return 'Error' end
+if download.git("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/remoteControl.lua", "/systemFiles/Programs/remoteControl.lua", true, 19) == 'ERROR' then return 'Error' end
 if quietDownload then os.reboot() elseif quick then return else return true end
 end
 

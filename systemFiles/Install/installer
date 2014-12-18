@@ -335,6 +335,7 @@ downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/maste
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/rangeLock", "/systemFiles/Programs/rangeLock")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/reactor", "/systemFiles/Programs/reactor")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/OpenPDetect", "/systemFiles/Programs/OpenPDetect")
+downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/systemFiles/Programs/remoteControl.lua", "/systemFiles/Programs/remoteControl.lua")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/README", "/Documentation/README")
 downloadFiles("https://raw.githubusercontent.com/hbomb79/securitySystemPro/master/LICENSE", "/Documentation/LICENSE")
 PrintCentered("Complete", 19)
