@@ -1,5 +1,5 @@
 runningProgram = shell.getRunningProgram()
-LogFile.i('reactor Program Running... ', runningProgram)
+if not pocket then LogFile.i('reactor Program Running... ', runningProgram) end
 current = { --Anything in this table will be saved to file
   settings = {},
   devices = {
@@ -13,6 +13,12 @@ Events={}
 elements = {}
 currentPage="starting"
 displayButtons = {}
+
+if not term.isColor() then
+	print('An Advanced Device Is Required, Color Support!')
+	sleep(5)
+	os.shutdown()
+end
 
 
 function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText, parent) --Function to create button
@@ -403,28 +409,52 @@ function changePage(newPage)
 		back = nil
 		back = btnInit("Return", nil, nil, termX/2-#"Return"/2, 18, 1, colors.red, 1, 256, function() os.queueEvent('back') end, false, nil, nil, nil, nil)
 	elseif currentPage == "actionRST" then
-		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
-		right.toggleState = 2
-		element.opacity(right, true)
-		redstoneSide = 'right'
-		back = btnInit("Return", nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('back') end, false, nil, nil, nil, nil)
-		left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = "left" end, true, colors.green, 1, 'Left', 'rsOut')
-		top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide')  redstoneSide = "top" end, true, colors.green, 1, 'Top', 'rsOut')
-		bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide')  redstoneSide = "bottom" end, true, colors.green, 1, 'Bottom', 'rsOut')
-		back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = "back" end, true, colors.green, 1, 'Back', 'rsOut')
+		if pocket then
+			right = btnInit('Right', nil, nil, 2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+			right.toggleState = 2
+			element.opacity(right, true)
+			redstoneSide = 'right'
+			left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = "left" end, true, colors.green, 1, 'Left', 'rsOut')
+			top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide')  redstoneSide = "top" end, true, colors.green, 1, 'Top', 'rsOut')
+			bottom = btnInit('Bottom', nil, nil, 5, 12, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide')  redstoneSide = "bottom" end, true, colors.green, 1, 'Bottom', 'rsOut')
+			back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 12, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = "back" end, true, colors.green, 1, 'Back', 'rsOut')
+			rsToggleState = btnInit('Turn ON', nil, nil, termX-4-#"Turn ON", 20, 1, colors.green, 1, 256, nil, true, colors.cyan, 1, 'Turn OFF', nil)
+		else
+			right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+			right.toggleState = 2
+			element.opacity(right, true)
+			redstoneSide = 'right'
+			left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = "left" end, true, colors.green, 1, 'Left', 'rsOut')
+			top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide')  redstoneSide = "top" end, true, colors.green, 1, 'Top', 'rsOut')
+			bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide')  redstoneSide = "bottom" end, true, colors.green, 1, 'Bottom', 'rsOut')
+			back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = "back" end, true, colors.green, 1, 'Back', 'rsOut')
+			rsToggleState = btnInit('Turn ON', nil, nil, go.x-go.width-2, 18, 1, colors.green, 1, 256, nil, true, colors.cyan, 1, 'Turn OFF', nil)
+		end
 		go = btnInit('Request', nil, nil, termX-4-#"Request", 18, 1, colors.green, 1, 256, function() os.queueEvent('send') end, false, nil, nil, nil, nil)
-		rsToggleState = btnInit('Turn ON', nil, nil, go.x-go.width-2, 18, 1, colors.green, 1, 256, nil, true, colors.cyan, 1, 'Turn OFF', nil)
+		returnback = btnInit("Return", nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('back') end, false, nil, nil, nil, nil)
 	elseif currentPage == "actionRSP" then
-		right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
-		right.toggleState = 2
-		element.opacity(right, true)
-		redstoneSide = 'right'
-		back = btnInit("Return", nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('submit_Result') os.queueEvent('back') end, false, nil, nil, nil, nil)
-		left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "left" end, true, colors.green, 1, 'Left', 'rsOut')
-		top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "top" end, true, colors.green, 1, 'Top', 'rsOut')
-		bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "bottom" end, true, colors.green, 1, 'Bottom', 'rsOut')
-		back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "back" end, true, colors.green, 1, 'Back', 'rsOut')
+		if pocket then
+			right = btnInit('Right', nil, nil, 2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+			right.toggleState = 2
+			element.opacity(right, true)
+			redstoneSide = 'right'
+			left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "left" end, true, colors.green, 1, 'Left', 'rsOut')
+			top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "top" end, true, colors.green, 1, 'Top', 'rsOut')
+			bottom = btnInit('Bottom', nil, nil, 5, 12, 1, colors.cyan, 1, 256, function() redstoneSide = "bottom" end, true, colors.green, 1, 'Bottom', 'rsOut')
+			back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 12, 1, colors.cyan, 1, 256, function() redstoneSide = "back" end, true, colors.green, 1, 'Back', 'rsOut')
+		else
+			right = btnInit('Right', nil, nil, 5, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
+			right.toggleState = 2
+			element.opacity(right, true)
+			redstoneSide = 'right'
+			left = btnInit('Left', nil, nil, right.x+right.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "left" end, true, colors.green, 1, 'Left', 'rsOut')
+			top = btnInit('Top', nil, nil, left.x+left.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "top" end, true, colors.green, 1, 'Top', 'rsOut')
+			bottom = btnInit('Bottom', nil, nil, top.x+top.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "bottom" end, true, colors.green, 1, 'Bottom', 'rsOut')
+			back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() redstoneSide = "back" end, true, colors.green, 1, 'Back', 'rsOut')
+		end
+		
 		go = btnInit('Request', nil, nil, termX-4-#"Request", 18, 1, colors.green, 1, 256, function() os.queueEvent('submit_Result') os.queueEvent('send') end, false, nil, nil, nil, nil)
+		returnback = btnInit("Return", nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('submit_Result') os.queueEvent('back') end, false, nil, nil, nil, nil)
 	elseif currentPage == "masterChg" then
 		nextBtn = btnInit('Next', nil, nil, termX-4-#"Next", 18, 1, colors.green, 1, 256, function() os.queueEvent('checkMaster') end, false, nil, nil, nil, nil)
 	elseif currentPage == 'login' then
@@ -434,10 +464,11 @@ function changePage(newPage)
 		printer.centered("Welcome To Your Settings Page", 6)
 		regClient = btnInit("Register Client", nil, 5, 4, 10, 1, colors.green, 1, 256, function() registerClient() changePage('settings') end, false, nil, nil, nil, nil)
 		delClient = btnInit("Delete Client", nil, 5, termX-6-#"Delete Client", 10, 1, colors.green, 1, 256, function() unregisterClient() changePage('settings') end, false, nil, nil, nil, nil)
+		pdaSetup = btnInit("PDA Setup", nil, nil, termX/2-#"PDA Setup"/2, 16, 1, colors.green, 1, 256, function() PDA() changePage('settings') end, false, nil, nil, nil, nil)
 		back = btnInit("Return", nil, nil, termX/2-#"Return"/2, 18, 1, colors.red, 1, 256, function() os.queueEvent("goback") end, false, nil, nil, nil, nil)
 	elseif currentPage == 'actionOSopt' then
-		sdBtn = btnInit("Shutdown Client", nil, 5, 4, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('sd') end, false, nil, nil, nil, nil)
-		rbBtn = btnInit("Reboot Client", nil, 5, termX-6-#"Reboot Client", 10, 1, colors.cyan, 1, 256, function() os.queueEvent('rb') end, false, nil, nil, nil, nil)
+		if pocket then sdBtn = btnInit("Shutdown", nil, nil, 4, 8, 1, colors.cyan, 1, 256, function() os.queueEvent('sd') end, false, nil, nil, nil, nil) else sdBtn = btnInit("Shutdown Client", nil, 5, 4, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('sd') end, false, nil, nil, nil, nil) end
+		if pocket then rbBtn = btnInit("Reboot", nil, nil, 4, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('rb') end, false, nil, nil, nil, nil) else rbBtn = btnInit("Reboot Client", nil, 5, termX-6-#"Reboot Client", 10, 1, colors.cyan, 1, 256, function() os.queueEvent('rb') end, false, nil, nil, nil, nil) end
 		back = btnInit("Return", nil, nil, termX/2-#"Return"/2, 18, 1, colors.red, 1, 256, function() os.queueEvent("goback") end, false, nil, nil, nil, nil)
 	else
 		LogFile.w("Unknown Page ID", runningProgram)
@@ -477,6 +508,58 @@ local function loadingIcon()
 		sleep(0.1)
 		paintutils.drawImage(logo3, loadX, loadY)
 		sleep(0.1)
+	end
+end
+
+function PDA()
+	changePage('PDA')
+	printer.centered('If you want to control these computers remotely', 6)
+	printer.centered("then this is the way to go!", 7)
+	printer.centered("This wizard will guide you through", 8)
+	printer.centered("creating your mobile master controller",9 )
+	printer.centered("The PDA communicates to the master computer", 11)
+	printer.centered("this means a master PC is still required and", 12)
+	printer.centered("must be in range of the client and yourself!", 13)
+	printer.centered('Click Anywhere To Continue', 19)
+	os.pullEvent('mouse_click')
+	changePage('PDA2')
+	printer.centered('The PDA installation is simple, simply insert', 6)
+	printer.centered("a PDA into a disk drive next to this pc", 7)
+	printer.centered("The PC will then copy the file to the", 10)
+	printer.centered("pocket PC", 11)
+	printer.centered("Press Left Or Right ALT To Exit", 19)
+	while true do
+		event, side = os.pullEvent()
+		if event == 'disk' then
+			if disk.hasData(side) then
+				local path = disk.getMountPath(side)
+				-- This script moves all the required files from the master PC to the Pocket computer
+				if fs.exists(path.."/api/") then
+					for i, v in ipairs(fs.list(path.."/api/")) do
+						fs.delete(v)
+					end
+					fs.delete(path..'/api/')
+				end
+				fs.copy('/api/', path..'/api/')
+				if fs.exists(path..'/startup') then fs.delete(path..'/startup') end 
+				fs.copy('systemFiles/Programs/remoteControl.lua', path..'/startup')
+				local pdaSettings = {
+					settings = {},
+					thisDevice = {}
+				}
+				pdaSettings.settings.masterID = tonumber(os.getComputerID())
+				pdaSettings.thisDevice.type="PDA"
+				pdaSettings = textutils.serialize(pdaSettings)
+				if fs.exists(path.."/remoteControlPDA") then fs.delete(path.."/remoteControlPDA") end
+				local f = fs.open(path..'/remoteControlPDA', 'w')
+				f.write(pdaSettings)
+				f.close()
+				--Place a settings file in the PDA containing the ID of the master PC and the type of device it is.
+				disk.eject(side)
+			end
+		elseif event == 'key' then
+		if side == keys.leftAlt or side == keys.rightAlt then changePage('settings') return end
+		end
 	end
 end
 
@@ -598,34 +681,37 @@ end
 
 function action(ID)
 	local function refreshSide(side, msg)
-		printer.centered('Loading...', 4)
-		rawrequest = {}
-		rawrequest["name"] = "RedstoneState"
-		rawrequest["side"] = side
-		request = textutils.serialize(rawrequest)
-		rednet.send(tonumber(ID), request, 'TABLEREQUEST')
-		local id, msg, proto = rednet.receive(3)
-		printer.centered('Redstone Settings For Client '..ID, 6)
-		if id == tonumber(ID) and msg and proto == "requestResponse" then
-			
-		else
-			drawTitleBar()
-			printer.centered('Cannot Retrieve Information From Client', 6)
-			printer.centered('Check Your Connection And Try Again', 8)
-			printer.centered('Click Anywhere To Return', 18)
-			os.pullEvent('mouse_click')
-			return 'err'
+		if not pocket then
+			printer.centered('Loading...', 4)
+			rawrequest = {}
+			rawrequest["name"] = "RedstoneState"
+			rawrequest["side"] = side
+			request = textutils.serialize(rawrequest)
+			rednet.send(tonumber(ID), request, 'TABLEREQUEST')
+			local id, msg, proto = rednet.receive(3)
+			printer.centered('Redstone Settings For Client '..ID, 6)
+			if id == tonumber(ID) and msg and proto == "requestResponse" then
+				
+			else
+				drawTitleBar()
+				printer.centered('Cannot Retrieve Information From Client', 6)
+				printer.centered('Check Your Connection And Try Again', 8)
+				printer.centered('Click Anywhere To Return', 18)
+				os.pullEvent('mouse_click')
+				return 'err'
+			end
+			printer.centered('', 4)
+			if msg == "false" then printer.centered('The '..side..' Side Is Not Currently Emitting Redstone', 8) elseif msg == "true" then printer.centered('The '..side..' Side Is Currently Emitting Redstone', 8) else printer.centered('The '..side..'Is Unknown (Check Connectivity)', 8) end
 		end
-		printer.centered('', 4)
-		if msg == "false" then printer.centered('The '..side..' Side Is Not Currently Emitting Redstone', 8) elseif msg == "true" then printer.centered('The '..side..' Side Is Currently Emitting Redstone', 8) else printer.centered('The '..side..'Is Unknown (Check Connectivity)', 8) end
 	end
+
 	
 	local function RST(ID)
 		changePage('actionRST')
-		printer.centered("Please Wait While I Request Information", 6)
 		local state = refreshSide(redstoneSide)
 		if state == 'err' then changePage('action') return end
 		while true do
+			if pocket then printer.centered('Redstone Client '..ID, 6) end
 			local e, p1, p2, p3 = os.pullEvent()
 			if e == 'back' then changePage('action') return
 			elseif e == "changeSide" then 
@@ -641,25 +727,35 @@ function action(ID)
 				rrequest["name"] = "redstonePerm"
 				rrequest["side"] = redstoneSide
 				rrequest["state"] = redstoneState
+				rrequest["forwardID"] = ID
 				request = textutils.serialize(rrequest)
-				rednet.send(tonumber(ID), request, 'taskRequest')
-				printer.centered('Request Sent', 6)
-				printer.centered('Waiting For Response', 6)
-				local m, m2 = rednet.receive(3)
-				if m == tonumber(ID) and m2 == "Complete" then
+				if pocket then
+					rednet.send(current.settings.masterID, request, 'forwardTaskRequest')
 					printer.centered('Task Complete', 6)				
 					printer.centered('Click Anywhere To Return', 18)
 					os.pullEvent('mouse_click')
 					changePage('action')
 					return
 				else
-					changePage('No')
-					drawTitleBar()
-					printer.centered('The Client Did\'nt Complete The Task', 6)
-					printer.centered('It may be busy, otherwise try again', 8)
-					printer.centered('Click To Return', 19)
-					os.pullEvent('mouse_click')
-					changePage('action')
+					rednet.send(tonumber(ID), request, 'taskRequest')
+					printer.centered('Request Sent', 6)
+					printer.centered('Waiting For Response', 6)
+					local m, m2 = rednet.receive(3)
+					if m == tonumber(ID) and m2 == "Complete" then
+						printer.centered('Task Complete', 6)				
+						printer.centered('Click Anywhere To Return', 18)
+						os.pullEvent('mouse_click')
+						changePage('action')
+						return
+					else
+						changePage('No')
+						drawTitleBar()
+						printer.centered('The Client Did\'nt Complete The Task', 6)
+						printer.centered('It may be busy, otherwise try again', 8)
+						printer.centered('Click To Return', 19)
+						os.pullEvent('mouse_click')
+						changePage('action')
+					end
 				end
 			end
 		end
@@ -668,10 +764,10 @@ function action(ID)
 	local function RSP(ID)
 		while true do
 			changePage('actionRSP')
-			printer.centered('Redstone Pulse Settings For Client '..ID, 6)
-			printer.centered('Select The Side And Time To Pulse', 7)
-			printer.centered('The Client Wont Respond For This Time', 15)
-			local text = 'Time To Pulse: '
+			printer.centered('Pulse Client '..ID, 6)
+			printer.centered('Side And Time', 7)
+			printer.centered('Client Wont Respond', 15)
+			local text = 'Time: '
 			term.setCursorPos(termX/2-#text+5, 14)
 			write(text)
 			local input = uInput.eventN(2, nil, elements)
@@ -686,24 +782,34 @@ function action(ID)
 					rrequest["name"] = "redstonePulse"
 					rrequest["side"] = redstoneSide
 					rrequest["time"] = input
+					rrequest["forwardID"] = ID
 					request = textutils.serialize(rrequest)
-					rednet.send(tonumber(ID), request, 'taskRequest')
-					printer.centered('Request Sent', 6)
-					printer.centered('Waiting For Response', 6)
-					local m, m2 = rednet.receive(3)
-					if m == tonumber(ID) and m2 == "Complete" then
+					if pocket then
+						rednet.send(current.settings.masterID, request, 'forwardTaskRequest')
 						printer.centered('Task Complete', 6)				
 						printer.centered('Click Anywhere To Return', 18)
 						os.pullEvent('mouse_click')
 						changePage('action')
 						return
 					else
-						changePage('No')
-						printer.centered('The Client Did\'nt Complete The Task', 6)
-						printer.centered('It may be busy, otherwise try again', 8)
-						printer.centered('Click To Return', 19)
-						os.pullEvent('mouse_click')
-						changePage('action')
+						rednet.send(tonumber(ID), request, 'taskRequest')
+						printer.centered('Request Sent', 6)
+						printer.centered('Waiting For Response', 6)
+						local m, m2 = rednet.receive(3)
+						if m == tonumber(ID) and m2 == "Complete" then
+							printer.centered('Task Complete', 6)				
+							printer.centered('Click Anywhere To Return', 18)
+							os.pullEvent('mouse_click')
+							changePage('action')
+							return
+						else
+							changePage('No')
+							printer.centered('The Client Did\'nt Complete The Task', 6)
+							printer.centered('It may be busy, otherwise try again', 8)
+							printer.centered('Click To Return', 19)
+							os.pullEvent('mouse_click')
+							changePage('action')
+						end
 					end
 				else
 					printer.centered('Enter A Time To Pulse For', 19)
@@ -721,9 +827,7 @@ function action(ID)
 	local function OSopt(ID)
 		changePage('actionOSopt')
 		while true do
-			--changePage('actionOSopt')
-			printer.centered('CraftOS Options For Client '..ID, 6)
-			printer.centered('Click The Buttons Below To Execute', 8)
+			if pocket then printer.centered('CraftOS Client '..ID, 6) else printer.centered('CraftOS Options For Client '..ID, 6) end
 			local e, p1, p2, p3 = os.pullEvent()
 			if e == "mouse_click" then checkClick(e, p1, p2, p3)
 			elseif e == "goback" then changePage('action') return
@@ -731,19 +835,25 @@ function action(ID)
 				rrequest = {}
 				rrequest["name"] = "sysOp"
 				rrequest["osOpt"] = "shutdown"
+				if pocket then rrequest["forwardID"] = ID end
 				os.queueEvent('send')
 				--Send shutdown message
 			elseif e == "rb" then
 				rrequest = {}
 				rrequest["name"] = "sysOp"
 				rrequest["osOpt"] = "reboot"
+				if pocket then rrequest["forwardID"] = ID end
 				os.queueEvent('send')
 				--Send reboot message
 			elseif e == "send" then
 				changePage('RDsubmit')
 				printer.centered('Creating Request', 6)
 				request = textutils.serialize(rrequest)
-				rednet.send(tonumber(ID), request, 'taskRequest')
+				if pocket then
+					rednet.send(tonumber(current.settings.masterID), request, 'forwardTaskRequest')
+				else
+					rednet.send(tonumber(ID), request, 'taskRequest')
+				end
 				printer.centered('Request Sent', 6)
 				printer.centered('Task Complete', 6)				
 				printer.centered('Click Anywhere To Return', 18)
@@ -754,6 +864,21 @@ function action(ID)
 		end
 	end
 	
+	if pocket then
+	tableClear()
+	drawTitleBar()
+	rednet.send(current.settings.masterID, ID, 'pingClient')
+	printer.centered('Pinging Client: '..ID, 6)
+	local id, msg = rednet.receive(5)
+	if tonumber(id) ~= tonumber(current.settings.masterID) or msg ~= "true" then
+		printer.centered('The client is not responding!', 6)
+		printer.centered('Make sure it is within range', 8)
+		printer.centered('Click Anywhere To return', 19)
+		os.pullEvent('mouse_click')
+		changePage('clientList')
+		return
+	end
+	else
 	tableClear()
 	drawTitleBar()
 	printer.centered('Pinging Client: '..ID, 6)
@@ -767,7 +892,7 @@ function action(ID)
 		changePage('clientList')
 		return
 	end
-
+	end
 	while true do		
 		changePage('action')
 		printer.centered("Managing Client: "..ID, 6)
@@ -1157,7 +1282,6 @@ function unregisterClient()
 	return
 end
 
-
 function loadSettings()
   LogFile.i('Loading Settings', runningProgram)
   if fs.exists('systemFiles/Programs/remoteControlSettings') then
@@ -1188,7 +1312,8 @@ function messageHandler()
 	while true do
 		sleep(0)
 		local messageSender, message, messageProtocol = rednet.receive()
-		LogFile.i("Message Received", runningProgram)
+		messageProtocol = messageProtocol or ""
+		LogFile.i("Message Received: "..messageSender.." : "..message.." : "..messageProtocol, runningProgram)
 		--If we get a message then the response will change depending on the type of client.
 		
 		if current.thisDevice.type == "MASTER" then
@@ -1203,6 +1328,22 @@ function messageHandler()
 					end
 				end
 				if not foundD then rednet.send(messageSender, 'false') elseif foundD then foundD = false end
+			elseif message == "requestClients" then
+				LogFile.i('Client List Requested', runningProgram)
+				rednet.send(messageSender, current.devices.Client)
+			elseif messageProtocol == 'pingClient' then
+				rednet.send(tonumber(message), 'Ping')
+				local m, m2, m3 = rednet.receive(2)
+				if m == tonumber(message) and m2 == "Pong" then
+					rednet.send(messageSender, 'true')
+				else
+					rednet.send(messageSender, 'false')
+				end
+			elseif messageProtocol == 'forwardTaskRequest' then
+				LogFile.i('Forward Message Received', runningProgram)
+				--Request from PDA to forward to client in message
+				local rawMessage = textutils.unserialize(message)
+				rednet.send(tonumber(rawMessage["forwardID"]), message, 'taskRequest')
 			end
 		elseif current.thisDevice.type == "CLIENT" then
 			if message == "Ping" and messageSender == current.settings.masterID then
@@ -1237,7 +1378,212 @@ function messageHandler()
 	LogFile.e("Message Handler OFFLINE", runningProgram)
 end
 
+function pocketStart()
+	modem.Initialise()
+	termX, termY = term.getSize()
+	--Pocket computers function alot differently, they require a startup function different to that other normal computers
+	--Load important APIs
+	term.clear()
+	print('Please Wait, Loading APIs')
+	
+	local apis = {
+		"titleBar",
+		"element",
+		"LogFile",
+		"printer",
+		"uInput",
+	}	
+	for _, v in ipairs(apis) do
+		sleep(0)
+		if not os.loadAPI('/api/'..v) then error('An error occurred when loading pocket APIs') end
+	end
+	LogFile.Initialise()
+	pocketPC.loadSettings()
+	notOn = true
+	--Ping master computer
+	while notOn do
+		for i=1, 3 do
+			drawTitleBar()
+			printer.centered("Pinging Master Computer", 6)
+			printer.centered("Sending Ping", 7)
+			rednet.send(current.settings.masterID, "Ping")
+			printer.centered("Waiting For Response..."..i, 7)
+			local messageID, Message = rednet.receive(5)
+			messageID = messageID or ""
+			Message = Message or ""
+			if Message == "Pong" and messageID == current.settings.masterID then
+				notOn = false
+				break
+			elseif Message ~= "Pong" and messageID ~= current.settings.masterID and i == 3 then
+				error(messageID.." :: "..Message)
+				drawTitleBar()
+				printer.centered("Cannot Connect To Master", 6)
+				printer.centered("Is It Within Range", 8)
+				printer.centered("And Is On-line!", 9)
+				printer.centered("Click Anywhere To Retry", 19)
+				os.pullEvent("mouse_click")
+			end
+		end
+	end
+	printer.centered('', 7)
+	sleep(0)
+	printer.centered('Retrieiving From Master', 6)
+	-- Get all settings and client lists etc... from master
+	current.devices = {}
+	current.devices.masterClients ={}
+	current.devices.masterClients = pocketPC.retrieveClients(current.settings.masterID)
+	if #current.devices.masterClients < 1 then
+		drawTitleBar()
+		printer.centered('No Clients Found', 6)
+		printer.centered('Register Some On The Master', 8)
+		sleep(3)
+		os.shutdown()
+	else
+		drawTitleBar()
+		printer.centered('Clients Found! ('..#current.devices.masterClients..')', 6)
+		sleep(0.5)
+		pocketPC.saveSettings()
+		drawTitleBar()
+		pocketPC.viewClients()
+	end
+end
+
+pocketPC = {
+	ping = function(ID)
+		rednet.send(ID, 'Ping')
+		local m, m1, m2 = rednet.receive(3)
+		m = m or ""
+		m1 = m1 or ""
+		m2 = m2 or ""
+		if tonumber(m) == ID and m1 == "Pong" then
+			return true
+		end
+		return false
+	end,
+
+	retrieveClients = function(ID)
+		rednet.send(ID, "requestClients")
+		local m, m1,m2 = rednet.receive(3)
+		if m == current.settings.masterID then
+			return m1
+		end
+		return {}
+	end,
+	
+	loadSettings = function()
+		if fs.exists('remoteControlPDA') then
+			local f = fs.open('remoteControlPDA', 'r')
+			if f then
+				current = textutils.unserialize(f.readAll())
+				LogFile.i('Settings Loaded', runningProgram)
+			end
+			f.close()
+		else
+			error'The Sync Did Not Bring Across Compatible Settings, Please Resync With The Master PC'
+		end
+	end,
+	
+	saveSettings = function()
+		current = current or {}
+		local f = fs.open('remoteControlPDA', 'w')
+		if f then
+			f.write(textutils.serialize(current))	    
+		end
+		f.close()	
+	end,
+	
+	viewClients = function()
+		local title = "Client List"
+        local tArgs = current.devices.masterClients
+        local pages = {[1]={}}
+        for i = 1, #tArgs, 1 do
+                if #pages[ #pages ] == 6 then
+                        pages[ #pages + 1 ] = {}
+                end
+                pages[ #pages ][ #pages[#pages] + 1 ] = tArgs[ i ]
+        end
+        local maxLen = 0
+        for k, v in ipairs( tArgs ) do
+                if #v > maxLen then maxLen = #v maxLenChar = k end
+        end
+		local termX, termY = term.getSize()
+        local maxx, maxy = term.getSize()
+        if maxLen > maxx - 20 then
+                error('String In The Array Is Too LARGE To Display, We Removed: '..maxLenChar)
+        end
+        local page = 1
+        local selected = 1
+        local function render()
+                local tbl = pages[ page ]
+                printer.centered(title, 4)
+				local xValue = 2
+				local Count = 1
+				local yValue = 8
+				tableClear()
+				if pages[page-1] then prevBtn = btnInit("Prev", nil, nil, 2, 20, 1, colors.cyan, 1, 256, function() os.queueEvent("PreviousPage") end, false, nil, nil, nil, nil) end
+				if pages[page+1] then nxtBtn = btnInit("Next", nil, nil, termX-2-#"Next", 20, 1, colors.cyan, 1, 256, function() os.queueEvent("NextPage") end, false, nil, nil, nil, nil) end
+                for i = 1, #tbl do
+					if Count == 1 then x = 2 y = 6
+					elseif Count == 2 then y = 8 x = 2
+					elseif Count == 3 then y = 10 x = 2
+					elseif Count == 4 then y = 12 x = 2
+					elseif Count == 5 then y = 14 x = 2
+					elseif Count == 6 then y = 16 x = 2
+					end
+                    displayButtons[tbl[i]] = btnInit("Client "..tbl[i], nil, nil, x, y, 1, colors.cyan, 1, 256, function() action(tbl[i]) end, false, nil, nil, nil, nil)
+					Count = Count + 1
+                end
+                if pages[ page - 1 ] then
+                    element.opacity(prevBtn, true)
+                end
+                if pages[ page + 1 ] then
+                    element.opacity(nxtBtn, true)
+                end
+                local str = "(" .. page .. "/" .. #pages .. ")"
+                printer.centered( str , 19)
+        end
+        while true do
+			render()
+			local event, param1, p2, p3 = os.pullEvent()
+			if event == "mouse_click" then
+				checkClick(event, param1, p2, p3)
+			elseif event == "PreviousPage" then
+				if pages[page-1] then
+					drawTitleBar()
+					printer.centered("Loading, Please Wait...", 4) sleep(0)
+					page = page -1
+					hideElement("-a")
+					element.opacity(prevBtn, false)
+					element.opacity(nxtBtn, false)
+					tableClear()
+					drawTitleBar()
+				else 
+					prevBtn.visible = false 
+					LogFile.w("Previous Button Fired When On First Page!", runningProgram) 
+				end
+			elseif event == "NextPage" then
+				if pages[page+1] then
+					drawTitleBar()
+					printer.centered("Loading, Please Wait...", 4) sleep(0.2)
+					page = page + 1
+					element.opacity(prevBtn, false)
+					element.opacity(nxtBtn, false)
+					tableClear()
+					drawTitleBar()
+				else 
+					nxtBtn.visible = false 
+					LogFile.w("Next Button Fired When On Last Page!", runningProgram) 
+				end
+			elseif event == "back" then
+				changePage('main')
+				return
+			end
+        end
+	end
+}
+
 function Initialise()
+	if pocket then pocketStart() else
 	drawTitleBar()
 	printer.centered("Loading Your Settings", 6)
 	loadSettings()
@@ -1253,8 +1599,8 @@ function Initialise()
 	while not modem.isPresent() do
 		printer.centered("This program uses rednet to communicate between", 6)
 		printer.centered("other computers. We cannot detect a wireless modem", 7)
-		printer.centered("on this PC please attach one to continue.", 8)
-		printer.centered("Well Check When You Attach A Peripheral", 19)
+		if not pocket then printer.centered("on this PC please attach one to continue.", 8)
+		printer.centered("Well Check When You Attach A Peripheral", 19) else printer.centered('Craft one onto this PDA then reboot', 8) end
 		os.pullEvent()
 		sleep(0)
 	end
@@ -1287,14 +1633,20 @@ function Initialise()
 	printer.centered("Creating Buttons", 6)
 	changePage('main')
 	parallel.waitForAny(programEventLoop, messageHandler) --Due to modem messages not being sent to an ID but rather a channel I am using the rednet API not the Modem API, This requires a listener to be run using parallel or coroutine rather than the eventRegister.
+	end
 end
 
 local _, err = pcall(Initialise)
-  if err then
+  if err and not pocket then
     term.setCursorBlink(false)
 	LogFile.e('XPCALL Error: '..err, runningProgram)
 	errora.err(err, 'The Remote Control Program Has Crashed, Error Code Above', true, true)
+  elseif err and pocket then
+	print ('A fatal error occurred: '..err)
+	sleep(5)
+	os.shutdown()
   end
 --The program appears to have left the loop, Reboot to stop error reporting!
 LogFile.e("The Program Appears To Have Left The Loop, To Prevent Error Reporting We Will Reboot", runningProgram)
+print'Loop Left!' sleep(1)
 os.reboot()
