@@ -693,10 +693,15 @@ function action(ID)
 			if id == tonumber(ID) and msg and proto == "requestResponse" then
 				
 			else
-				drawTitleBar()
-				printer.centered('Cannot Retrieve Information From Client', 6)
-				printer.centered('Check Your Connection And Try Again', 8)
-				printer.centered('Click Anywhere To Return', 18)
+				changePage('No')
+				if pocket then 
+					printer.centered('The Client Didnt Complete', 6)
+					printer.centered("The Task!", 7)
+				else
+					printer.centered('The Client Did\'nt Complete The Task', 6)
+					printer.centered('It may be busy, otherwise try again', 8)
+				end
+				printer.centered('Click To Return', 19)
 				os.pullEvent('mouse_click')
 				return 'err'
 			end
@@ -749,9 +754,13 @@ function action(ID)
 						return
 					else
 						changePage('No')
-						drawTitleBar()
-						printer.centered('The Client Did\'nt Complete The Task', 6)
-						printer.centered('It may be busy, otherwise try again', 8)
+						if pocket then 
+							printer.centered('The Client Didnt Complete', 6)
+							printer.centered("The Task!", 7)
+						else
+							printer.centered('The Client Did\'nt Complete The Task', 6)
+							printer.centered('It may be busy, otherwise try again', 8)
+						end
 						printer.centered('Click To Return', 19)
 						os.pullEvent('mouse_click')
 						changePage('action')
@@ -804,8 +813,13 @@ function action(ID)
 							return
 						else
 							changePage('No')
-							printer.centered('The Client Did\'nt Complete The Task', 6)
-							printer.centered('It may be busy, otherwise try again', 8)
+							if pocket then 
+								printer.centered('The Client Didnt Complete', 6)
+								printer.centered("The Task!", 7)
+							else
+								printer.centered('The Client Did\'nt Complete The Task', 6)
+								printer.centered('It may be busy, otherwise try again', 8)
+							end
 							printer.centered('Click To Return', 19)
 							os.pullEvent('mouse_click')
 							changePage('action')
@@ -871,8 +885,8 @@ function action(ID)
 	printer.centered('Pinging Client: '..ID, 6)
 	local id, msg = rednet.receive(5)
 	if tonumber(id) ~= tonumber(current.settings.masterID) or msg ~= "true" then
-		printer.centered('The client is not responding!', 6)
-		printer.centered('Make sure it is within range', 8)
+		printer.centered('Client isnt responding', 6)
+		printer.centered('Is it within range?', 8)
 		printer.centered('Click Anywhere To return', 19)
 		os.pullEvent('mouse_click')
 		changePage('clientList')
@@ -1435,7 +1449,7 @@ function pocketStart()
 	if #current.devices.masterClients < 1 then
 		drawTitleBar()
 		printer.centered('No Clients Found', 6)
-		printer.centered('Register Some On The Master', 8)
+		printer.centered('Register Some On Master', 8)
 		sleep(3)
 		os.shutdown()
 	else
