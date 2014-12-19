@@ -409,6 +409,8 @@ function changePage(newPage)
 		back = nil
 		back = btnInit("Return", nil, nil, termX/2-#"Return"/2, 18, 1, colors.red, 1, 256, function() os.queueEvent('back') end, false, nil, nil, nil, nil)
 	elseif currentPage == "actionRST" then
+		go = btnInit('Request', nil, nil, termX-4-#"Request", 18, 1, colors.green, 1, 256, function() os.queueEvent('send') end, false, nil, nil, nil, nil)
+		returnback = btnInit("Return", nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('back') end, false, nil, nil, nil, nil)
 		if pocket then
 			right = btnInit('Right', nil, nil, 2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
 			right.toggleState = 2
@@ -430,8 +432,6 @@ function changePage(newPage)
 			back = btnInit('Back', nil, nil, bottom.x+bottom.width+2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = "back" end, true, colors.green, 1, 'Back', 'rsOut')
 			rsToggleState = btnInit('Turn ON', nil, nil, go.x-go.width-2, 18, 1, colors.green, 1, 256, nil, true, colors.cyan, 1, 'Turn OFF', nil)
 		end
-		go = btnInit('Request', nil, nil, termX-4-#"Request", 18, 1, colors.green, 1, 256, function() os.queueEvent('send') end, false, nil, nil, nil, nil)
-		returnback = btnInit("Return", nil, nil, 2, 18, 1, colors.red, 1, 256, function() os.queueEvent('back') end, false, nil, nil, nil, nil)
 	elseif currentPage == "actionRSP" then
 		if pocket then
 			right = btnInit('Right', nil, nil, 2, 10, 1, colors.cyan, 1, 256, function() os.queueEvent('changeSide') redstoneSide = 'right' end, true, colors.green, 1, 'Right', 'rsOut')
