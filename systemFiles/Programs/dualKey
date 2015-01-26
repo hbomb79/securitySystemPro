@@ -11,9 +11,9 @@ titleBar.draw("HbombOS Security Suite", 'Digital Lock', colors.cyan, 256, 128, 2
 local text1 = "Username: "
 local text2 = "Password: "
 setup = false
-function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Function to create button
+function btnInit(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText, parent) --Function to create button
 	LogFile.i('Registering Button!', runningProgram)
-	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText) --Calls API to generate button
+	local btn = element.create(btnText, btnWidth, btnHeight, btnX, btnY, btnTC, btnBG, oTC, oBG, onClick, toggle, secBG, secTC, secText, parent) --Calls API to generate button
 	LogFile.i('Button Generated', runningProgram)
 	LogFile.i('Button Call Complete', runningProgram)
 	table.insert(elements, btn) --Inserts into table so it can be scanned later
