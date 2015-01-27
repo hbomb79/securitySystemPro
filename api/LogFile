@@ -1,6 +1,7 @@
-Initialise = function()
-	local h = fs.open('/systemFiles/logFile.log', 'w')
-	h.write('-@-HbombOS Security Suite System Log-@-'..'\n\n')
+Initialise = function(text, path)
+	if circumSuite then text = '-@-HbombOS Security Suite System Log-@-'..'\n\n' _G.logFilePath = '/systemFiles/LogFile.log' else _G.logFilePath = path or '/logFile.log' text = text or 'Unknown Log' end
+	local h = fs.open(logFilePath, 'w')
+	h.write(text)
 	h.close()
 end
 
@@ -9,22 +10,22 @@ log = function(msg, Program, state)
 	if state ~= '' then
 		state = ' '..state
 	end
-	local h = fs.open('/systemFiles/logFile.log', 'a')
+	local h = fs.open(logFilePath, 'a')
 	h.write('  ['..os.clock()..']['..Program..'] '..state..' '..tostring(msg..'\n'))
 	h.close()
 end
 
 e = function(msg, Program)
-    Program = Program or 'Unknown Program'
+    Program = runningProgram or 'Unknown Program'
 	log(msg, Program, 'Error >')
 end
 
 i = function(msg, Program)
-    Program = Program or 'Unknown Program'
+    Program = runningProgram or 'Unknown Program'
 	log(msg, Program, 'Info >')
 end
 
 w = function(msg, Program)
-    Program = Program or 'Unknown Program'
+    Program = runningProgram or 'Unknown Program'
 	log(msg, Program, 'Warning >')
 end
