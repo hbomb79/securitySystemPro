@@ -1,9 +1,31 @@
+_G.termX, _G.termY = term.getSize()
 
 function centered(text, y, tc)
+	if not y then error('Y value missing for printer API', 2) elseif not text then error('No text is present in printer API', 2) end
 	if tc then term.setTextColor(tc) end
 	local w, h = term.getSize()
+	local text = stripText(text)
     x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
+	LogFile.i(tostring(x).."::"..tostring(y), runningProgram)
     term.setCursorPos(x, y)
 	term.clearLine()
     write(text)
+end
+
+function stripText(text)
+	if #text > termX then
+		local screenSize = termX-3
+		local overSize = termX-#text*-1
+		local arg1 = #text/2-(overSize/2)
+		local arg2 = (#text/2-(overSize/2))*-1
+		LogFile.i('Screen Size: '..screenSize..':: OverSize: '..overSize..':: Arg1: '..arg1..':: Arg2: '..arg2, runningProgram)
+		local s1 = string.sub(text, 1, arg1)
+		local s2 = string.sub(text, arg2)
+		LogFile.i('Original: '..text..':: Part One: '..s1..':: Part Two: '..s2..':: Length: '..(#s1+#s2+#'...'), runningProgram)
+		local text = (s1.."..."..s2)
+		LogFile.i(#text, runningProgram)
+		if #text > termX then LogFile.w('The String: ('..text..') is too large to display ('..#text..')') return'Text Too Large To Display' end
+		return text
+	end
+	return text
 end
