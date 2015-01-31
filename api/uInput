@@ -8,6 +8,11 @@ function doClick(event, btn, x, y, buttonTable) --Checks if click happened... Us
 	end
 end
 
+function breakInputs()
+	--Used to stop all inputs without returning, Used in HexAlarm when all inputs must be cancelled.
+	LogFile.i('Running Break Inputs, uInput')
+	os.queueEvent('uInputBreak')
+end
 
 function nRead(len, replaceChar) --Number ONLY Input, Returns with: enter key
   local _int = 1
@@ -30,6 +35,7 @@ function nRead(len, replaceChar) --Number ONLY Input, Returns with: enter key
           if #input < len then
 			term.setCursorBlink(true)
 			input = input .. p1
+			LogFile.i('Input Entered.')
 			term.write(replaceChar or p1)
 		  end
 		  if #input >= len then term.setCursorBlink(false) end
@@ -40,6 +46,7 @@ function nRead(len, replaceChar) --Number ONLY Input, Returns with: enter key
           term.setCursorPos(x-1,y)
           term.write(" ")
           term.setCursorPos(x-1,y)
+		elseif e == 'uInputBreak' then return
         end
   until p1==keys.enter
   term.setCursorBlink(false)
@@ -82,6 +89,7 @@ function eventN(len, replaceChar, buttonTable) --Number Only Event Input, Return
 			return input
 		elseif e=="mouse_click" then
 			doClick('mouse_click', p1, p2, p3, buttonTable)
+		elseif e=='uInputBreak' then return
 		end
   until submitted
   term.setCursorBlink(false)
@@ -112,18 +120,21 @@ function eventRead(len, replaceChar, buttonTable) --Any Key Read, Returns with: 
           term.setCursorPos(x-1,y)
         elseif event == "submit_Result" then --Button Event
 			submitted = true
+			LogFile.i('Submit Result Called')
 			term.setCursorBlink(false)
 			return input
 		elseif event == "mouse_click" then
 			doClick('mouse_click', nil, p2, p3, buttonTable)
+		elseif event == 'uInputBreak' then LogFile.i('Force Break') return
 		end
   until submitted
+  LogFile.w('False Return!')
   term.setCursorBlink(false)
 end
 
 function keyRead(len, replaceChar) --Any Key Read, Returns with: enter key
   submitted = false
-  LogFile.i('Number Input Called', 'uInput API') --Log Input Start
+  LogFile.i('Key Input Called', 'uInput API') --Log Input Start
   Num = false
   len = len or 10
   local input=""
@@ -146,6 +157,7 @@ function keyRead(len, replaceChar) --Any Key Read, Returns with: enter key
           term.setCursorPos(x-1,y)
           term.write(" ")
           term.setCursorPos(x-1,y)
+		elseif e == 'uInputBreak' or e == 'alert' then return
         end
   until p1==keys.enter
   term.setCursorBlink(false)
@@ -182,6 +194,7 @@ function restrictedKeyRead(len, replaceChar, restrictedChars) --White listed Key
           term.setCursorPos(x-1,y)
           term.write(" ")
           term.setCursorPos(x-1,y)
+		elseif e == 'uInputBreak' then return
         end
   until p1==keys.enter
   term.setCursorBlink(false)
@@ -191,7 +204,6 @@ end
 function restrictedEventRead(len, replaceChar, buttonTable, restrictedChars) --White Listed Key Read, Returns with: submit_Result
   submitted = false
   blackListed = false
-  LogFile.i('Restricted Event Input Called', 'uInput API') --Log Input Start
   len = len or 10
   local input=""
   local key = 0
@@ -221,6 +233,7 @@ function restrictedEventRead(len, replaceChar, buttonTable, restrictedChars) --W
 			return input
 		elseif event == "mouse_click" then
 			doClick('mouse_click', nil, p2, p3, buttonTable)
+		elseif e == 'uInputBreak' then return
 		end
   until submitted
   term.setCursorBlink(false)
