@@ -20,7 +20,6 @@ function create(text, width, height, x, y, tc, bg, otc, obg, func, toggle, secBG
 	new.secondaryText = secText or text
 	new.visible = true
 	new.parent = parent or nil
-	LogFile.i('Element Parent: '..textutils.serialize(new.parent), 'LogFileAPI')
 	return new
 end
 
@@ -38,8 +37,6 @@ function tryClick(elementTable, x, y) --On Click Check Co-Ords, If match run the
 										draw(p)
 									end
 								end
-							else
-								LogFile.i('No parent found on element', 'LogFileAPI')
 							end
 							draw(v)
 						if v.func then return(v.func) end
