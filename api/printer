@@ -6,7 +6,6 @@ function centered(text, y, tc)
 	local w, h = term.getSize()
 	local text = stripText(text)
     x = math.ceil(math.ceil((w / 2) - (#text / 2)), 0)+1
-	LogFile.i(tostring(x).."::"..tostring(y), runningProgram)
     term.setCursorPos(x, y)
 	term.clearLine()
     write(text)
